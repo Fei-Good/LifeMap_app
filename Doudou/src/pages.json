@@ -12,6 +12,13 @@
 			"style": {
 				"navigationBarTitleText": "首页"
 			}
+		},
+		{
+			"path": "pages/chat/chat",
+			"style": {
+				"navigationBarTitleText": "DouDou聊天",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {
