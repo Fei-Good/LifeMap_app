@@ -147,18 +147,13 @@ const handleLogin = () => {
 }
 
 const handleRegister = () => {
-  // 改变DouDou的问候语
   greetingText.value = '欢迎加入我们！注册后一起成长吧~ 🎉'
   
-  // 3秒后恢复原始问候语
   setTimeout(() => {
-    greetingText.value = 'Hi! 我是你的职场好搭子DouDou 😊'
-  }, 3000)
-  
-  uni.showToast({
-    title: '注册功能开发中',
-    icon: 'none'
-  })
+    uni.navigateTo({
+      url: '/pages/register/register'
+    })
+  }, 1000)
 }
 
 const handleForgotPassword = () => {
