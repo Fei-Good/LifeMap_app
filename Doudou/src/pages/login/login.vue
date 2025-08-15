@@ -10,7 +10,11 @@
     <!-- DouDou角色区域 -->
     <view class="doudou-section">
       <view class="doudou-avatar" @click="onDouDouClick">
-        <view class="doudou-face"></view>
+        <image 
+          class="doudou-image" 
+          src="@/static/login/DouDou形象_登录页.png" 
+          mode="aspectFit"
+        />
       </view>
       <view class="greeting-bubble">
         <text class="greeting-text">{{ greetingText }}</text>
@@ -41,13 +45,22 @@
         />
       </view>
       
-      <button 
-        class="login-btn"
-        :class="{ 'login-btn-active': isFormValid }"
-        @click="handleLogin"
-      >
-        登录
-      </button>
+      <view class="button-group">
+        <button 
+          class="action-btn login-btn"
+          :class="{ 'action-btn-active': isFormValid }"
+          @click="handleLogin"
+        >
+          登录
+        </button>
+        
+        <button 
+          class="action-btn register-btn"
+          @click="handleRegister"
+        >
+          注册
+        </button>
+      </view>
       
       <view class="forgot-password" @click="handleForgotPassword">
         <text class="forgot-text">忘记密码？</text>
@@ -133,6 +146,21 @@ const handleLogin = () => {
   }, 2000)
 }
 
+const handleRegister = () => {
+  // 改变DouDou的问候语
+  greetingText.value = '欢迎加入我们！注册后一起成长吧~ 🎉'
+  
+  // 3秒后恢复原始问候语
+  setTimeout(() => {
+    greetingText.value = 'Hi! 我是你的职场好搭子DouDou 😊'
+  }, 3000)
+  
+  uni.showToast({
+    title: '注册功能开发中',
+    icon: 'none'
+  })
+}
+
 const handleForgotPassword = () => {
   // 改变DouDou的问候语
   greetingText.value = '别担心，联系管理员重置密码吧~ 🤗'
@@ -143,7 +171,7 @@ const handleForgotPassword = () => {
   }, 3000)
   
   uni.showToast({
-    title: '功能开发中',
+    title: '发送邮箱至：1234567890@doudou.com',
     icon: 'none'
   })
 }
@@ -237,14 +265,11 @@ const handleForgotPassword = () => {
 }
 
 .doudou-avatar {
-  width: 160rpx;
-  height: 160rpx;
-  background: linear-gradient(45deg, #ff6b6b, #ffa500);
-  border-radius: 50%;
+  width: 220rpx;
+  height: 220rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10rpx 30rpx rgba(255, 107, 107, 0.3);
   cursor: pointer;
   transition: all 0.3s ease;
   margin-bottom: 30rpx;
@@ -259,37 +284,11 @@ const handleForgotPassword = () => {
   }
 }
 
-.doudou-face {
-  position: relative;
+.doudou-image {
   width: 100%;
   height: 100%;
-  
-  // 使用伪元素创建眼睛
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50rpx;
-    left: 45rpx;
-    width: 16rpx;
-    height: 20rpx;
-    background: #333;
-    border-radius: 50%;
-    box-shadow: 60rpx 0 0 #333;
-  }
-  
-  // 使用伪元素创建嘴巴
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 45rpx;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40rpx;
-    height: 20rpx;
-    border: 3rpx solid #333;
-    border-top: none;
-    border-radius: 0 0 40rpx 40rpx;
-  }
+  border-radius: 50%;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.2);
 }
 
 .greeting-bubble {
@@ -355,30 +354,54 @@ const handleForgotPassword = () => {
   }
 }
 
-.login-btn {
-  width: 100%;
+/* 按钮组容器 */
+.button-group {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 40rpx;
+}
+
+/* 通用按钮样式 */
+.action-btn {
+  flex: 1;
   height: 100rpx;
-  background: linear-gradient(45deg, #667eea, #764ba2);
   border: none;
   border-radius: 25rpx;
-  font-size: 36rpx;
-  color: #fff;
+  font-size: 32rpx;
   font-weight: 600;
-  margin-bottom: 40rpx;
   transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2rpx);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* 登录按钮样式 */
+.login-btn {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: #fff;
   opacity: 0.6;
   
-  &.login-btn-active {
+  &.action-btn-active {
     opacity: 1;
     box-shadow: 0 10rpx 30rpx rgba(102, 126, 234, 0.3);
-    
-    &:hover {
-      transform: translateY(-2rpx);
-    }
-    
-    &:active {
-      transform: translateY(0);
-    }
+  }
+}
+
+/* 注册按钮样式 */
+.register-btn {
+  background: rgba(255, 255, 255, 0.9);
+  color: #667eea;
+  border: 2rpx solid #667eea;
+  box-shadow: 0 5rpx 15rpx rgba(102, 126, 234, 0.1);
+  
+  &:hover {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 10rpx 25rpx rgba(102, 126, 234, 0.2);
   }
 }
 
@@ -444,8 +467,8 @@ const handleForgotPassword = () => {
   }
   
   .doudou-avatar {
-    width: 140rpx;
-    height: 140rpx;
+    width: 180rpx;
+    height: 180rpx;
   }
   
   .greeting-text {
@@ -457,9 +480,9 @@ const handleForgotPassword = () => {
     font-size: 30rpx;
   }
   
-  .login-btn {
+  .action-btn {
     height: 90rpx;
-    font-size: 32rpx;
+    font-size: 30rpx;
   }
 }
 </style>

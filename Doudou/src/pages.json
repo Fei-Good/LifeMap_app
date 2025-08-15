@@ -19,6 +19,13 @@
 				"navigationBarTitleText": "DouDou聊天",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/task/task",
+			"style": {
+				"navigationBarTitleText": "任务系统",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {

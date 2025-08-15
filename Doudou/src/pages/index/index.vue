@@ -17,6 +17,16 @@
         </view>
       </button>
       
+      <button class="task-btn" @tap="goToTask">
+        <view class="btn-content">
+          <text class="task-icon">🎯</text>
+          <view class="btn-text">
+            <text class="btn-title">任务系统</text>
+            <text class="btn-desc">游戏化完成工作任务</text>
+          </view>
+        </view>
+      </button>
+      
       <button class="login-btn" @tap="goToLogin">
         <text>登录/注册</text>
       </button>
@@ -39,9 +49,21 @@ export default {
       })
     },
     
+    goToTask() {
+      uni.navigateTo({
+        url: '/pages/task/task'
+      })
+    },
+    
     goToLogin() {
       uni.navigateTo({
         url: '/pages/login/login'
+      })
+    },
+    
+    goToMap() {
+      uni.navigateTo({
+        url: '/pages/map/map'
       })
     }
   },
@@ -111,6 +133,38 @@ export default {
   box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.15);
 }
 
+.task-btn {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 40rpx;
+  padding: 0;
+  border: none;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 16rpx 40rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.task-btn:active {
+  transform: translateY(-4rpx);
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.15);
+}
+
+.map-btn {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 40rpx;
+  padding: 0;
+  border: none;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 16rpx 40rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.map-btn:active {
+  transform: translateY(-4rpx);
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.15);
+}
+
 .btn-content {
   display: flex;
   align-items: center;
@@ -122,6 +176,30 @@ export default {
   width: 80rpx;
   height: 80rpx;
   background: linear-gradient(45deg, #ff6b6b, #ffa500);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  flex-shrink: 0;
+}
+
+.task-icon {
+  width: 80rpx;
+  height: 80rpx;
+  background: linear-gradient(45deg, #4facfe, #00f2fe);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  flex-shrink: 0;
+}
+
+.map-icon {
+  width: 80rpx;
+  height: 80rpx;
+  background: linear-gradient(45deg, #28a745, #20c997);
   border-radius: 50%;
   display: flex;
   align-items: center;
