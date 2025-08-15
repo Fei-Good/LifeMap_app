@@ -78,6 +78,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import userService from '@/utils/userService'
 
 // 响应式数据
 const username = ref('')
@@ -115,7 +116,7 @@ const onInputBlur = (event) => {
   event.target.style.transform = 'scale(1)'
 }
 
-const handleLogin = () => {
+const handleLogin = async () => {
   if (!isFormValid.value) {
     uni.showToast({
       title: '请填写完整信息',
@@ -124,26 +125,33 @@ const handleLogin = () => {
     return
   }
   
-  // 这里添加登录逻辑
   uni.showLoading({
     title: '登录中...'
   })
   
-  // 模拟登录请求
-  setTimeout(() => {
+  try {
+    const result = await userService.login(username.value.trim(), password.value)
+    
     uni.hideLoading()
+    
     uni.showToast({
       title: '登录成功',
       icon: 'success'
     })
     
-    // 登录成功后跳转到主页
     setTimeout(() => {
-      uni.switchTab({
+      uni.reLaunch({
         url: '/pages/index/index'
       })
-    }, 1500)
-  }, 2000)
+    }, 1000)
+  } catch (error) {
+    uni.hideLoading()
+    
+    uni.showToast({
+      title: error.message || '登录失败',
+      icon: 'none'
+    })
+  }
 }
 
 const handleRegister = () => {

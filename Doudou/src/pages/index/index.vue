@@ -7,7 +7,7 @@
     </view>
     
     <view class="action-area">
-      <button class="chat-btn" @tap="goToChat">
+      <button class="chat-btn" @tap="goToChat" v-if="isLoggedIn">
         <view class="btn-content">
           <text class="doudou-icon">😊</text>
           <view class="btn-text">
@@ -17,7 +17,7 @@
         </view>
       </button>
       
-      <button class="task-btn" @tap="goToTask">
+      <button class="task-btn" @tap="goToTask" v-if="isLoggedIn">
         <view class="btn-content">
           <text class="task-icon">🎯</text>
           <view class="btn-text">
@@ -27,37 +27,101 @@
         </view>
       </button>
       
-      <button class="login-btn" @tap="goToLogin">
+      <button class="login-btn" @tap="goToLogin" v-if="!isLoggedIn">
         <text>登录/注册</text>
+      </button>
+      
+      <button class="profile-btn" @tap="goToProfile" v-if="isLoggedIn">
+        <text>个人资料</text>
+      </button>
+      
+      <button class="logout-btn" @tap="handleLogout" v-if="isLoggedIn">
+        <text>退出登录</text>
       </button>
     </view>
   </view>
 </template>
 
 <script>
+import userService from '@/utils/userService'
+
 export default {
   data() {
     return {
       title: 'LifeMap',
+      isLoggedIn: false
     }
   },
-  onLoad() {},
+  onLoad() {
+    this.checkLoginStatus()
+  },
+  onShow() {
+    this.checkLoginStatus()
+  },
   methods: {
+    checkLoginStatus() {
+      this.isLoggedIn = userService.isLoggedIn()
+    },
+    
     goToChat() {
+      if (!this.isLoggedIn) {
+        uni.showToast({
+          title: '请先登录',
+          icon: 'none'
+        })
+        return
+      }
       uni.navigateTo({
         url: '/pages/chat/chat'
       })
     },
     
     goToTask() {
+      if (!this.isLoggedIn) {
+        uni.showToast({
+          title: '请先登录',
+          icon: 'none'
+        })
+        return
+      }
       uni.navigateTo({
         url: '/pages/task/task'
       })
     },
     
     goToLogin() {
+      if (this.isLoggedIn) {
+        uni.showToast({
+          title: '您已登录',
+          icon: 'none'
+        })
+        return
+      }
       uni.navigateTo({
         url: '/pages/login/login'
+      })
+    },
+    
+    goToProfile() {
+      uni.navigateTo({
+        url: '/pages/profile/profile'
+      })
+    },
+    
+    handleLogout() {
+      uni.showModal({
+        title: '确认退出',
+        content: '确定要退出登录吗？',
+        success: (res) => {
+          if (res.confirm) {
+            userService.logout()
+            this.checkLoginStatus()
+            uni.showToast({
+              title: '已退出登录',
+              icon: 'success'
+            })
+          }
+        }
       })
     },
     
@@ -240,6 +304,42 @@ export default {
 
 .login-btn:active {
   background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2rpx);
+}
+
+.profile-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 50rpx;
+  padding: 28rpx 0;
+  font-size: 28rpx;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  margin-top: 20rpx;
+}
+
+.profile-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2rpx);
+}
+
+.logout-btn {
+  background: rgba(255, 71, 87, 0.2);
+  color: white;
+  border: 2rpx solid rgba(255, 71, 87, 0.3);
+  border-radius: 50rpx;
+  padding: 28rpx 0;
+  font-size: 28rpx;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  margin-top: 20rpx;
+}
+
+.logout-btn:active {
+  background: rgba(255, 71, 87, 0.3);
   transform: translateY(-2rpx);
 }
 
