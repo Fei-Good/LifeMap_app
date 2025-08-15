@@ -111,6 +111,10 @@
               <button class="login-btn" @tap="goToLogin">
                 <text>登录/注册</text>
               </button>
+              
+              <button class="profile-btn" @tap="goToProfile" v-if="isLoggedIn">
+                <text>个人资料</text>
+              </button>
             </view>
           </view>
         </view>
@@ -248,6 +252,7 @@ export default {
       })
     },
     
+<<<<<<< HEAD
     handleLogout() {
       uni.showModal({
         title: '确认退出',
@@ -265,6 +270,8 @@ export default {
       })
     },
     
+=======
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     goToMap() {
       uni.navigateTo({
         url: '/pages/map/map'
@@ -569,6 +576,24 @@ export default {
 }
 
 .login-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2rpx);
+}
+
+.profile-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 50rpx;
+  padding: 28rpx 0;
+  font-size: 28rpx;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  margin-top: 20rpx;
+}
+
+.profile-btn:active {
   background: rgba(255, 255, 255, 0.3);
   transform: translateY(-2rpx);
 }

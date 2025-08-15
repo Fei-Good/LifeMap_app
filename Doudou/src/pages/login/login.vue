@@ -125,15 +125,27 @@ const handleLogin = async () => {
     return
   }
   
+<<<<<<< HEAD
+=======
+  // 显示加载状态
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
   uni.showLoading({
     title: '登录中...'
   })
   
   try {
+<<<<<<< HEAD
+=======
+    // 调用登录服务
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     const result = await userService.login(username.value.trim(), password.value)
     
     uni.hideLoading()
     
+<<<<<<< HEAD
+=======
+    // 登录成功
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     uni.showToast({
       title: '登录成功',
       icon: 'success'
@@ -147,6 +159,10 @@ const handleLogin = async () => {
   } catch (error) {
     uni.hideLoading()
     
+<<<<<<< HEAD
+=======
+    // 显示错误信息
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     uni.showToast({
       title: error.message || '登录失败',
       icon: 'none'
@@ -157,6 +173,10 @@ const handleLogin = async () => {
 const handleRegister = () => {
   greetingText.value = '欢迎加入我们！注册后一起成长吧~ 🎉'
   
+<<<<<<< HEAD
+=======
+  // 跳转到注册页面
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
   setTimeout(() => {
     uni.navigateTo({
       url: '/pages/register/register'
