@@ -1,100 +1,235 @@
 <template>
-  <view class="chat-container">
-    <!-- 状态栏 -->
-    <view class="status-bar">
-      <text class="status-time">9:41</text>
-      <text class="status-battery">🔋 💯</text>
+  <view class="chat-web-layout">
+    <!-- 左侧说明面板 -->
+    <view class="chat-left-panel">
+      <view class="panel-content">
+        <view class="panel-header">
+          <text class="panel-title">💡 使用指南</text>
+        </view>
+        <view class="panel-body">
+          <view class="guide-item">
+            <text class="guide-icon">🎯</text>
+            <view class="guide-text">
+              <text class="guide-title">开始对话</text>
+              <text class="guide-desc">点击下方快捷问题或直接输入你的职场困惑</text>
+            </view>
+          </view>
+          
+          <view class="guide-item">
+            <text class="guide-icon">💬</text>
+            <view class="guide-text">
+              <text class="guide-title">智能回复</text>
+              <text class="guide-desc">DouDou会根据你的问题提供个性化建议</text>
+            </view>
+          </view>
+          
+          <view class="guide-item">
+            <text class="guide-icon">📝</text>
+            <view class="guide-text">
+              <text class="guide-title">持续交流</text>
+              <text class="guide-desc">可以继续追问，深入探讨任何职场话题</text>
+            </view>
+          </view>
+          
+          <view class="guide-item">
+            <text class="guide-icon">⭐</text>
+            <view class="guide-text">
+              <text class="guide-title">实用建议</text>
+              <text class="guide-desc">获得可操作的建议和具体的行动步骤</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="tips-section">
+          <text class="tips-title">💡 小贴士</text>
+          <view class="tip-item">
+            <text class="tip-text">• 描述具体场景，获得更精准的建议</text>
+          </view>
+          <view class="tip-item">
+            <text class="tip-text">• 可以分享你的职业背景和目标</text>
+          </view>
+          <view class="tip-item">
+            <text class="tip-text">• 随时保存重要的对话内容</text>
+          </view>
+        </view>
+      </view>
     </view>
 
-    <!-- 聊天头部 -->
-    <view class="chat-header">
-      <view class="back-btn" @tap="goBack">
-        <text class="back-icon">←</text>
-      </view>
-      <view class="header-doudou" @tap="playHeaderAnimation">
-        <view class="doudou-face">
-          <view class="doudou-eyes">
-            <view class="eye left"></view>
-            <view class="eye right"></view>
+    <!-- 中间聊天区域 - iPhone 12 Pro尺寸 -->
+    <view class="chat-main-content">
+      <view class="phone-frame">
+        <view class="phone-screen">
+          <view class="chat-container">
+            <!-- 状态栏 -->
+            <view class="status-bar">
+              <text class="status-time">9:41</text>
+              <text class="status-battery">🔋 💯</text>
+            </view>
+
+            <!-- 聊天头部 -->
+            <view class="chat-header">
+              <view class="back-btn" @tap="goBack">
+                <text class="back-icon">←</text>
+              </view>
+              <view class="header-doudou" @tap="playHeaderAnimation">
+                <view class="doudou-face">
+                  <view class="doudou-eyes">
+                    <view class="eye left"></view>
+                    <view class="eye right"></view>
+                  </view>
+                  <view class="doudou-mouth"></view>
+                </view>
+              </view>
+              <view class="header-info">
+                <text class="header-name">DouDou</text>
+                <text class="header-status">{{ headerStatus }}</text>
+              </view>
+              <view class="more-btn" @tap="showMoreOptions">
+                <text class="more-icon">⋯</text>
+              </view>
+            </view>
+
+            <!-- 聊天内容区域 -->
+            <scroll-view class="chat-content" scroll-y :scroll-top="scrollTop" scroll-with-animation>
+              <!-- DouDou欢迎卡片 - 简化版 -->
+              <view class="welcome-card" @tap="playWelcomeAnimation">
+                <view class="welcome-doudou-simple">
+                  <text class="doudou-emoji">😊</text>
+                </view>
+                <view class="welcome-text">
+                  <text class="welcome-title">{{ welcomeTitle }}</text>
+                  <text class="welcome-desc">{{ welcomeDesc }}</text>
+                </view>
+              </view>
+
+              <!-- 快捷问题 -->
+              <view class="quick-questions">
+                <view 
+                  class="question-item" 
+                  v-for="(question, index) in quickQuestions" 
+                  :key="index"
+                  @tap="selectQuestion(question)"
+                  :class="{ 'question-selected': question.selected }"
+                >
+                  <view class="question-icon" :style="{ backgroundColor: question.bgColor }">
+                    <text>{{ question.icon }}</text>
+                  </view>
+                  <view class="question-content">
+                    <text class="question-title">{{ question.title }}</text>
+                    <text class="question-subtitle">{{ question.subtitle }}</text>
+                  </view>
+                </view>
+              </view>
+
+              <!-- 聊天消息 -->
+              <view class="chat-messages">
+                <view 
+                  v-for="(message, index) in messages" 
+                  :key="index"
+                  :class="['message-bubble', message.type]"
+                >
+                  <text>{{ message.content }}</text>
+                </view>
+              </view>
+            </scroll-view>
+
+            <!-- 底部输入区域 -->
+            <view class="chat-input-area">
+              <view class="input-container">
+                <textarea 
+                  class="chat-input"
+                  :class="{ 'input-focused': inputFocused }"
+                  v-model="inputText"
+                  placeholder="输入你的问题..."
+                  @focus="onInputFocus"
+                  @blur="onInputBlur"
+                  :auto-height="true"
+                  :maxlength="500"
+                />
+                <button 
+                  class="send-btn" 
+                  @tap="sendMessage"
+                  :disabled="!inputText.trim() || sending"
+                  :class="{ 'btn-sending': sending }"
+                >
+                  <text v-if="!sending">→</text>
+                  <text v-else>⏳</text>
+                </button>
+              </view>
+            </view>
           </view>
-          <view class="doudou-mouth"></view>
         </view>
-      </view>
-      <view class="header-info">
-        <text class="header-name">DouDou</text>
-        <text class="header-status">{{ headerStatus }}</text>
-      </view>
-      <view class="more-btn" @tap="showMoreOptions">
-        <text class="more-icon">⋯</text>
       </view>
     </view>
 
-    <!-- 聊天内容区域 -->
-    <scroll-view class="chat-content" scroll-y :scroll-top="scrollTop" scroll-with-animation>
-      <!-- DouDou欢迎卡片 - 简化版 -->
-      <view class="welcome-card" @tap="playWelcomeAnimation">
-        <view class="welcome-doudou-simple">
-          <text class="doudou-emoji">😊</text>
+    <!-- 右侧功能说明面板 -->
+    <view class="chat-right-panel">
+      <view class="panel-content">
+        <view class="panel-header">
+          <text class="panel-title">🚀 功能特色</text>
         </view>
-        <view class="welcome-text">
-          <text class="welcome-title">{{ welcomeTitle }}</text>
-          <text class="welcome-desc">{{ welcomeDesc }}</text>
-        </view>
-      </view>
-
-      <!-- 快捷问题 -->
-      <view class="quick-questions">
-        <view 
-          class="question-item" 
-          v-for="(question, index) in quickQuestions" 
-          :key="index"
-          @tap="selectQuestion(question)"
-          :class="{ 'question-selected': question.selected }"
-        >
-          <view class="question-icon" :style="{ backgroundColor: question.bgColor }">
-            <text>{{ question.icon }}</text>
+        <view class="panel-body">
+          <view class="feature-item">
+            <text class="feature-icon">🤖</text>
+            <view class="feature-text">
+              <text class="feature-title">AI智能</text>
+              <text class="feature-desc">基于先进AI技术，理解你的真实需求</text>
+            </view>
           </view>
-          <view class="question-content">
-            <text class="question-title">{{ question.title }}</text>
-            <text class="question-subtitle">{{ question.subtitle }}</text>
+          
+          <view class="feature-item">
+            <text class="feature-icon">🎭</text>
+            <view class="feature-text">
+              <text class="feature-title">情感交互</text>
+              <text class="feature-desc">DouDou有表情变化，让对话更有趣</text>
+            </view>
+          </view>
+          
+          <view class="feature-item">
+            <text class="feature-icon">📱</text>
+            <view class="feature-text">
+              <text class="feature-title">响应式设计</text>
+              <text class="feature-desc">支持各种设备，随时随地使用</text>
+            </view>
+          </view>
+          
+          <view class="feature-item">
+            <text class="feature-icon">🔒</text>
+            <view class="feature-text">
+              <text class="feature-title">隐私保护</text>
+              <text class="feature-desc">你的对话内容安全加密存储</text>
+            </view>
           </view>
         </view>
-      </view>
-
-      <!-- 聊天消息 -->
-      <view class="chat-messages">
-        <view 
-          v-for="(message, index) in messages" 
-          :key="index"
-          :class="['message-bubble', message.type]"
-        >
-          <text>{{ message.content }}</text>
+        
+        <view class="stats-section">
+          <text class="stats-title">📊 使用统计</text>
+          <view class="stat-item">
+            <text class="stat-label">今日对话</text>
+            <text class="stat-value">12</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">累计帮助</text>
+            <text class="stat-value">156</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">满意度</text>
+            <text class="stat-value">98%</text>
+          </view>
         </view>
-      </view>
-    </scroll-view>
-
-    <!-- 底部输入区域 - 标注D -->
-    <view class="chat-input-area">
-      <view class="input-container">
-        <textarea 
-          class="chat-input"
-          :class="{ 'input-focused': inputFocused }"
-          v-model="inputText"
-          placeholder="输入你的问题..."
-          @focus="onInputFocus"
-          @blur="onInputBlur"
-          :auto-height="true"
-          :maxlength="500"
-        />
-        <button 
-          class="send-btn" 
-          @tap="sendMessage"
-          :disabled="!inputText.trim() || sending"
-          :class="{ 'btn-sending': sending }"
-        >
-          <text v-if="!sending">→</text>
-          <text v-else>⏳</text>
-        </button>
+        
+        <view class="conversation-tips">
+          <text class="tips-title">💬 对话技巧</text>
+          <view class="tip-item">
+            <text class="tip-text">• 保持对话的连贯性</text>
+          </view>
+          <view class="tip-item">
+            <text class="tip-text">• 提供具体的背景信息</text>
+          </view>
+          <view class="tip-item">
+            <text class="tip-text">• 及时反馈建议的效果</text>
+          </view>
+        </view>
       </view>
     </view>
   </view>
@@ -277,9 +412,300 @@ export default {
 </script>
 
 <style scoped>
+/* Web端布局样式 */
+.chat-web-layout {
+  display: flex;
+  height: 100vh;
+  background: linear-gradient(180deg, #f8f9ff 0%, #e8f0fe 100%);
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+/* 左侧说明面板 */
+.chat-left-panel {
+  width: 320px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  margin-right: 40px;
+  height: fit-content;
+}
+
+.chat-left-panel .panel-content {
+  padding: 30px 20px;
+}
+
+.chat-left-panel .panel-header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.chat-left-panel .panel-title {
+  font-size: 20px;
+  color: #333;
+  font-weight: 700;
+}
+
+.chat-left-panel .panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.guide-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.3s ease;
+}
+
+.guide-item:hover {
+  background: rgba(102, 126, 234, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+}
+
+.guide-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.guide-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.guide-title {
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+
+.guide-desc {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.tips-section {
+  background: rgba(255, 193, 7, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.tips-title {
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.tip-item {
+  margin-bottom: 8px;
+}
+
+.tip-text {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* 中间聊天区域 - iPhone 12 Pro尺寸 */
+.chat-main-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.phone-frame {
+  width: 390px;
+  height: 844px;
+  background: #000;
+  border-radius: 40px;
+  padding: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.phone-frame::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 30px;
+  background: #000;
+  border-radius: 0 0 20px 20px;
+  z-index: 2;
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #f8f9ff 0%, #e8f0fe 100%);
+  border-radius: 32px;
+  overflow: hidden;
+  position: relative;
+}
+
+.chat-container {
+  height: 100%;
+  background: linear-gradient(180deg, #f8f9ff 0%, #e8f0fe 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 右侧功能说明面板 */
+.chat-right-panel {
+  width: 320px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  margin-left: 40px;
+  height: fit-content;
+}
+
+.chat-right-panel .panel-content {
+  padding: 30px 20px;
+}
+
+.chat-right-panel .panel-header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.chat-right-panel .panel-title {
+  font-size: 20px;
+  color: #333;
+  font-weight: 700;
+}
+
+.chat-right-panel .panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  background: rgba(102, 126, 234, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+}
+
+.feature-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.feature-title {
+  font-size: 13px;
+  color: #333;
+  font-weight: 600;
+}
+
+.feature-desc {
+  font-size: 11px;
+  color: #666;
+  line-height: 1.3;
+}
+
+.stats-section {
+  background: rgba(40, 167, 69, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  margin-bottom: 20px;
+}
+
+.stats-title {
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.stat-value {
+  font-size: 14px;
+  color: #28a745;
+  font-weight: 600;
+}
+
+.conversation-tips {
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.conversation-tips .tips-title {
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.conversation-tips .tip-item {
+  margin-bottom: 8px;
+}
+
+.conversation-tips .tip-text {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
 /* 基础样式 */
 .chat-container {
-  height: 100vh;
+  height: 100%;
   background: linear-gradient(180deg, #f8f9ff 0%, #e8f0fe 100%);
   display: flex;
   flex-direction: column;
@@ -577,7 +1003,7 @@ export default {
   transform: scale(1.02);
 }
 
-/* 底部输入区域 - 标注D */
+/* 底部输入区域 */
 .chat-input-area {
   background: rgba(255, 255, 255, 0.95);
   padding: 15px 20px 25px;
@@ -656,8 +1082,98 @@ export default {
   to { transform: rotate(360deg); }
 }
 
-/* 响应式适配 */
-@media (max-width: 375px) {
+/* 响应式设计 */
+@media screen and (max-width: 1400px) {
+  .chat-web-layout {
+    padding: 30px 15px;
+  }
+  
+  .chat-left-panel,
+  .chat-right-panel {
+    width: 280px;
+  }
+  
+  .panel-content {
+    padding: 25px 15px;
+  }
+  
+  .phone-frame {
+    width: 350px;
+    height: 757px;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .chat-web-layout {
+    flex-direction: column;
+    gap: 30px;
+    padding: 20px;
+  }
+  
+  .chat-left-panel,
+  .chat-right-panel {
+    width: 100%;
+    max-width: 600px;
+    margin: 0;
+  }
+  
+  .phone-frame {
+    width: 390px;
+    height: 844px;
+    margin: 20px 0;
+  }
+  
+  .panel-body {
+    flex-direction: row;
+    gap: 15px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+  
+  .guide-item,
+  .feature-item {
+    min-width: 250px;
+    flex-shrink: 0;
+  }
+  
+  .tips-section,
+  .stats-section,
+  .conversation-tips {
+    min-width: 200px;
+    flex-shrink: 0;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .chat-web-layout {
+    padding: 15px 10px;
+  }
+  
+  .phone-frame {
+    width: 320px;
+    height: 692px;
+  }
+  
+  .panel-body {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .guide-item,
+  .feature-item {
+    min-width: auto;
+  }
+  
+  .tips-section,
+  .stats-section,
+  .conversation-tips {
+    min-width: auto;
+  }
+  
+  .panel-content {
+    padding: 20px 15px;
+  }
+  
   .chat-content {
     padding: 16px;
   }
