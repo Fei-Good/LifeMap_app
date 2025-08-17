@@ -92,6 +92,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import userService from '@/utils/userService'
+import apiService from '@/utils/apiService'
 
 // 响应式数据
 const currentQuestionIndex = ref(0)
@@ -242,39 +243,107 @@ const nextQuestion = () => {
 const completeQuestionnaire = async () => {
   try {
     uni.showLoading({
-      title: '正在保存测试结果...'
+      title: 'DouDou正在生成专属报告...',
+      mask: true
     })
     
-    const currentUser = userService.getCurrentUser()
-    if (currentUser) {
-      // 更新用户信息，保存问卷答案
-      await userService.updateUserProfile(currentUser.id, {
-        infoCollected: true,
-        questionnaireAnswers: userAnswers.value,
-        questionnaireCompletedAt: new Date().toISOString()
+    // 提交问卷答案到API，获取个性化报告
+    const response = await apiService.submitQuestionnaire(userAnswers.value)
+    
+    if (response.data && response.data.personalityReport) {
+      // 保存个性化报告到本地存储
+      uni.setStorageSync('personality_report', response.data.personalityReport)
+      
+      // 标记用户完成信息收集
+      await userService.markUserInfoCompleted()
+      
+      uni.hideLoading()
+      
+      // 显示成功消息
+      uni.showToast({
+        title: '个性化报告生成完成！',
+        icon: 'success',
+        duration: 2000
       })
+      
+      // 延时跳转到聊天页面，显示报告
+      setTimeout(() => {
+        uni.reLaunch({
+          url: '/pages/chat/chat?showReport=true'
+        })
+      }, 2000)
+      
+    } else {
+      throw new Error('未获取到个性化报告')
+    }
+    
+  } catch (error) {
+    uni.hideLoading()
+    
+    console.error('提交问卷失败:', error)
+    
+    // 如果API调用失败，仍然标记为完成，跳转到聊天页面
+    try {
+      await userService.markUserInfoCompleted()
+      
+      uni.showToast({
+        title: '问卷已保存，报告生成中...',
+        icon: 'none',
+        duration: 2000
+      })
+      
+      // 跳转到聊天页面
+      setTimeout(() => {
+        uni.reLaunch({
+          url: '/pages/chat/chat'
+        })
+      }, 2000)
+      
+    } catch (updateError) {
+      console.error('更新用户状态失败:', updateError)
+      
+      uni.showToast({
+        title: '保存失败，请重试',
+        icon: 'none'
+      })
+    }
+  }
+}
+
+onMounted(async () => {
+  // 页面加载时的初始化
+  console.log('用户信息收集页面已加载')
+  
+  // 尝试从API获取问卷题目
+  try {
+    uni.showLoading({
+      title: '加载题目中...',
+      mask: true
+    })
+    
+    const response = await apiService.getQuestionnaireQuestions()
+    
+    if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+      // 使用API返回的题目
+      questionsData.value = response.data
+      console.log('从API加载了', response.data.length, '道题目')
+    } else {
+      console.log('API返回的题目格式不正确，使用本地题目')
     }
     
     uni.hideLoading()
     
-    // 跳转到结果页面，然后进入地图主界面
-    uni.redirectTo({
-      url: '/pages/questionnaire-result/questionnaire-result'
-    })
-    
   } catch (error) {
+    console.warn('从API获取问卷题目失败，使用本地题目:', error)
     uni.hideLoading()
+    
+    // API失败时显示提示，但仍然使用本地题目
     uni.showToast({
-      title: '保存失败，请重试',
-      icon: 'none'
+      title: '网络连接不稳定，使用离线题目',
+      icon: 'none',
+      duration: 2000
     })
-    console.error('保存问卷结果失败:', error)
   }
-}
-
-onMounted(() => {
-  // 页面加载时的初始化
-  console.log('用户信息收集页面已加载')
 })
 </script>
 

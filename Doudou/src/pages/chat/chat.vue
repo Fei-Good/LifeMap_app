@@ -1,677 +1,878 @@
 <template>
   <view class="chat-container">
-    <!-- 状态栏 -->
-    <view class="status-bar">
-      <text class="status-time">9:41</text>
-      <text class="status-battery">🔋 💯</text>
-    </view>
-
-    <!-- 聊天头部 -->
-    <view class="chat-header">
-      <view class="back-btn" @tap="goBack">
-        <text class="back-icon">←</text>
-      </view>
-      <view class="header-doudou" @tap="playHeaderAnimation">
-        <view class="doudou-face">
-          <view class="doudou-eyes">
-            <view class="eye left"></view>
-            <view class="eye right"></view>
-          </view>
-          <view class="doudou-mouth"></view>
+    <!-- 状态栏占位 -->
+    <view class="status-bar"></view>
+    
+    <!-- 顶部目标卡片 -->
+    <view class="goal-card">
+      <view class="goal-content">
+        <view class="goal-info">
+          <text class="goal-label">目标</text>
+          <text class="goal-title">成功跑路上岸</text>
+          <text class="goal-days">155天</text>
+          <text class="goal-subtitle">已坚持天数</text>
         </view>
-      </view>
-      <view class="header-info">
-        <text class="header-name">DouDou</text>
-        <text class="header-status">{{ headerStatus }}</text>
-      </view>
-      <view class="more-btn" @tap="showMoreOptions">
-        <text class="more-icon">⋯</text>
+        <view class="goal-avatar">
+          <image 
+            class="avatar-img"
+            src="@/static/DouDou比心.png"
+            mode="aspectFit"
+          />
+        </view>
       </view>
     </view>
 
-    <!-- 聊天内容区域 -->
-    <scroll-view class="chat-content" scroll-y :scroll-top="scrollTop" scroll-with-animation>
-      <!-- DouDou欢迎卡片 - 简化版 -->
-      <view class="welcome-card" @tap="playWelcomeAnimation">
-        <view class="welcome-doudou-simple">
-          <text class="doudou-emoji">😊</text>
+    <!-- 问候区域 -->
+    <view class="greeting-section">
+      <text class="greeting-title">Hi 我是DouDou</text>
+      <text class="greeting-desc">我可以为你解决在线的咨询，聊聊咨询，帮你提高效率</text>
+      
+      <!-- 功能按钮 -->
+      <view class="function-buttons">
+        <view class="function-btn" @click="handleFunction('task')">
+          <view class="btn-icon">📋</view>
+          <text class="btn-text">领取任务</text>
         </view>
-        <view class="welcome-text">
-          <text class="welcome-title">{{ welcomeTitle }}</text>
-          <text class="welcome-desc">{{ welcomeDesc }}</text>
+        <view class="function-btn" @click="handleFunction('chat')">
+          <view class="btn-icon">💬</view>
+          <text class="btn-text">聊聊咨询</text>
         </view>
-      </view>
-
-      <!-- 快捷问题 -->
-      <view class="quick-questions">
-        <view 
-          class="question-item" 
-          v-for="(question, index) in quickQuestions" 
-          :key="index"
-          @tap="selectQuestion(question)"
-          :class="{ 'question-selected': question.selected }"
-        >
-          <view class="question-icon" :style="{ backgroundColor: question.bgColor }">
-            <text>{{ question.icon }}</text>
-          </view>
-          <view class="question-content">
-            <text class="question-title">{{ question.title }}</text>
-            <text class="question-subtitle">{{ question.subtitle }}</text>
-          </view>
+        <view class="function-btn" @click="handleFunction('efficiency')">
+          <view class="btn-icon">📊</view>
+          <text class="btn-text">提高效率</text>
         </view>
       </view>
+    </view>
 
-      <!-- 聊天消息 -->
-      <view class="chat-messages">
-        <view 
-          v-for="(message, index) in messages" 
-          :key="index"
-          :class="['message-bubble', message.type]"
-        >
-          <text>{{ message.content }}</text>
+    <!-- 聊天消息区域 -->
+    <scroll-view 
+      class="chat-messages"
+      scroll-y="true"
+      :scroll-top="scrollTop"
+      @scrolltoupper="onScrollToUpper"
+    >
+      <view 
+        v-for="(message, index) in messages" 
+        :key="index" 
+        class="message-item"
+        :class="{ 'user-message': message.isUser }"
+      >
+        <!-- DouDou消息 -->
+        <view v-if="!message.isUser" class="ai-message">
+          <view class="message-avatar">
+            <image 
+              class="avatar-small"
+              src="@/static/QA/火苗.png"
+              mode="aspectFit"
+            />
+          </view>
+          <view class="message-bubble ai-bubble">
+            <text class="message-text">{{ message.content }}</text>
+            <text class="message-time">{{ formatTime(message.timestamp) }}</text>
+          </view>
+        </view>
+        
+        <!-- 用户消息 -->
+        <view v-else class="user-message-container">
+          <view class="message-bubble user-bubble">
+            <text class="message-text">{{ message.content }}</text>
+            <text class="message-time">{{ formatTime(message.timestamp) }}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 加载提示 -->
+      <view v-if="isLoading" class="loading-message">
+        <view class="message-avatar">
+          <image 
+            class="avatar-small"
+            src="@/static/QA/火苗.png"
+            mode="aspectFit"
+          />
+        </view>
+        <view class="loading-bubble">
+          <view class="loading-dots">
+            <view class="dot"></view>
+            <view class="dot"></view>
+            <view class="dot"></view>
+          </view>
         </view>
       </view>
     </scroll-view>
 
-    <!-- 底部输入区域 - 标注D -->
-    <view class="chat-input-area">
+    <!-- 底部输入区域 -->
+    <view class="input-section">
       <view class="input-container">
-        <textarea 
-          class="chat-input"
-          :class="{ 'input-focused': inputFocused }"
-          v-model="inputText"
-          placeholder="输入你的问题..."
-          @focus="onInputFocus"
-          @blur="onInputBlur"
-          :auto-height="true"
-          :maxlength="500"
-        />
-        <button 
-          class="send-btn" 
-          @tap="sendMessage"
-          :disabled="!inputText.trim() || sending"
-          :class="{ 'btn-sending': sending }"
+        <view class="input-avatar">
+          <image 
+            class="doudou-avatar"
+            src="@/static/QA/火苗.png"
+            mode="aspectFit"
+          />
+        </view>
+        <view class="input-area">
+          <input 
+            class="message-input"
+            v-model="inputMessage"
+            placeholder="和doudou聊一下吧"
+            @confirm="sendMessage"
+            confirm-type="send"
+            :focus="inputFocus"
+          />
+        </view>
+        <view 
+          class="send-btn"
+          :class="{ 'can-send': inputMessage.trim() }"
+          @click="sendMessage"
         >
-          <text v-if="!sending">→</text>
-          <text v-else>⏳</text>
-        </button>
+          <view class="send-icon">⬇</view>
+        </view>
       </view>
     </view>
   </view>
 </template>
 
-<script>
-import { ref, reactive, nextTick } from 'vue'
+<script setup>
+import { ref, onMounted, nextTick } from 'vue'
+import aiService from '@/utils/aiService'
+import apiService from '@/utils/apiService'
 
-export default {
-  name: 'ChatPage',
-  setup() {
-    // 响应式数据
-    const inputText = ref('')
-    const inputFocused = ref(false)
-    const sending = ref(false)
-    const scrollTop = ref(0)
-    const headerStatus = ref('AI助手 • 在线')
-    const welcomeTitle = ref('Hey 😊，我是职场搭子')
-    const welcomeDesc = ref('你的贴心智能助手，随时为您服务')
+// 响应式数据
+const messages = ref([
+  {
+    content: '你好！我是DouDou，你的专属AI助手。有什么可以帮助你的吗？',
+    isUser: false,
+    timestamp: Date.now()
+  }
+])
+const inputMessage = ref('')
+const isLoading = ref(false)
+const scrollTop = ref(0)
+const inputFocus = ref(false)
 
-    // 快捷问题数据
-    const quickQuestions = reactive([
-      {
-        id: 1,
-        icon: '💡',
-        title: '你目前遇到的最大职场困扰是...',
-        subtitle: '基于你的职位交流',
-        bgColor: '#fff3cd',
-        selected: false
-      },
-      {
-        id: 2,
-        icon: '🎯',
-        title: '你希望提升哪方面的能力?',
-        subtitle: 'AI智能提升',
-        bgColor: '#d1ecf1',
-        selected: false
-      },
-      {
-        id: 3,
-        icon: '⭐',
-        title: '你对当前工作的满意度如何?',
-        subtitle: '聊聊现况',
-        bgColor: '#f8d7da',
-        selected: false
+// 页面加载时的初始化
+onMounted(() => {
+  // 自动滚动到底部
+  scrollToBottom()
+  
+  // 检查是否需要显示个性化报告
+  const pages = getCurrentPages()
+  const currentPage = pages[pages.length - 1]
+  const options = currentPage.options || {}
+  
+  if (options.showReport === 'true') {
+    showPersonalityReport()
+  }
+})
+
+// 显示个性化报告
+const showPersonalityReport = async () => {
+  try {
+    // 尝试从本地存储获取报告
+    let report = uni.getStorageSync('personality_report')
+    
+    if (!report) {
+      // 如果本地没有，尝试从API获取
+      try {
+        const response = await apiService.getPersonalityReport()
+        report = response.data
+        // 保存到本地存储
+        uni.setStorageSync('personality_report', report)
+      } catch (error) {
+        console.error('获取个性化报告失败:', error)
+        // 使用默认报告消息
+        messages.value.push({
+          content: '欢迎回来！你的个性化报告正在生成中，请稍后查看~',
+          isUser: false,
+          timestamp: Date.now()
+        })
+        scrollToBottom()
+        return
       }
-    ])
-
-    // 消息数据
-    const messages = reactive([
-      {
-        id: 1,
-        type: 'ai',
-        content: '根据你的职业规划，我推荐了几个下午13:45-14'
-      }
-    ])
-
-    // 方法
-    const goBack = () => {
-      uni.navigateBack()
     }
+    
+    if (report) {
+      // 构建报告消息内容
+      const reportMessage = `🎉 你的专属个性化报告已生成！
 
-    const playHeaderAnimation = () => {
-      headerStatus.value = '很高兴为您服务 😊'
-      setTimeout(() => {
-        headerStatus.value = 'AI助手 • 在线'
-      }, 2000)
-    }
+✨ **${report.title}**
+${report.subtitle || ''}
 
-    const playWelcomeAnimation = () => {
-      welcomeTitle.value = '哈哈！你好呀~ 😄'
-      welcomeDesc.value = '点击下方问题开始我们的对话吧！'
-      setTimeout(() => {
-        welcomeTitle.value = 'Hey 😊，我是职场搭子'
-        welcomeDesc.value = '你的贴心智能助手，随时为您服务'
-      }, 3000)
-    }
+📝 **个性分析**
+${report.description || ''}
 
-    const selectQuestion = (question) => {
-      // 重置所有问题状态
-      quickQuestions.forEach(q => q.selected = false)
-      // 设置当前选中
-      question.selected = true
+🏷️ **个性特征**
+${report.traits ? report.traits.join('、') : ''}
+
+💡 **成长建议**
+${report.suggestions ? report.suggestions.map((s, index) => `${index + 1}. ${s.icon || ''} ${s.text}`).join('\n') : ''}
+
+🌟 **优势领域**
+${report.strengths ? report.strengths.join('、') : ''}
+
+📈 **发展方向**
+${report.developmentAreas ? report.developmentAreas.join('、') : ''}
+
+💫 **DouDou寄语**
+${report.summary || '期待与你一起成长！'}
+
+来和我聊聊你的想法吧~ 😊`
+
+      // 添加报告消息
+      messages.value.push({
+        content: reportMessage,
+        isUser: false,
+        timestamp: Date.now(),
+        type: 'report'
+      })
       
-      // 添加用户消息
-      messages.push({
-        id: messages.length + 1,
-        type: 'user',
-        content: question.title
-      })
+      scrollToBottom()
+    }
+  } catch (error) {
+    console.error('显示个性化报告失败:', error)
+  }
+}
 
-      // 模拟AI回复
-      setTimeout(() => {
-        messages.push({
-          id: messages.length + 1,
-          type: 'ai',
-          content: '这是一个很好的问题！让我来为您详细分析一下...'
-        })
-        scrollToBottom()
+// 保存聊天消息到API
+const saveChatMessage = async (message) => {
+  try {
+    await apiService.saveChatMessage({
+      content: message.content,
+      isUser: message.isUser,
+      timestamp: message.timestamp,
+      type: message.type || 'text'
+    })
+  } catch (error) {
+    console.warn('保存聊天记录失败:', error)
+    // 保存失败不影响聊天功能
+  }
+}
+
+// 发送消息
+const sendMessage = async () => {
+  const message = inputMessage.value.trim()
+  if (!message) return
+  
+  // 添加用户消息
+  const userMessage = {
+    content: message,
+    isUser: true,
+    timestamp: Date.now()
+  }
+  messages.value.push(userMessage)
+  
+  // 清空输入框
+  inputMessage.value = ''
+  
+  // 滚动到底部
+  await nextTick()
+  scrollToBottom()
+  
+  // 显示加载状态
+  isLoading.value = true
+  
+  try {
+    // 保存用户消息到API
+    await saveChatMessage(userMessage)
+    
+    // 获取AI回复
+    const aiResponse = await getAIResponse(message)
+    
+    // 添加AI回复
+    const aiMessage = {
+      content: aiResponse,
+      isUser: false,
+      timestamp: Date.now()
+    }
+    messages.value.push(aiMessage)
+    
+    // 保存AI回复到API
+    await saveChatMessage(aiMessage)
+    
+    // 滚动到底部
+    await nextTick()
+    scrollToBottom()
+    
+  } catch (error) {
+    console.error('获取AI回复失败:', error)
+    
+    // 添加错误回复
+    messages.value.push({
+      content: '抱歉，我现在有点忙，请稍后再试一下~',
+      isUser: false,
+      timestamp: Date.now()
+    })
+    
+    await nextTick()
+    scrollToBottom()
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// 获取AI回复
+const getAIResponse = async (userMessage) => {
+  try {
+    // 构建对话历史
+    const conversationHistory = messages.value
+      .filter(msg => msg.type !== 'report') // 排除报告消息
+      .slice(-5) // 只取最近5条消息作为上下文
+      .map(msg => ({
+        role: msg.isUser ? 'user' : 'assistant', 
+        content: msg.content
+      }))
+    
+    // 优先使用后端API的AI聊天服务
+    try {
+      const response = await apiService.chatWithAI(userMessage, conversationHistory)
+      if (response.data && response.data.reply) {
+        return response.data.reply
+      }
+    } catch (apiError) {
+      console.warn('后端AI服务调用失败，使用本地AI服务:', apiError)
+      
+      // 备用方案：使用本地AI服务
+      try {
+        // 重新构建完整的对话历史供本地AI使用
+        const fullHistory = messages.value
+          .filter(msg => msg.type !== 'report')
+          .map(msg => ({
+            role: msg.isUser ? 'user' : 'assistant',
+            content: msg.content
+          }))
         
-        // 重置问题选中状态
-        setTimeout(() => {
-          question.selected = false
-        }, 2000)
-      }, 1000)
-
-      scrollToBottom()
-    }
-
-    const onInputFocus = () => {
-      inputFocused.value = true
-    }
-
-    const onInputBlur = () => {
-      inputFocused.value = false
-    }
-
-    const sendMessage = () => {
-      const message = inputText.value.trim()
-      if (!message || sending.value) return
-
-      sending.value = true
-
-      // 添加用户消息
-      messages.push({
-        id: messages.length + 1,
-        type: 'user',
-        content: message
-      })
-
-      inputText.value = ''
-      scrollToBottom()
-
-      // 模拟AI回复
-      setTimeout(() => {
-        messages.push({
-          id: messages.length + 1,
-          type: 'ai',
-          content: `关于"${message}"，我建议您可以从以下几个方面考虑...`
+        // 添加当前用户消息
+        fullHistory.push({
+          role: 'user',
+          content: userMessage
         })
-        sending.value = false
-        scrollToBottom()
-      }, 1500)
+        
+        const localResponse = await aiService.callAIAPI(buildChatPrompt(fullHistory))
+        return localResponse || '我正在思考中...请稍等一下~'
+      } catch (localError) {
+        console.error('本地AI服务也调用失败:', localError)
+        throw localError
+      }
     }
+    
+    return '我正在思考中...请稍等一下~'
+    
+  } catch (error) {
+    console.error('AI服务调用失败:', error)
+    return '抱歉，我暂时无法回复，请稍后再试~'
+  }
+}
 
-    const scrollToBottom = () => {
-      nextTick(() => {
-        scrollTop.value = scrollTop.value === 0 ? 1 : 0
-      })
-    }
+// 构建聊天提示词
+const buildChatPrompt = (history) => {
+  const conversationText = history.map(msg => 
+    `${msg.role === 'user' ? '用户' : 'DouDou'}: ${msg.content}`
+  ).join('\n')
 
-    const showMoreOptions = () => {
-      uni.showToast({
-        title: '更多功能开发中',
-        icon: 'none'
-      })
-    }
+  return `
+你是DouDou，一个温暖、友善、专业的AI助手。你的任务是：
+1. 以温暖友好的语调与用户对话
+2. 根据用户的问题提供有用的建议和帮助
+3. 如果用户需要帮助提高效率、解决问题或获得咨询，请积极提供支持
+4. 保持积极正面的态度，适时给予鼓励
+5. 回复要简洁明了，不要过长
 
-    return {
-      inputText,
-      inputFocused,
-      sending,
-      scrollTop,
-      headerStatus,
-      welcomeTitle,
-      welcomeDesc,
-      quickQuestions,
-      messages,
-      goBack,
-      playHeaderAnimation,
-      playWelcomeAnimation,
-      selectQuestion,
-      onInputFocus,
-      onInputBlur,
-      sendMessage,
-      showMoreOptions
-    }
+对话历史：
+${conversationText}
+
+请作为DouDou回复最后一个用户消息，回复要自然友好，不超过100字：
+`
+}
+
+// 功能按钮点击处理
+const handleFunction = (type) => {
+  let message = ''
+  switch(type) {
+    case 'task':
+      message = '我想领取一些任务来提升自己'
+      break
+    case 'chat':
+      message = '我想和你聊聊，寻求一些建议'
+      break
+    case 'efficiency':
+      message = '我想提高工作和学习的效率'
+      break
+  }
+  
+  if (message) {
+    inputMessage.value = message
+    sendMessage()
+  }
+}
+
+// 滚动到底部
+const scrollToBottom = () => {
+  nextTick(() => {
+    scrollTop.value = 99999
+  })
+}
+
+// 滚动到顶部时的处理
+const onScrollToUpper = () => {
+  // 可以在这里实现加载更多历史消息的功能
+  console.log('scrolled to top')
+}
+
+// 格式化时间
+const formatTime = (timestamp) => {
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diff = now - date
+  
+  if (diff < 60000) { // 1分钟内
+    return '刚刚'
+  } else if (diff < 3600000) { // 1小时内
+    return `${Math.floor(diff / 60000)}分钟前`
+  } else if (diff < 86400000) { // 24小时内
+    return `${Math.floor(diff / 3600000)}小时前`
+  } else {
+    return `${date.getMonth() + 1}-${date.getDate()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
   }
 }
 </script>
 
-<style scoped>
-/* 基础样式 */
+<style lang="scss" scoped>
 .chat-container {
+  width: 100vw;
   height: 100vh;
-  background: linear-gradient(180deg, #f8f9ff 0%, #e8f0fe 100%);
+  background-image: url('@/static/chat.png');
+  background-size: contain;
+  background-position: center bottom;
+  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
-/* 状态栏 */
+/* 状态栏占位 */
 .status-bar {
-  height: 44px;
+  height: calc(var(--status-bar-height) + 20rpx);
+  width: 100%;
+}
+
+/* 顶部目标卡片 */
+.goal-card {
+  margin: 20rpx 30rpx;
+  background: linear-gradient(135deg, #FFE0B2 0%, #FFCC80 100%);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 8rpx 20rpx rgba(255, 152, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    animation: shimmer 3s infinite;
+  }
+}
+
+.goal-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  background: rgba(255, 255, 255, 0.95);
-  color: #333;
-  font-size: 14px;
-  font-weight: 600;
-  backdrop-filter: blur(10px);
-}
-
-/* 聊天头部 */
-.chat-header {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 15px 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(10px);
-}
-
-.back-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(102, 126, 234, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.back-btn:active {
-  background: rgba(102, 126, 234, 0.2);
-  transform: scale(1.1);
-}
-
-.header-doudou {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(45deg, #ff6b6b, #ffa500);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
-  transition: all 0.3s ease;
+  z-index: 2;
 }
 
-.header-doudou:active {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.doudou-face {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.doudou-eyes {
-  position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-}
-
-.eye {
-  width: 3px;
-  height: 5px;
-  background: #333;
-  border-radius: 50%;
-}
-
-.doudou-mouth {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 10px;
-  height: 5px;
-  border: 1px solid #333;
-  border-top: none;
-  border-radius: 0 0 10px 10px;
-}
-
-.header-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.header-name {
-  font-size: 18px;
-  color: #333;
-  font-weight: 600;
-}
-
-.header-status {
-  font-size: 12px;
-  color: #666;
-  margin-top: 2px;
-}
-
-.more-btn {
-  margin-left: auto;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(102, 126, 234, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.more-btn:active {
-  background: rgba(102, 126, 234, 0.2);
-  transform: scale(1.1);
-}
-
-/* 聊天内容区域 */
-.chat-content {
+.goal-info {
   flex: 1;
-  padding: 20px;
-}
-
-/* DouDou欢迎卡片 - 简化版 */
-.welcome-card {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border-radius: 20px;
-  padding: 20px;
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.welcome-card:active {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
-}
-
-.welcome-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  animation: float 4s ease-in-out infinite;
-}
-
-.welcome-doudou-simple {
-  width: 50px;
-  height: 50px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  backdrop-filter: blur(10px);
-}
-
-.doudou-emoji {
-  font-size: 24px;
-}
-
-.welcome-text {
   display: flex;
   flex-direction: column;
-  gap: 6px;
 }
 
-.welcome-title {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.welcome-desc {
-  font-size: 14px;
-  opacity: 0.9;
-  line-height: 1.4;
-}
-
-/* 快捷问题 */
-.quick-questions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.question-item {
-  background: white;
-  border-radius: 16px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.question-item:active {
-  transform: translateX(8px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
-}
-
-.question-selected {
-  background: linear-gradient(135deg, #667eea, #764ba2) !important;
-  color: white;
-}
-
-.question-selected .question-title,
-.question-selected .question-subtitle {
-  color: white;
-}
-
-.question-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.question-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.question-title {
-  font-size: 15px;
-  color: #333;
+.goal-label {
+  font-size: 24rpx;
+  color: #8D6E63;
+  margin-bottom: 8rpx;
   font-weight: 500;
 }
 
-.question-subtitle {
-  font-size: 12px;
-  color: #666;
+.goal-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #5D4037;
+  margin-bottom: 12rpx;
 }
 
-/* 聊天消息 */
-.chat-messages {
+.goal-days {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #FF8F00;
+  line-height: 1;
+  margin-bottom: 4rpx;
+}
+
+.goal-subtitle {
+  font-size: 22rpx;
+  color: #8D6E63;
+}
+
+.goal-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-img {
+  width: 100rpx;
+  height: 100rpx;
+}
+
+/* 问候区域 */
+.greeting-section {
+  padding: 40rpx 30rpx;
+  text-align: center;
+}
+
+.greeting-title {
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #2E3A59;
+  margin-bottom: 20rpx;
+}
+
+.greeting-desc {
+  display: block;
+  font-size: 28rpx;
+  color: #5A6C7D;
+  line-height: 1.5;
+  margin-bottom: 40rpx;
+}
+
+/* 功能按钮 */
+.function-buttons {
+  display: flex;
+  justify-content: space-around;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.function-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20rpx;
+  padding: 30rpx 20rpx;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  align-items: center;
+  gap: 12rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  
+  &:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 1);
+  }
+}
+
+.btn-icon {
+  font-size: 32rpx;
+}
+
+.btn-text {
+  font-size: 24rpx;
+  color: #4A5568;
+  font-weight: 500;
+}
+
+/* 聊天消息区域 */
+.chat-messages {
+  flex: 1;
+  padding: 0 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.message-item {
+  margin-bottom: 30rpx;
+}
+
+/* AI消息 */
+.ai-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+}
+
+.message-avatar {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-small {
+  width: 40rpx;
+  height: 40rpx;
 }
 
 .message-bubble {
-  border-radius: 20px;
-  padding: 12px 16px;
-  max-width: 85%;
-  font-size: 14px;
-  line-height: 1.4;
-  transition: all 0.3s ease;
+  max-width: 70%;
+  padding: 24rpx 28rpx;
+  border-radius: 24rpx;
+  position: relative;
 }
 
-.message-bubble.ai {
-  background: rgba(102, 126, 234, 0.1);
-  border-radius: 20px 20px 20px 4px;
-  align-self: flex-start;
-  color: #333;
-}
-
-.message-bubble.user {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border-radius: 20px 20px 4px 20px;
-  align-self: flex-end;
-  color: white;
-}
-
-.message-bubble:active {
-  transform: scale(1.02);
-}
-
-/* 底部输入区域 - 标注D */
-.chat-input-area {
+.ai-bubble {
   background: rgba(255, 255, 255, 0.95);
-  padding: 15px 20px 25px;
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  color: #2D3748;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: -12rpx;
+    top: 20rpx;
+    width: 0;
+    height: 0;
+    border-top: 12rpx solid transparent;
+    border-bottom: 12rpx solid transparent;
+    border-right: 12rpx solid rgba(255, 255, 255, 0.95);
+  }
+}
+
+/* 用户消息 */
+.user-message-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.user-bubble {
+  background: linear-gradient(135deg, #4A9EFF 0%, #1E88E5 100%);
+  color: white;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    right: -12rpx;
+    top: 20rpx;
+    width: 0;
+    height: 0;
+    border-top: 12rpx solid transparent;
+    border-bottom: 12rpx solid transparent;
+    border-left: 12rpx solid #1E88E5;
+  }
+}
+
+.message-text {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.5;
+  margin-bottom: 8rpx;
+}
+
+.message-time {
+  display: block;
+  font-size: 20rpx;
+  opacity: 0.7;
+}
+
+/* 加载消息 */
+.loading-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.loading-bubble {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20rpx 24rpx;
+  border-radius: 24rpx;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: -12rpx;
+    top: 20rpx;
+    width: 0;
+    height: 0;
+    border-top: 12rpx solid transparent;
+    border-bottom: 12rpx solid transparent;
+    border-right: 12rpx solid rgba(255, 255, 255, 0.95);
+  }
+}
+
+.loading-dots {
+  display: flex;
+  gap: 8rpx;
+  align-items: center;
+}
+
+.dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #CBD5E0;
+  animation: dotPulse 1.4s infinite both;
+  
+  &:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  
+  &:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+}
+
+/* 底部输入区域 */
+.input-section {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20rpx 30rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10rpx);
 }
 
 .input-container {
   display: flex;
-  align-items: flex-end;
-  gap: 12px;
+  align-items: center;
+  gap: 20rpx;
 }
 
-.chat-input {
-  flex: 1;
-  background: #f8f9fa;
-  border: 2px solid transparent;
-  border-radius: 25px;
-  padding: 12px 16px;
-  font-size: 16px;
-  min-height: 44px;
-  max-height: 100px;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
-}
-
-.chat-input:focus,
-.input-focused {
-  border-color: #667eea !important;
-  background: white !important;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  transform: scale(1.02);
-}
-
-.send-btn {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(45deg, #667eea, #764ba2);
-  border: none;
+.input-avatar {
+  width: 60rpx;
+  height: 60rpx;
   border-radius: 50%;
-  color: white;
+  background: rgba(255, 192, 203, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  transition: all 0.3s ease;
   flex-shrink: 0;
 }
 
-.send-btn:not([disabled]):active {
-  transform: scale(1.1);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+.doudou-avatar {
+  width: 40rpx;
+  height: 40rpx;
 }
 
-.send-btn[disabled] {
-  opacity: 0.5;
-  background: #ccc;
+.input-area {
+  flex: 1;
+  background: #F7FAFC;
+  border-radius: 50rpx;
+  padding: 0 30rpx;
+  border: 2rpx solid #E2E8F0;
+  transition: border-color 0.3s ease;
+  
+  &:focus-within {
+    border-color: #4A9EFF;
+  }
 }
 
-.btn-sending {
-  animation: rotate 1s linear infinite;
+.message-input {
+  width: 100%;
+  height: 80rpx;
+  font-size: 28rpx;
+  color: #2D3748;
+  background: transparent;
+  border: none;
+  outline: none;
+  
+  &::placeholder {
+    color: #A0AEC0;
+  }
+}
+
+.send-btn {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background: #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  
+  &.can-send {
+    background: linear-gradient(135deg, #4A9EFF 0%, #1E88E5 100%);
+    transform: rotate(45deg);
+  }
+}
+
+.send-icon {
+  font-size: 28rpx;
+  color: #718096;
+  transition: color 0.3s ease;
+  
+  .can-send & {
+    color: white;
+  }
 }
 
 /* 动画 */
-@keyframes float {
-  0%, 100% { 
-    transform: translateY(0px) rotate(0deg); 
-  }
-  50% { 
-    transform: translateY(-10px) rotate(180deg); 
-  }
+@keyframes shimmer {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+@keyframes dotPulse {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* 响应式适配 */
-@media (max-width: 375px) {
-  .chat-content {
-    padding: 16px;
+@media screen and (max-width: 375px) {
+  .goal-card {
+    margin: 15rpx 20rpx;
+    padding: 25rpx;
   }
   
-  .welcome-card {
-    padding: 16px;
+  .goal-title {
+    font-size: 32rpx;
   }
   
-  .question-item {
-    padding: 12px;
+  .goal-days {
+    font-size: 42rpx;
   }
   
-  .chat-input-area {
-    padding: 12px 16px 20px;
+  .greeting-section {
+    padding: 30rpx 20rpx;
+  }
+  
+  .greeting-title {
+    font-size: 42rpx;
+  }
+  
+  .function-buttons {
+    gap: 15rpx;
+  }
+  
+  .function-btn {
+    padding: 25rpx 15rpx;
+  }
+  
+  .chat-messages {
+    padding: 0 20rpx;
+  }
+  
+  .input-section {
+    padding: 15rpx 20rpx;
+    padding-bottom: calc(15rpx + env(safe-area-inset-bottom));
   }
 }
 </style>

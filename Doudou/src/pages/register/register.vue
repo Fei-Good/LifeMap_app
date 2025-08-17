@@ -89,6 +89,7 @@ const formData = reactive({
 // 表单验证
 const isFormValid = computed(() => {
   return formData.username.trim() && 
+         isValidUsername(formData.username) &&
          formData.email.trim() && 
          formData.password.trim() && 
          formData.confirmPassword.trim() && 
@@ -97,6 +98,12 @@ const isFormValid = computed(() => {
          isValidEmail(formData.email) &&
          isValidPassword(formData.password)
 })
+
+// 用户名格式验证（只能包含字母、数字、汉字和下划线）
+const isValidUsername = (username) => {
+  const usernameRegex = /^[\u4e00-\u9fa5_a-zA-Z0-9]+$/
+  return usernameRegex.test(username)
+}
 
 // 邮箱格式验证
 const isValidEmail = (email) => {
@@ -114,6 +121,8 @@ const handleRegister = async () => {
   if (!isFormValid.value) {
     if (!formData.username.trim()) {
       uni.showToast({ title: '请输入用户名', icon: 'none' })
+    } else if (!isValidUsername(formData.username)) {
+      uni.showToast({ title: '用户名只能包含字母、数字、汉字和下划线', icon: 'none' })
     } else if (!formData.email.trim()) {
       uni.showToast({ title: '请输入邮箱', icon: 'none' })
     } else if (!isValidEmail(formData.email)) {

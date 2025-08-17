@@ -1,6 +1,9 @@
 /**
  * 用户服务 - 处理用户认证和用户信息管理
+ * 基于真实API接口
  */
+
+import apiService from './apiService.js'
 
 class UserService {
   constructor() {
@@ -15,30 +18,30 @@ class UserService {
    * @returns {Promise} 登录结果
    */
   async login(username, password) {
-    return new Promise((resolve, reject) => {
-      // 模拟网络请求
-      setTimeout(() => {
-        // 简单验证逻辑（实际项目中应该调用后端API）
-        if (username && password) {
-          const userData = {
-            id: Date.now(),
-            username: username,
-            loginTime: new Date().toISOString(),
-            isNewUser: !this.hasUserData(username) // 判断是否为新用户
-          }
-          
-          this.currentUser = userData
-          this.saveToStorage(userData)
-          
-          resolve({
-            success: true,
-            user: userData
-          })
-        } else {
-          reject(new Error('用户名或密码不能为空'))
+    try {
+      // 调用API登录
+      const response = await apiService.login(username, password)
+      
+      if (response.data && response.data.user) {
+        const userData = response.data.user
+        
+        // 保存用户信息到本地
+        this.currentUser = userData
+        this.saveToStorage(userData)
+        
+        return {
+          success: true,
+          user: userData,
+          message: response.message || '登录成功'
         }
-      }, 1000)
-    })
+      } else {
+        throw new Error('登录响应数据格式错误')
+      }
+    } catch (error) {
+      console.error('用户登录失败:', error)
+      // 直接抛出原始错误，保留完整的错误信息（包括code和errors等字段）
+      throw error
+    }
   }
 
   /**
@@ -47,57 +50,29 @@ class UserService {
    * @returns {Promise} 注册结果
    */
   async register(registrationData) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const { username, email, password } = registrationData
+    try {
+      // 调用API注册
+      const response = await apiService.register(registrationData)
+      
+      if (response.data && response.data.user) {
+        const userData = response.data.user
         
-        if (!username || !email || !password) {
-          reject(new Error('用户名、邮箱和密码不能为空'))
-          return
-        }
+        // 保存用户信息到本地（注册后不自动登录，所以不设置currentUser）
+        // this.currentUser = userData
+        // this.saveToStorage(userData)
         
-        // 检查用户名是否已存在
-        if (this.hasUserData(username)) {
-          reject(new Error('用户名已存在，请换一个用户名'))
-          return
-        }
-        
-        // 验证邮箱格式
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(email)) {
-          reject(new Error('请输入有效的邮箱地址'))
-          return
-        }
-        
-        // 验证密码长度
-        if (password.length < 6) {
-          reject(new Error('密码长度至少6位'))
-          return
-        }
-        
-        const userData = {
-          id: Date.now(),
-          username: username,
-          email: email,
-          registerTime: new Date().toISOString(),
-          isNewUser: true,
-          avatar: '', // 默认头像为空
-          profile: {
-            personalityType: '',
-            completedAssessment: false
-          }
-        }
-        
-        this.currentUser = userData
-        this.saveToStorage(userData)
-        
-        resolve({
+        return {
           success: true,
           user: userData,
-          message: '注册成功'
-        })
-      }, 1500) // 稍微增加延时，模拟真实的网络请求
-    })
+          message: response.message || '注册成功'
+        }
+      } else {
+        throw new Error('注册响应数据格式错误')
+      }
+    } catch (error) {
+      console.error('用户注册失败:', error)
+      throw new Error(error.message || '注册失败')
+    }
   }
 
   /**
@@ -125,72 +100,164 @@ class UserService {
   /**
    * 用户登出
    */
-  logout() {
-    this.currentUser = null
-    uni.removeStorageSync(this.storageKey)
+  async logout() {
+    try {
+      // 调用API登出
+      await apiService.logout()
+    } catch (error) {
+      console.warn('API登出失败:', error.message)
+      // 即使API失败也要清除本地数据
+    } finally {
+      // 清除本地用户数据
+      this.currentUser = null
+      uni.removeStorageSync(this.storageKey)
+    }
   }
 
   /**
    * 更新用户信息
    * @param {object} updates 更新的信息
+   * @returns {Promise} 更新结果
    */
-  updateUserInfo(updates) {
-    if (this.currentUser) {
-      this.currentUser = { ...this.currentUser, ...updates }
-      this.saveToStorage(this.currentUser)
+  async updateUserInfo(updates) {
+    try {
+      // 调用API更新用户资料
+      const response = await apiService.updateUserProfile(updates)
+      
+      if (response.data && this.currentUser) {
+        // 更新本地用户信息
+        this.currentUser = { ...this.currentUser, ...response.data }
+        this.saveToStorage(this.currentUser)
+      }
+      
+      return {
+        success: true,
+        message: response.message || '用户信息更新成功'
+      }
+    } catch (error) {
+      console.error('更新用户信息失败:', error)
+      // 如果API调用失败，仍然更新本地信息（离线支持）
+      if (this.currentUser) {
+        this.currentUser = { ...this.currentUser, ...updates }
+        this.saveToStorage(this.currentUser)
+      }
+      throw new Error(error.message || '更新用户信息失败')
     }
   }
 
   /**
    * 标记用户完成信息收集（不再是新用户）
+   * @returns {Promise} 完成结果
    */
-  markUserInfoCompleted() {
-    if (this.currentUser) {
-      this.currentUser.isNewUser = false
-      this.currentUser.infoCollected = true
-      this.currentUser.infoCompletedTime = new Date().toISOString()
-      this.saveToStorage(this.currentUser)
+  async markUserInfoCompleted() {
+    try {
+      // 调用API标记信息收集完成
+      await apiService.completeUserInfo()
+      
+      // 更新本地用户信息
+      if (this.currentUser) {
+        this.currentUser.isNewUser = false
+        this.currentUser.infoCollected = true
+        this.currentUser.infoCompletedTime = new Date().toISOString()
+        this.saveToStorage(this.currentUser)
+      }
+      
+      return {
+        success: true,
+        message: '信息收集已完成'
+      }
+    } catch (error) {
+      console.error('标记信息收集完成失败:', error)
+      // 如果API调用失败，仍然更新本地信息
+      if (this.currentUser) {
+        this.currentUser.isNewUser = false
+        this.currentUser.infoCollected = true
+        this.currentUser.infoCompletedTime = new Date().toISOString()
+        this.saveToStorage(this.currentUser)
+      }
+      throw new Error(error.message || '标记信息收集完成失败')
     }
   }
 
   /**
-   * 更新用户档案信息
-   * @param {number} userId 用户ID
-   * @param {object} profileData 档案数据
-   * @returns {Promise} 更新结果
+   * 检查用户名是否存在
+   * @param {string} username 用户名
+   * @returns {Promise<boolean>} 用户名是否存在
    */
-  async updateUserProfile(userId, profileData) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          if (this.currentUser && this.currentUser.id === userId) {
-            // 更新用户信息
-            this.currentUser = { ...this.currentUser, ...profileData }
-            this.saveToStorage(this.currentUser)
-            
-            resolve({
-              success: true,
-              message: '用户档案更新成功'
-            })
-          } else {
-            reject(new Error('用户不存在或ID不匹配'))
-          }
-        } catch (error) {
-          reject(error)
-        }
-      }, 500) // 模拟网络延时
-    })
+  async checkUsername(username) {
+    try {
+      const response = await apiService.checkUsername(username)
+      return response.data?.exists || false
+    } catch (error) {
+      console.error('检查用户名失败:', error)
+      // 如果API调用失败，返回false（乐观策略）
+      return false
+    }
   }
 
   /**
-   * 检查用户是否存在（模拟）
-   * @param {string} username 用户名
-   * @returns {boolean} 用户是否存在
+   * 验证当前Token是否有效
+   * @returns {Promise<boolean>} Token是否有效
    */
-  hasUserData(username) {
-    // 简单的模拟逻辑，实际应该查询后端
-    const existingUsers = ['admin', 'test', 'demo']
-    return existingUsers.includes(username.toLowerCase())
+  async verifyToken() {
+    try {
+      const response = await apiService.verifyToken()
+      return response.code === 200
+    } catch (error) {
+      console.error('Token验证失败:', error)
+      // Token无效，清除本地数据
+      this.currentUser = null
+      uni.removeStorageSync(this.storageKey)
+      return false
+    }
+  }
+
+  /**
+   * 刷新Token
+   * @returns {Promise} 刷新结果
+   */
+  async refreshToken() {
+    try {
+      await apiService.refreshToken()
+      return {
+        success: true,
+        message: 'Token刷新成功'
+      }
+    } catch (error) {
+      console.error('Token刷新失败:', error)
+      // Token刷新失败，清除本地数据
+      this.currentUser = null
+      uni.removeStorageSync(this.storageKey)
+      throw new Error(error.message || 'Token刷新失败')
+    }
+  }
+
+  /**
+   * 获取用户等级信息
+   * @returns {Promise} 等级信息
+   */
+  async getUserLevel() {
+    try {
+      const response = await apiService.getUserLevel()
+      return response.data
+    } catch (error) {
+      console.error('获取用户等级失败:', error)
+      throw new Error(error.message || '获取用户等级失败')
+    }
+  }
+
+  /**
+   * 获取用户统计信息
+   * @returns {Promise} 统计信息
+   */
+  async getUserStats() {
+    try {
+      const response = await apiService.getUserStats()
+      return response.data
+    } catch (error) {
+      console.error('获取用户统计失败:', error)
+      throw new Error(error.message || '获取用户统计失败')
+    }
   }
 
   /**

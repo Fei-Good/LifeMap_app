@@ -179,6 +179,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import apiService from '@/utils/apiService'
+import userService from '@/utils/userService'
 
 // 状态栏高度
 const statusBarHeight = ref(0)
@@ -274,25 +276,73 @@ const badges = ref([
 ])
 
 // 完成任务
-const completeTask = (task, type, index) => {
+const completeTask = async (task, type, index) => {
   if (task.completed) return
   
-  // 创建完成动画效果
-  uni.showToast({
-    title: '任务完成！+' + task.reward + 'EXP',
-    icon: 'success',
-    duration: 2000
-  })
-  
-  task.completed = true
-  if (type === 'daily' && task.current < task.total) {
-    task.current = task.total
-  }
-  
-  // 更新经验值
-  currentExp.value += task.reward
-  if (currentExp.value >= maxExp.value) {
-    levelUp()
+  try {
+    // 显示加载状态
+    uni.showLoading({
+      title: '完成任务中...'
+    })
+    
+    // 如果任务有ID，调用API完成任务
+    if (task.id) {
+      const result = await apiService.completeTask(task.id, {
+        type: type,
+        completedAt: new Date().toISOString()
+      })
+      
+      // 如果API返回了更新的经验值，使用API的数据
+      if (result.data && result.data.expGained !== undefined) {
+        task.reward = result.data.expGained
+      }
+    }
+    
+    uni.hideLoading()
+    
+    // 创建完成动画效果
+    uni.showToast({
+      title: '任务完成！+' + task.reward + 'EXP',
+      icon: 'success',
+      duration: 2000
+    })
+    
+    // 更新本地任务状态
+    task.completed = true
+    if (type === 'daily' && task.current < task.total) {
+      task.current = task.total
+    }
+    
+    // 更新经验值
+    currentExp.value += task.reward
+    if (currentExp.value >= maxExp.value) {
+      levelUp()
+    }
+    
+    // 震动反馈
+    uni.vibrateShort()
+    
+  } catch (error) {
+    uni.hideLoading()
+    
+    console.error('完成任务失败:', error)
+    
+    // 即使API调用失败，也要更新本地状态
+    uni.showToast({
+      title: '网络不稳定，本地已记录完成',
+      icon: 'none',
+      duration: 2000
+    })
+    
+    task.completed = true
+    if (type === 'daily' && task.current < task.total) {
+      task.current = task.total
+    }
+    
+    currentExp.value += task.reward
+    if (currentExp.value >= maxExp.value) {
+      levelUp()
+    }
   }
 }
 
@@ -439,11 +489,94 @@ const showTaskHistory = () => {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
   // 获取系统信息，适配状态栏高度
   const systemInfo = uni.getSystemInfoSync()
   statusBarHeight.value = systemInfo.statusBarHeight || 0
+  
+  // 加载用户数据和任务数据
+  await loadUserData()
+  await loadTasksData()
 })
+
+// 加载用户数据
+const loadUserData = async () => {
+  try {
+    // 获取用户等级信息
+    const levelData = await userService.getUserLevel()
+    if (levelData) {
+      userLevel.value = levelData.level || 5
+      levelTitle.value = levelData.levelTitle || '沟通达人'
+      currentExp.value = levelData.currentExp || 1250
+      maxExp.value = levelData.maxExp || 2000
+    }
+  } catch (error) {
+    console.warn('获取用户等级失败，使用默认数据:', error)
+  }
+}
+
+// 加载任务数据
+const loadTasksData = async () => {
+  try {
+    uni.showLoading({
+      title: '加载任务中...',
+      mask: true
+    })
+    
+    // 获取任务列表
+    const response = await apiService.getTasks()
+    
+    if (response.data && Array.isArray(response.data)) {
+      // 按类型分类任务
+      const tasks = response.data
+      
+      // 分离每日任务和挑战任务
+      const dailyTasksFromApi = tasks.filter(task => task.type === 'daily')
+      const challengeTasksFromApi = tasks.filter(task => task.type === 'challenge')
+      
+      if (dailyTasksFromApi.length > 0) {
+        dailyTasks.value = dailyTasksFromApi.map(task => ({
+          id: task.id,
+          title: task.title || task.name,
+          description: task.description,
+          reward: task.reward || task.exp || 50,
+          current: task.progress || 0,
+          total: task.target || 1,
+          completed: task.completed || false
+        }))
+      }
+      
+      if (challengeTasksFromApi.length > 0) {
+        challengeTasks.value = challengeTasksFromApi.map(task => ({
+          id: task.id,
+          title: task.title || task.name,
+          description: task.description,
+          reward: task.reward || task.exp || 200,
+          difficulty: task.difficulty || '⭐⭐⭐',
+          completed: task.completed || false
+        }))
+      }
+      
+      console.log('从API加载了任务:', {
+        daily: dailyTasksFromApi.length,
+        challenge: challengeTasksFromApi.length
+      })
+    }
+    
+    uni.hideLoading()
+    
+  } catch (error) {
+    console.warn('从API获取任务失败，使用本地任务:', error)
+    uni.hideLoading()
+    
+    // 显示提示
+    uni.showToast({
+      title: '网络连接不稳定，使用离线任务',
+      icon: 'none',
+      duration: 2000
+    })
+  }
+}
 </script>
 
 <style scoped>

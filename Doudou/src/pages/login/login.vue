@@ -61,6 +61,22 @@
   const isFormValid = computed(() => {
     return formData.account.trim() && formData.password.trim()
   })
+
+  // 格式化错误信息
+  const formatErrorMessage = (error) => {
+    // 如果有详细的字段错误信息
+    if (error.errors && Array.isArray(error.errors) && error.errors.length > 0) {
+      // 将所有字段错误合并为一个消息
+      const fieldErrors = error.errors.map(fieldError => {
+        return `${fieldError.field}: ${fieldError.message}`
+      }).join('\n')
+      
+      return `${error.message || '输入验证失败'}\n${fieldErrors}`
+    }
+    
+    // 如果没有详细错误，使用基本错误信息
+    return error.message || '登录失败'
+  }
   
   // 登录处理
   const handleLogin = async () => {
@@ -95,10 +111,24 @@
     } catch (error) {
       uni.hideLoading()
       
+      // 格式化错误信息，包括详细的字段验证错误
+      const errorMessage = formatErrorMessage(error)
+      
       uni.showToast({
-        title: error.message || '登录失败',
-        icon: 'none'
+        title: errorMessage,
+        icon: 'none',
+        duration: 4000 // 增加显示时间，因为错误信息可能较长
       })
+      
+      // 如果有详细的字段错误，同时更新DouDou的问候语
+      if (error.errors && error.errors.length > 0) {
+        greetingText.value = '哎呀，信息填写有问题哦~ 请检查后重试 😅'
+        
+        // 5秒后恢复原始问候语
+        setTimeout(() => {
+          greetingText.value = 'Hi! 我是你的职场好搭子DouDou 😊'
+        }, 5000)
+      }
     }
   }
   
