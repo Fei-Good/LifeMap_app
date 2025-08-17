@@ -141,6 +141,34 @@ class UserService {
   }
 
   /**
+   * 更新用户资料（兼容性方法）
+   * @param {string} userId 用户ID
+   * @param {object} updates 更新的信息
+   * @returns {Promise} 更新结果
+   */
+  async updateUserProfile(userId, updates) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        try {
+          if (this.currentUser) {
+            this.currentUser = { ...this.currentUser, ...updates }
+            this.saveToStorage(this.currentUser)
+            resolve({
+              success: true,
+              message: '用户资料更新成功',
+              user: this.currentUser
+            })
+          } else {
+            reject(new Error('用户未登录'))
+          }
+        } catch (error) {
+          reject(new Error('更新用户资料失败: ' + error.message))
+        }
+      }, 500)
+    })
+  }
+
+  /**
    * 标记用户完成信息收集（不再是新用户）
    */
   markUserInfoCompleted() {
