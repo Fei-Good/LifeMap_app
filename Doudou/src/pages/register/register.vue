@@ -1,11 +1,19 @@
 <template>
   <view class="register-container">
+<<<<<<< HEAD
+=======
+    <!-- 背景装饰 -->
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     <view class="background-decoration">
       <view class="circle circle-1"></view>
       <view class="circle circle-2"></view>
       <view class="circle circle-3"></view>
     </view>
     
+<<<<<<< HEAD
+=======
+    <!-- 顶部导航 -->
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     <view class="top-nav">
       <view class="nav-back" @click="goBack">
         <text class="back-icon">←</text>
@@ -16,6 +24,10 @@
       </view>
     </view>
     
+<<<<<<< HEAD
+=======
+    <!-- DouDou角色区域 -->
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     <view class="doudou-section">
       <view class="doudou-avatar" @click="onDouDouClick">
         <image 
@@ -29,6 +41,10 @@
       </view>
     </view>
     
+<<<<<<< HEAD
+=======
+    <!-- 注册表单区域 -->
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     <view class="form-section">
       <view class="input-group">
         <view class="input-label">
@@ -154,6 +170,10 @@
       </view>
     </view>
     
+<<<<<<< HEAD
+=======
+    <!-- 底部装饰 -->
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     <view class="bottom-decoration">
       <view class="wave wave-1"></view>
       <view class="wave wave-2"></view>
@@ -166,6 +186,10 @@
 import { ref, computed } from 'vue'
 import userService from '@/utils/userService'
 
+<<<<<<< HEAD
+=======
+// 响应式数据
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 const username = ref('')
 const phone = ref('')
 const password = ref('')
@@ -175,12 +199,20 @@ const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const greetingText = ref('欢迎加入LifeMap！让我们一起成长吧~ 🎉')
 
+<<<<<<< HEAD
+=======
+// 错误信息
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 const usernameError = ref('')
 const phoneError = ref('')
 const passwordError = ref('')
 const confirmPasswordError = ref('')
 const agreementError = ref('')
 
+<<<<<<< HEAD
+=======
+// 计算属性 - 用于按钮状态
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 const isFormValid = computed(() => {
   return username.value.trim().length > 0 && 
          password.value.trim().length > 0 && 
@@ -189,8 +221,15 @@ const isFormValid = computed(() => {
          !usernameError.value &&
          !passwordError.value &&
          !confirmPasswordError.value
+<<<<<<< HEAD
 })
 
+=======
+  // 注意：手机号码不参与表单验证，因为是非必填项
+})
+
+// 方法
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 const onDouDouClick = () => {
   uni.vibrateShort({ type: 'light' })
   greetingText.value = '加油！注册成功就能使用所有功能啦~ 💪'
@@ -221,6 +260,10 @@ const onUsernameBlur = () => {
 const onPhoneBlur = () => {
   const value = phone.value.trim()
   if (!value) {
+<<<<<<< HEAD
+=======
+    // 手机号码为空时不显示错误（因为是非必填项）
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     phoneError.value = ''
   } else if (!/^1[3-9]\d{9}$/.test(value)) {
     phoneError.value = '请输入有效的手机号码'
@@ -238,11 +281,20 @@ const onPasswordBlur = () => {
   } else if (value.length > 20) {
     passwordError.value = '密码不能超过20个字符'
   } else {
+<<<<<<< HEAD
     let typeCount = 0
     if (/[a-z]/.test(value)) typeCount++
     if (/[A-Z]/.test(value)) typeCount++
     if (/\d/.test(value)) typeCount++
     if (/[!@#$%^&*(),.?":{}|<>]/.test(value)) typeCount++
+=======
+    // 检查密码复杂度：至少包含两种类型
+    let typeCount = 0
+    if (/[a-z]/.test(value)) typeCount++ // 小写字母
+    if (/[A-Z]/.test(value)) typeCount++ // 大写字母
+    if (/\d/.test(value)) typeCount++ // 数字
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(value)) typeCount++ // 特殊字符
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     
     if (typeCount < 2) {
       passwordError.value = '密码至少包含两种类型（字母、数字、特殊字符）'
@@ -251,6 +303,10 @@ const onPasswordBlur = () => {
     }
   }
   
+<<<<<<< HEAD
+=======
+  // 检查确认密码
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
   if (confirmPassword.value && value !== confirmPassword.value) {
     confirmPasswordError.value = '两次输入的密码不一致'
   } else if (confirmPassword.value) {
@@ -303,6 +359,10 @@ const showPrivacy = () => {
 }
 
 const handleRegister = async () => {
+<<<<<<< HEAD
+=======
+  // 验证表单
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
   onUsernameBlur()
   onPhoneBlur()
   onPasswordBlur()
@@ -313,6 +373,10 @@ const handleRegister = async () => {
     return
   }
   
+<<<<<<< HEAD
+=======
+  // 检查必填字段是否有错误
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
   const errorFields = []
   if (usernameError.value) errorFields.push('用户名')
   if (passwordError.value) errorFields.push('密码')
@@ -327,6 +391,10 @@ const handleRegister = async () => {
     return
   }
   
+<<<<<<< HEAD
+=======
+  // 检查必填字段是否为空
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
   const missingFields = []
   if (!username.value.trim()) missingFields.push('用户名')
   if (!password.value.trim()) missingFields.push('密码')
@@ -341,31 +409,61 @@ const handleRegister = async () => {
     return
   }
   
+<<<<<<< HEAD
   uni.showLoading({ title: '注册中...' })
   
   try {
+=======
+  // 显示加载状态
+  uni.showLoading({
+    title: '注册中...'
+  })
+  
+  try {
+    // 准备注册数据
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     const registerData = {
       username: username.value.trim(),
       phone: phone.value.trim(),
       password: password.value
     }
     
+<<<<<<< HEAD
     await userService.register(registerData)
     
     uni.hideLoading()
     
+=======
+    // 调用注册服务
+    const result = await userService.register(registerData)
+    
+    uni.hideLoading()
+    
+    // 注册成功
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     uni.showModal({
       title: '注册成功',
       content: '恭喜您！账号创建成功，现在可以登录了~',
       showCancel: false,
       confirmText: '去登录',
       success: () => {
+<<<<<<< HEAD
         uni.navigateTo({ url: '/pages/login/login' })
+=======
+        // 跳转到登录页面
+        uni.navigateTo({
+          url: '/pages/login/login'
+        })
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
       }
     })
   } catch (error) {
     uni.hideLoading()
     
+<<<<<<< HEAD
+=======
+    // 显示错误信息
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
     uni.showModal({
       title: '注册失败',
       content: error.message || '注册失败，请重试',
@@ -380,7 +478,13 @@ const goBack = () => {
 }
 
 const goToLogin = () => {
+<<<<<<< HEAD
   uni.navigateTo({ url: '/pages/login/login' })
+=======
+  uni.navigateTo({
+    url: '/pages/login/login'
+  })
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 }
 </script>
 
@@ -399,6 +503,10 @@ const goToLogin = () => {
   padding-top: 40rpx;
 }
 
+<<<<<<< HEAD
+=======
+/* 背景装饰 */
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 .background-decoration {
   position: fixed;
   top: 0;
@@ -440,10 +548,22 @@ const goToLogin = () => {
 }
 
 @keyframes float {
+<<<<<<< HEAD
   0%, 100% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-20px) rotate(180deg); }
 }
 
+=======
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}
+
+/* 顶部导航 */
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 .top-nav {
   width: 100%;
   position: relative;
@@ -485,6 +605,10 @@ const goToLogin = () => {
   font-weight: bold;
 }
 
+<<<<<<< HEAD
+=======
+/* DouDou角色区域 */
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 .doudou-section {
   width: 100%;
   position: relative;
@@ -505,6 +629,17 @@ const goToLogin = () => {
   transition: all 0.3s ease;
   margin-bottom: 25rpx;
   animation: bounce 2s infinite;
+<<<<<<< HEAD
+=======
+  
+  &:hover {
+    transform: scale(1.1) rotate(5deg);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 }
 
 .doudou-image {
@@ -520,6 +655,7 @@ const goToLogin = () => {
   border-radius: 25rpx;
   position: relative;
   box-shadow: 0 8rpx 25rpx rgba(0, 0, 0, 0.1);
+<<<<<<< HEAD
 }
 
 .greeting-bubble::before {
@@ -533,6 +669,21 @@ const goToLogin = () => {
   border-left: 15rpx solid transparent;
   border-right: 15rpx solid transparent;
   border-bottom: 15rpx solid rgba(255, 255, 255, 0.95);
+=======
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -15rpx;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15rpx solid transparent;
+    border-right: 15rpx solid transparent;
+    border-bottom: 15rpx solid rgba(255, 255, 255, 0.95);
+  }
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 }
 
 .greeting-text {
@@ -542,11 +693,26 @@ const goToLogin = () => {
 }
 
 @keyframes bounce {
+<<<<<<< HEAD
   0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
   40% { transform: translateY(-10rpx); }
   60% { transform: translateY(-5rpx); }
 }
 
+=======
+  0%, 20%, 50%, 80%, 100% { 
+    transform: translateY(0); 
+  }
+  40% { 
+    transform: translateY(-10rpx); 
+  }
+  60% { 
+    transform: translateY(-5rpx); 
+  }
+}
+
+/* 注册表单区域 */
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 .form-section {
   width: 100%;
   max-width: 500rpx;
@@ -607,6 +773,7 @@ const goToLogin = () => {
   transition: all 0.3s ease;
   text-align: center;
   box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.1);
+<<<<<<< HEAD
 }
 
 .input-field:focus {
@@ -625,6 +792,26 @@ const goToLogin = () => {
   border-color: #ff4757;
   background: rgba(255, 71, 87, 0.1);
   box-shadow: 0 4rpx 15rpx rgba(255, 71, 87, 0.2);
+=======
+  
+  &:focus {
+    background: rgba(255, 255, 255, 1);
+    border-color: #667eea;
+    transform: scale(1.02);
+    box-shadow: 0 8rpx 25rpx rgba(102, 126, 234, 0.3);
+  }
+  
+  &::placeholder {
+    color: #999;
+    text-align: center;
+  }
+  
+  &.input-error {
+    border-color: #ff4757;
+    background: rgba(255, 71, 87, 0.1);
+    box-shadow: 0 4rpx 15rpx rgba(255, 71, 87, 0.2);
+  }
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 }
 
 .password-input-container {
@@ -666,6 +853,10 @@ const goToLogin = () => {
   color: #ff4757;
 }
 
+<<<<<<< HEAD
+=======
+/* 协议区域 */
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 .agreement-section {
   width: 100%;
   margin-bottom: 25rpx;
@@ -698,11 +889,19 @@ const goToLogin = () => {
   transition: all 0.3s ease;
   flex-shrink: 0;
   margin-top: 4rpx;
+<<<<<<< HEAD
 }
 
 .checkbox.checked {
   background: #667eea;
   border-color: #667eea;
+=======
+  
+  &.checked {
+    background: #667eea;
+    border-color: #667eea;
+  }
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 }
 
 .check-icon {
@@ -723,6 +922,10 @@ const goToLogin = () => {
   text-decoration: underline;
 }
 
+<<<<<<< HEAD
+=======
+/* 按钮组 */
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 .button-group {
   width: 100%;
   margin-bottom: 25rpx;
@@ -739,6 +942,7 @@ const goToLogin = () => {
   font-size: 30rpx;
   font-weight: 600;
   transition: all 0.3s ease;
+<<<<<<< HEAD
 }
 
 .action-btn:disabled {
@@ -752,6 +956,21 @@ const goToLogin = () => {
 
 .action-btn:not(:disabled):active {
   transform: translateY(0);
+=======
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  &:not(:disabled):hover {
+    transform: translateY(-2rpx);
+  }
+  
+  &:not(:disabled):active {
+    transform: translateY(0);
+  }
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 }
 
 .register-btn {
@@ -759,6 +978,7 @@ const goToLogin = () => {
   color: #fff;
   opacity: 0.6;
   box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.1);
+<<<<<<< HEAD
 }
 
 .register-btn.action-btn-active {
@@ -767,6 +987,17 @@ const goToLogin = () => {
   transform: translateY(-2rpx);
 }
 
+=======
+  
+  &.action-btn-active {
+    opacity: 1;
+    box-shadow: 0 10rpx 30rpx rgba(102, 126, 234, 0.3);
+    transform: translateY(-2rpx);
+  }
+}
+
+/* 登录链接 */
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 .login-link {
   width: 100%;
   text-align: center;
@@ -786,6 +1017,10 @@ const goToLogin = () => {
   margin-left: 10rpx;
 }
 
+<<<<<<< HEAD
+=======
+/* 底部装饰 */
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 .bottom-decoration {
   position: fixed;
   bottom: 0;
@@ -806,6 +1041,7 @@ const goToLogin = () => {
   animation: wave 4s ease-in-out infinite;
 }
 
+<<<<<<< HEAD
 .wave-1 { animation-delay: 0s; }
 .wave-2 { animation-delay: 1s; opacity: 0.7; }
 .wave-3 { animation-delay: 2s; opacity: 0.5; }
@@ -815,6 +1051,32 @@ const goToLogin = () => {
   50% { transform: translateX(20px); }
 }
 
+=======
+.wave-1 {
+  animation-delay: 0s;
+}
+
+.wave-2 {
+  animation-delay: 1s;
+  opacity: 0.7;
+}
+
+.wave-3 {
+  animation-delay: 2s;
+  opacity: 0.5;
+}
+
+@keyframes wave {
+  0%, 100% {
+    transform: translateX(0px);
+  }
+  50% {
+    transform: translateX(20px);
+  }
+}
+
+/* 响应式适配 */
+>>>>>>> ef06d39 (feat: 完善注册功能，优化样式，添加手机号码字段，修复登录跳转问题)
 @media screen and (max-width: 375px) {
   .register-container {
     padding: 0 30rpx;
