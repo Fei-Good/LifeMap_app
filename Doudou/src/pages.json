@@ -21,12 +21,7 @@
 				"navigationStyle": "custom"
 			}
 		},
-		{
-			"path": "pages/index/index",
-			"style": {
-				"navigationBarTitleText": "首页"
-			}
-		},
+
 		{
 			"path": "pages/chat/chat",
 			"style": {
@@ -38,6 +33,27 @@
 			"path": "pages/task/task",
 			"style": {
 				"navigationBarTitleText": "任务系统",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/user-info-collection/user-info-collection",
+			"style": {
+				"navigationBarTitleText": "性格测试",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/questionnaire-result/questionnaire-result",
+			"style": {
+				"navigationBarTitleText": "测试结果",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/map/map",
+			"style": {
+				"navigationBarTitleText": "成长地图",
 				"navigationStyle": "custom"
 			}
 		}
