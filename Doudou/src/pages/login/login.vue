@@ -86,21 +86,11 @@
         icon: 'success'
       })
       
-      // 根据用户类型跳转不同页面
+      // 跳转到引导页面，由引导页面判断用户类型
       setTimeout(() => {
-        const currentUser = userService.getCurrentUser()
-        
-        if (userService.isNewUser(currentUser)) {
-          // 新用户，跳转到信息收集页面
-          uni.reLaunch({
-            url: '/pages/user-info-collection/user-info-collection'
-          })
-        } else {
-          // 老用户，跳转到主界面（暂时跳转到聊天页面）
-          uni.reLaunch({
-            url: '/pages/chat/chat'
-          })
-        }
+        uni.reLaunch({
+          url: '/pages/intro/intro'
+        })
       }, 1000)
     } catch (error) {
       uni.hideLoading()

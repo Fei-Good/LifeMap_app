@@ -5,15 +5,20 @@
       <view class="doudou-avatar">
         <image 
           class="avatar-image"
-          src="@/static/login/DouDou形象_登录页.png"
+          src="@/static/QA/火苗.png"
           mode="aspectFit"
         />
       </view>
-      <view class="progress-bar">
-        <view 
-          class="progress-fill" 
-          :style="{ width: progressPercentage + '%' }"
-        ></view>
+      <view class="progress-container">
+        <view class="mood-indicator">
+          <text class="mood-text">DouDou心情指数</text>
+        </view>
+        <view class="progress-bar">
+          <view 
+            class="progress-fill" 
+            :style="{ width: progressPercentage + '%' }"
+          ></view>
+        </view>
       </view>
       <view class="progress-text">{{ currentQuestionIndex + 1 }}/{{ totalQuestions }}</view>
     </view>
@@ -77,7 +82,7 @@
           :disabled="isNextButtonDisabled"
           @click="nextQuestion"
         >
-          {{ currentQuestionIndex === totalQuestions - 1 ? '完成测试' : '下一步' }}
+          {{ currentQuestionIndex === totalQuestions - 1 ? 'DouDou说：“我一直在”' : '下一步' }}
         </button>
       </view>
     </view>
@@ -98,7 +103,7 @@ const userAnswers = ref([])
 const questionsData = ref([
   {
     id: 1,//新人Landing期
-    question: "DouDou第一天入职，工位还没捂热，同事们都埋头工作没人理他， 怎么办 ？ (´•̥ ̯ •̥`) ",
+    question: "第一天入职，工位还没捂热，同事们都埋头工作没人理他， 怎么办 ？ (´•̥ ̯ •̥`) ",
     image: "/static/QA/1_matting.gif",
     options: [
       { label: "A. 假装淡定", value: "emotion", description: "暂时回避，缓解压力" },
@@ -277,7 +282,8 @@ onMounted(() => {
 .questionnaire-container {
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(180deg, #E8F4FD 0%, #B8E0FF 100%);
+  background: url('@/static/QA/聊天背景.jpg') no-repeat center center;
+  background-size: cover;
   display: flex;
   flex-direction: column;
 }
@@ -308,12 +314,31 @@ onMounted(() => {
   height: 80rpx;
 }
 
-.progress-bar {
+.progress-container {
   flex: 1;
+  margin: 0 30rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.mood-indicator {
+  text-align: center;
+}
+
+.mood-text {
+  font-size: 24rpx;
+  color: #666;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 8rpx 16rpx;
+  display: inline-block;
+}
+
+.progress-bar {
   height: 10rpx;
   background: rgba(255, 193, 7, 0.3);
   border-radius: 5rpx;
-  margin: 0 30rpx;
   overflow: hidden;
 }
 
@@ -384,7 +409,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   margin: 20rpx 0;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 30rpx;
   padding: 40rpx;
 }
@@ -393,7 +418,7 @@ onMounted(() => {
   width: 100%;
   max-width: 500rpx;
   height: 400rpx;
-  border-radius: 50rpx;
+  border-radius: 20rpx;
 }
 
 /* 选项区域 */
@@ -512,6 +537,16 @@ onMounted(() => {
   .avatar-image {
     width: 50rpx;
     height: 50rpx;
+  }
+  
+  .progress-container {
+    margin: 0 20rpx;
+    gap: 8rpx;
+  }
+  
+  .mood-text {
+    font-size: 20rpx;
+    padding: 6rpx 12rpx;
   }
   
   .progress-text {

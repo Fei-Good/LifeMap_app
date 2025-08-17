@@ -1,6 +1,13 @@
 {
 	"pages": [ 
 		{
+			"path": "pages/intro/intro",
+			"style": {
+				"navigationBarTitleText": "DouDou引导",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/login/login",
 			"style": {
 				"navigationBarTitleText": "登录",
@@ -11,13 +18,6 @@
 			"path": "pages/register/register",
 			"style": {
 				"navigationBarTitleText": "注册",
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/profile/profile",
-			"style": {
-				"navigationBarTitleText": "个人资料",
 				"navigationStyle": "custom"
 			}
 		},

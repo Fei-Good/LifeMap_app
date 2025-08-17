@@ -118,7 +118,8 @@ class UserService {
    */
   isNewUser(user) {
     if (!user) return true
-    return user.isNewUser === true
+    // 用户标记为新用户，且未完成信息收集
+    return user.isNewUser === true && !user.infoCollected
   }
 
   /**
@@ -146,9 +147,39 @@ class UserService {
   markUserInfoCompleted() {
     if (this.currentUser) {
       this.currentUser.isNewUser = false
+      this.currentUser.infoCollected = true
       this.currentUser.infoCompletedTime = new Date().toISOString()
       this.saveToStorage(this.currentUser)
     }
+  }
+
+  /**
+   * 更新用户档案信息
+   * @param {number} userId 用户ID
+   * @param {object} profileData 档案数据
+   * @returns {Promise} 更新结果
+   */
+  async updateUserProfile(userId, profileData) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        try {
+          if (this.currentUser && this.currentUser.id === userId) {
+            // 更新用户信息
+            this.currentUser = { ...this.currentUser, ...profileData }
+            this.saveToStorage(this.currentUser)
+            
+            resolve({
+              success: true,
+              message: '用户档案更新成功'
+            })
+          } else {
+            reject(new Error('用户不存在或ID不匹配'))
+          }
+        } catch (error) {
+          reject(error)
+        }
+      }, 500) // 模拟网络延时
+    })
   }
 
   /**
