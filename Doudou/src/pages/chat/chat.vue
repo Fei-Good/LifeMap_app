@@ -18,6 +18,10 @@
             src="@/static/DouDou比心.png"
             mode="aspectFit"
           />
+          <!-- 返回按钮 -->
+          <view class="back-button" @click="goBack">
+            <text class="back-text">返回</text>
+          </view>
         </view>
       </view>
     </view>
@@ -434,6 +438,11 @@ const formatTime = (timestamp) => {
     return `${date.getMonth() + 1}-${date.getDate()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
   }
 }
+
+// 返回上一页
+const goBack = () => {
+  uni.navigateBack()
+}
 </script>
 
 <style lang="scss" scoped>
@@ -526,11 +535,33 @@ const formatTime = (timestamp) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative; /* Added for positioning back button */
 }
 
 .avatar-img {
   width: 100rpx;
   height: 100rpx;
+}
+
+/* 返回按钮 */
+.back-button {
+  position: absolute;
+  top: -40rpx;
+  right: 0;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 30rpx;
+  padding: 10rpx 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.back-text {
+  font-size: 24rpx;
+  color: #4A5568;
+  font-weight: 500;
 }
 
 /* 问候区域 */
@@ -653,6 +684,7 @@ const formatTime = (timestamp) => {
 .user-message-container {
   display: flex;
   justify-content: flex-end;
+  padding-right: 60rpx;
 }
 
 .user-bubble {

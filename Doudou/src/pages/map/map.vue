@@ -21,7 +21,15 @@
           <span class="nav-text">上一页</span>
         </button>
         
-
+        <!-- 任务按钮 - 只在最后一页显示 -->
+        <button 
+          v-if="currentPage === totalPages"
+          class="nav-button task-button" 
+          @click="goToTaskPage"
+        >
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">待办任务</span>
+        </button>
         
         <!-- 下一页按钮 -->
         <button 
@@ -89,6 +97,14 @@ export default {
       }
     }
     
+    // 跳转到任务页面
+    const goToTaskPage = () => {
+      uni.navigateTo({
+        url: '/pages/task/task'
+      })
+      console.log('跳转到任务页面')
+    }
+    
     onMounted(() => {
       console.log('Map component mounted')
     })
@@ -101,7 +117,8 @@ export default {
       onIframeLoad,
       goToPrevPage,
       goToNextPage,
-      goToPage
+      goToPage,
+      goToTaskPage
     }
   }
 }
@@ -126,10 +143,10 @@ export default {
 
 /* 底部导航栏样式 */
 .bottom-navigation {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-  border-top: 1px solid #333;
+  background: #ffffff;
+  border-top: 1px solid #e0e0e0;
   padding: 2px 20px;
-  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .nav-content {
@@ -146,7 +163,7 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  background: linear-gradient(135deg, #ff9f25 0%, #ff8c00 100%);
   color: white;
   border: none;
   border-radius: 18px;
@@ -154,14 +171,14 @@ export default {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(74, 144, 226, 0.25);
+  box-shadow: 0 2px 6px rgba(255, 159, 37, 0.25);
   min-width: 90px;
 }
 
 .nav-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #5ba0f2 0%, #4080cd 100%);
+  background: linear-gradient(135deg, #ffb347 0%, #ff9f25 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+  box-shadow: 0 4px 12px rgba(255, 159, 37, 0.4);
 }
 
 .nav-button:active:not(:disabled) {
