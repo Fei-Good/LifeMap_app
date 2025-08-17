@@ -1,280 +1,228 @@
 <template>
-  <view class="map-container">
-    <!-- 顶部标题 -->
-    <view class="header">
-      <text class="title">DouDou成长地图</text>
-      <text class="subtitle">欢迎回来！继续你的成长之旅</text>
-    </view>
+  <div class="map-container">
+    <iframe 
+      ref="mapFrame"
+      :src="mapHtmlPath" 
+      frameborder="0" 
+      class="map-iframe"
+      @load="onIframeLoad"
+    ></iframe>
     
-    <!-- 主要内容区域 -->
-    <view class="main-content">
-      <!-- DouDou欢迎形象 -->
-      <view class="doudou-welcome">
-        <image 
-          class="doudou-happy"
-          src="@/static/DouDou比心.gif"
-          mode="aspectFit"
-        />
-        <view class="welcome-message">
-          <text class="message-text">DouDou很想你呢！</text>
-          <text class="sub-text">让我们继续一起成长吧~</text>
-        </view>
-      </view>
-      
-      <!-- 功能导航区域 -->
-      <view class="navigation-grid">
-        <view class="nav-item" @click="goToChat">
-          <view class="nav-icon chat-icon">💬</view>
-          <text class="nav-text">与DouDou聊天</text>
-        </view>
+    <!-- 底部导航栏 -->
+    <div class="bottom-navigation">
+      <div class="nav-content">
+        <!-- 上一页按钮 -->
+        <button 
+          class="nav-button prev-button" 
+          @click="goToPrevPage"
+          :disabled="currentPage <= 1"
+        >
+          <span class="nav-icon">‹</span>
+          <span class="nav-text">上一页</span>
+        </button>
         
-        <view class="nav-item" @click="goToTask">
-          <view class="nav-icon task-icon">📝</view>
-          <text class="nav-text">任务系统</text>
-        </view>
+
         
-        <view class="nav-item" @click="goToProfile">
-          <view class="nav-icon profile-icon">👤</view>
-          <text class="nav-text">个人资料</text>
-        </view>
-        
-        <view class="nav-item" @click="retakeAssessment">
-          <view class="nav-icon test-icon">🧠</view>
-          <text class="nav-text">重新测试</text>
-        </view>
-      </view>
-    </view>
-  </view>
+        <!-- 下一页按钮 -->
+        <button 
+          class="nav-button next-button" 
+          @click="goToNextPage"
+          :disabled="false"
+        >
+          <span class="nav-text">{{ currentPage === totalPages ? '开始聊天' : '下一页' }}</span>
+          <span class="nav-icon">{{ currentPage === totalPages ? '💬' : '›' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script setup>
-import { onMounted } from 'vue'
-import userService from '@/utils/userService'
+<script>
+import { ref, onMounted } from 'vue'
 
-// 页面加载
-onMounted(() => {
-  const currentUser = userService.getCurrentUser()
-  console.log('地图页面加载，当前用户:', currentUser)
-})
-
-// 导航方法
-const goToChat = () => {
-  uni.navigateTo({
-    url: '/pages/chat/chat'
-  })
-}
-
-const goToTask = () => {
-  uni.navigateTo({
-    url: '/pages/task/task'
-  })
-}
-
-const goToProfile = () => {
-  uni.navigateTo({
-    url: '/pages/profile/profile'
-  })
-}
-
-const retakeAssessment = () => {
-  uni.showModal({
-    title: '重新测试',
-    content: '确定要重新进行性格测试吗？这将覆盖你当前的测试结果。',
-    success: (res) => {
-      if (res.confirm) {
-        // 重置用户的测试状态
-        const currentUser = userService.getCurrentUser()
-        if (currentUser) {
-          userService.updateUserInfo({
-            infoCollected: false,
-            questionnaireAnswers: [],
-            questionnaireCompletedAt: null
-          })
-        }
-        
-        uni.redirectTo({
-          url: '/pages/user-info-collection/user-info-collection'
-        })
+export default {
+  name: 'Map',
+  setup() {
+    const mapFrame = ref(null)
+    const mapHtmlPath = ref('/temp_pages/map_1.html')
+    const currentPage = ref(1)
+    const totalPages = ref(4) // 假设总共有5页
+    
+    const onIframeLoad = () => {
+      console.log('Map HTML loaded successfully')
+      // 可以在这里添加iframe加载完成后的逻辑
+    }
+    
+    // 上一页功能
+    const goToPrevPage = () => {
+      if (currentPage.value > 1) {
+        currentPage.value--
+        // 更新iframe的src属性
+        mapHtmlPath.value = `/temp_pages/map_${currentPage.value}.html`
+        console.log(`切换到第${currentPage.value}页`)
       }
     }
-  })
+    
+    // 下一页功能
+    const goToNextPage = () => {
+      if (currentPage.value < totalPages.value) {
+        currentPage.value++
+        // 更新iframe的src属性
+        mapHtmlPath.value = `/temp_pages/map_${currentPage.value}.html`
+        console.log(`切换到第${currentPage.value}页`)
+      } else if (currentPage.value === totalPages.value) {
+        // 第四页时，跳转到聊天页面
+        uni.navigateTo({
+          url: '/pages/chat/chat'
+        })
+        console.log('从第四页跳转到聊天页面')
+      }
+    }
+    
+    // 跳转到指定页面
+    const goToPage = (pageNumber) => {
+      if (pageNumber >= 1 && pageNumber <= totalPages.value) {
+        currentPage.value = pageNumber
+        // 更新iframe的src属性
+        mapHtmlPath.value = `/temp_pages/map_${currentPage.value}.html`
+        console.log(`跳转到第${currentPage.value}页`)
+      }
+    }
+    
+    onMounted(() => {
+      console.log('Map component mounted')
+    })
+    
+    return {
+      mapFrame,
+      mapHtmlPath,
+      currentPage,
+      totalPages,
+      onIframeLoad,
+      goToPrevPage,
+      goToNextPage,
+      goToPage
+    }
+  }
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .map-container {
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-/* 顶部区域 */
-.header {
-  padding: 60rpx 40rpx 40rpx;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10rpx);
-}
-
-.title {
-  display: block;
-  font-size: 48rpx;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 20rpx;
-  text-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.3);
-}
-
-.subtitle {
-  display: block;
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 500;
-}
-
-/* 主要内容 */
-.main-content {
+.map-iframe {
+  width: 100%;
   flex: 1;
-  padding: 40rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 60rpx;
+  border: none;
+  display: block;
 }
 
-/* DouDou欢迎区域 */
-.doudou-welcome {
+/* 底部导航栏样式 */
+.bottom-navigation {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-top: 1px solid #333;
+  padding: 2px 20px;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.nav-content {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  gap: 30rpx;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 40rpx;
-  padding: 50rpx;
-  backdrop-filter: blur(15rpx);
-  border: 2rpx solid rgba(255, 255, 255, 0.2);
+  gap: 20px;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
-.doudou-happy {
-  width: 200rpx;
-  height: 200rpx;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 20rpx;
-}
-
-.welcome-message {
-  text-align: center;
-}
-
-.message-text {
-  display: block;
-  font-size: 36rpx;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 15rpx;
-  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.3);
-}
-
-.sub-text {
-  display: block;
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.8);
+.nav-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+  border: none;
+  border-radius: 18px;
+  font-size: 13px;
   font-weight: 500;
-}
-
-/* 导航网格 */
-.navigation-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30rpx;
-}
-
-.nav-item {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 30rpx;
-  padding: 50rpx 30rpx;
-  text-align: center;
-  transition: all 0.3s ease;
   cursor: pointer;
-  backdrop-filter: blur(10rpx);
-  border: 2rpx solid rgba(255, 255, 255, 0.1);
-  
-  &:active {
-    transform: scale(0.95);
-    background: rgba(255, 255, 255, 0.25);
-  }
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(74, 144, 226, 0.25);
+  min-width: 90px;
+}
+
+.nav-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5ba0f2 0%, #4080cd 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
+.nav-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.nav-button:disabled {
+  background: #666;
+  color: #999;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .nav-icon {
-  font-size: 60rpx;
-  margin-bottom: 20rpx;
-  display: block;
-  height: 80rpx;
-  line-height: 80rpx;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .nav-text {
-  font-size: 28rpx;
-  color: #fff;
-  font-weight: 600;
-  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.3);
+  font-size: 13px;
 }
 
-/* 响应式适配 */
-@media screen and (max-width: 375px) {
-  .header {
-    padding: 50rpx 30rpx 30rpx;
+
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .bottom-navigation {
+    padding: 3px 16px;
   }
   
-  .title {
-    font-size: 42rpx;
-  }
-  
-  .subtitle {
-    font-size: 26rpx;
-  }
-  
-  .main-content {
-    padding: 30rpx;
-    gap: 50rpx;
-  }
-  
-  .doudou-welcome {
-    padding: 40rpx 30rpx;
-  }
-  
-  .doudou-happy {
-    width: 180rpx;
-    height: 180rpx;
-  }
-  
-  .message-text {
-    font-size: 32rpx;
-  }
-  
-  .sub-text {
-    font-size: 26rpx;
-  }
-  
-  .navigation-grid {
-    gap: 25rpx;
-  }
-  
-  .nav-item {
-    padding: 40rpx 25rpx;
-  }
-  
-  .nav-icon {
-    font-size: 50rpx;
-    height: 70rpx;
-    line-height: 70rpx;
-    margin-bottom: 15rpx;
+  .nav-button {
+    padding: 5px 12px;
+    font-size: 12px;
+    min-width: 75px;
   }
   
   .nav-text {
-    font-size: 26rpx;
+    font-size: 12px;
   }
+  
+  .nav-icon {
+    font-size: 14px;
+  }
+  
+
+}
+
+@media (max-width: 480px) {
+  .nav-content {
+    gap: 6px;
+  }
+  
+  .nav-button {
+    padding: 4px 8px;
+    min-width: 65px;
+  }
+  
+  .nav-text {
+    display: none;
+  }
+  
+
 }
 </style>

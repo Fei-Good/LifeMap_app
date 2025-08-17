@@ -39,8 +39,7 @@ class UserService {
       }
     } catch (error) {
       console.error('用户登录失败:', error)
-      // 直接抛出原始错误，保留完整的错误信息（包括code和errors等字段）
-      throw error
+      throw new Error(error.message || '登录失败')
     }
   }
 

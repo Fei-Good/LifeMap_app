@@ -480,8 +480,9 @@ const formatTime = (timestamp) => {
 
 .goal-content {
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
   align-items: center;
+  gap: 30rpx;
   position: relative;
   z-index: 2;
 }
@@ -876,3 +877,4 @@ const formatTime = (timestamp) => {
   }
 }
 </style>
+
