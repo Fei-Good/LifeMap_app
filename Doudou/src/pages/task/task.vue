@@ -31,6 +31,7 @@
       <text class="exp-text">经验值 {{currentExp}} / {{maxExp}}</text>
       <view class="progress-bar">
         <view class="progress-fill" :style="{width: progressPercent + '%'}"></view>
+        <view class="progress-glow"></view>
       </view>
     </view>
 
@@ -38,6 +39,7 @@
     <view class="doudou-section">
       <view class="doudou-avatar" @tap="onDouDouClick">
         <view class="doudou-face"></view>
+        <view class="doudou-glow"></view>
       </view>
       <view class="greeting-bubble">
         <text>{{greetingMessage}}</text>
@@ -71,6 +73,7 @@
               {{task.completed ? '已完成' : '待完成'}}
             </view>
           </view>
+          <view class="task-decoration"></view>
         </view>
       </view>
 
@@ -99,6 +102,7 @@
               {{task.completed ? '已完成' : '待完成'}}
             </view>
           </view>
+          <view class="task-decoration"></view>
         </view>
       </view>
 
@@ -119,6 +123,7 @@
             <text class="progress-info">{{bossTask.timeLeft}}</text>
             <view class="task-status status-boss">{{bossTask.status}}</view>
           </view>
+          <view class="task-decoration"></view>
         </view>
       </view>
     </view>
@@ -139,6 +144,7 @@
         >
           <view class="skill-icon-bg" :style="{background: skill.bgColor}">
             <text class="skill-emoji">{{skill.icon}}</text>
+            <view class="skill-glow"></view>
           </view>
           <text class="skill-name">{{skill.name}}</text>
         </view>
@@ -165,6 +171,7 @@
             <text>{{badge.earned ? badge.icon : '?'}}</text>
           </view>
         </view>
+        <view class="gashapon-decoration"></view>
       </view>
     </view>
   </view>
@@ -442,44 +449,59 @@ onMounted(() => {
 <style scoped>
 .task-page {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+}
+
+.task-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  pointer-events: none;
 }
 
 .status-bar {
-  background: #ffffff;
+  background: transparent;
 }
 
 /* 任务头部样式 */
 .task-header {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 20rpx 30rpx;
   color: #333333;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.2);
 }
 
 .back-btn {
   width: 80rpx;
   height: 80rpx;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #667eea, #764ba2);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4rpx 16rpx rgba(102, 126, 234, 0.3);
 }
 
 .back-btn:active {
-  background: rgba(0, 0, 0, 0.2);
-  transform: scale(1.1);
+  transform: scale(0.95) rotate(-5deg);
+  box-shadow: 0 2rpx 8rpx rgba(102, 126, 234, 0.4);
 }
 
 .back-icon {
   font-size: 32rpx;
   font-weight: bold;
-  color: #333333;
+  color: #ffffff;
 }
 
 .header-title {
@@ -493,12 +515,17 @@ onMounted(() => {
   font-size: 36rpx;
   font-weight: bold;
   margin-bottom: 4rpx;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .subtitle-text {
   display: block;
   font-size: 24rpx;
   opacity: 0.8;
+  color: #666;
 }
 
 .header-actions {
@@ -510,16 +537,17 @@ onMounted(() => {
   width: 72rpx;
   height: 72rpx;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #ff6b6b, #ffa500);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4rpx 16rpx rgba(255, 107, 107, 0.3);
 }
 
 .action-btn:active {
-  background: rgba(0, 0, 0, 0.2);
-  transform: scale(1.1);
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(255, 107, 107, 0.4);
 }
 
 .settings-icon,
@@ -529,11 +557,15 @@ onMounted(() => {
 
 /* 顶部进度条区域 */
 .top-progress {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
   padding: 40rpx 30rpx;
   color: #333333;
   text-align: center;
-  border-bottom: 1rpx solid #f0f0f0;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.2);
+  margin: 20rpx 30rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
 }
 
 .level-info {
@@ -547,35 +579,71 @@ onMounted(() => {
 .level-badge {
   background: linear-gradient(45deg, #4facfe, #00f2fe);
   color: #ffffff;
-  padding: 10rpx 24rpx;
+  padding: 12rpx 28rpx;
   border-radius: 40rpx;
   font-size: 28rpx;
   font-weight: bold;
+  box-shadow: 0 4rpx 16rpx rgba(79, 172, 254, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 .level-title {
   font-size: 32rpx;
   font-weight: 600;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .exp-text {
   font-size: 24rpx;
   margin-bottom: 16rpx;
+  color: #666;
 }
 
 .progress-bar {
-  background: #f0f0f0;
+  background: rgba(240, 240, 240, 0.5);
   border-radius: 20rpx;
-  height: 16rpx;
+  height: 20rpx;
   overflow: hidden;
   margin-top: 16rpx;
+  position: relative;
+  box-shadow: inset 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
 .progress-fill {
-  background: linear-gradient(90deg, #ffd700, #ffed4e);
+  background: linear-gradient(90deg, #ffd700, #ffed4e, #ffd700);
+  background-size: 200% 100%;
   height: 100%;
   border-radius: 20rpx;
-  transition: width 0.5s ease;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.progress-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+  border-radius: 20rpx;
+  z-index: 0;
 }
 
 /* DouDou角色区域 */
@@ -584,25 +652,38 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   padding: 40rpx 0;
-  background: #fff;
-  margin-bottom: 20rpx;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  margin: 20rpx 30rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
 }
 
 .doudou-avatar {
   width: 160rpx;
   height: 160rpx;
-  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+  background: linear-gradient(45deg, #ff6b6b, #ffa500, #ff6b6b);
+  background-size: 200% 200%;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10rpx 30rpx rgba(255, 107, 107, 0.3);
+  box-shadow: 0 16rpx 48rpx rgba(255, 107, 107, 0.4);
   margin-bottom: 30rpx;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 .doudou-avatar:active {
   transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 20rpx 60rpx rgba(255, 107, 107, 0.6);
 }
 
 .doudou-face {
@@ -636,15 +717,32 @@ onMounted(() => {
   border-radius: 0 0 40rpx 40rpx;
 }
 
+.doudou-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
 .greeting-bubble {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 20rpx 30rpx;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 24rpx 36rpx;
   border-radius: 30rpx;
   position: relative;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12rpx 32rpx rgba(102, 126, 234, 0.3);
   font-size: 28rpx;
-  color: #333;
   font-weight: 500;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
 .greeting-bubble::before {
@@ -657,7 +755,7 @@ onMounted(() => {
   height: 0;
   border-left: 16rpx solid transparent;
   border-right: 16rpx solid transparent;
-  border-bottom: 16rpx solid rgba(255, 255, 255, 0.95);
+  border-bottom: 16rpx solid #667eea;
 }
 
 /* 任务卡片容器 */
@@ -672,11 +770,12 @@ onMounted(() => {
 .section-title {
   font-size: 36rpx;
   font-weight: bold;
-  color: #333;
+  color: white;
   margin-bottom: 30rpx;
   display: flex;
   align-items: center;
   gap: 16rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
 }
 
 .section-icon {
@@ -688,29 +787,32 @@ onMounted(() => {
   justify-content: center;
   color: white;
   font-size: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2);
 }
 
-.daily-icon { background: #28a745; }
-.challenge-icon { background: #ffc107; }
-.boss-icon { background: #dc3545; }
-.skill-icon { background: #6f42c1; }
+.daily-icon { background: linear-gradient(135deg, #28a745, #20c997); }
+.challenge-icon { background: linear-gradient(135deg, #ffc107, #fd7e14); }
+.boss-icon { background: linear-gradient(135deg, #dc3545, #e83e8c); }
+.skill-icon { background: linear-gradient(135deg, #6f42c1, #8e44ad); }
 .achievement-icon { background: rgba(255,255,255,0.3); }
 
 /* 任务卡片样式 */
 .task-card {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
   border-radius: 24rpx;
   padding: 30rpx;
   margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
   border-left: 8rpx solid;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
 }
 
 .task-card:active {
-  transform: translateY(-4rpx);
-  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.2);
+  transform: translateY(-8rpx) scale(1.02);
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.2);
 }
 
 .task-card.daily { border-left-color: #28a745; }
@@ -718,8 +820,8 @@ onMounted(() => {
 .task-card.boss { border-left-color: #dc3545; }
 
 .task-card.completed {
-  opacity: 0.7;
-  background: #f8f9fa;
+  opacity: 0.8;
+  background: rgba(248, 249, 250, 0.95);
 }
 
 .task-header {
@@ -739,16 +841,18 @@ onMounted(() => {
 .task-reward {
   background: linear-gradient(45deg, #ffd700, #ffed4e);
   color: #333;
-  padding: 8rpx 16rpx;
+  padding: 10rpx 20rpx;
   border-radius: 24rpx;
   font-size: 24rpx;
   font-weight: bold;
+  box-shadow: 0 4rpx 16rpx rgba(255, 215, 0, 0.3);
 }
 
 .task-description {
   color: #666;
   font-size: 28rpx;
   margin-bottom: 20rpx;
+  line-height: 1.5;
 }
 
 .task-progress {
@@ -763,32 +867,48 @@ onMounted(() => {
 }
 
 .task-status {
-  padding: 8rpx 24rpx;
+  padding: 10rpx 28rpx;
   border-radius: 40rpx;
   font-size: 24rpx;
   font-weight: bold;
+  transition: all 0.3s ease;
 }
 
 .status-pending {
-  background: #e9ecef;
+  background: linear-gradient(135deg, #e9ecef, #dee2e6);
   color: #6c757d;
 }
 
 .status-completed {
-  background: #d4edda;
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
   color: #155724;
 }
 
 .status-boss {
-  background: #f8d7da;
+  background: linear-gradient(135deg, #f8d7da, #f5c6cb);
   color: #721c24;
+}
+
+.task-decoration {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 20rpx;
+  background: linear-gradient(to right, transparent, rgba(0,0,0,0.05));
+  border-radius: 0 0 24rpx 24rpx;
+  z-index: -1;
 }
 
 /* 技能包区域 */
 .skills-section {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
   padding: 40rpx 30rpx;
-  margin-bottom: 20rpx;
+  margin: 20rpx 30rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
 }
 
 .skills-grid {
@@ -801,11 +921,11 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .skill-item:active {
-  transform: translateY(-6rpx);
+  transform: translateY(-12rpx) scale(1.1);
 }
 
 .skill-icon-bg {
@@ -816,11 +936,26 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   margin-bottom: 16rpx;
-  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
 }
 
 .skill-emoji {
   font-size: 40rpx;
+  z-index: 1;
+  position: relative;
+}
+
+.skill-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  border-radius: 24rpx;
+  z-index: 0;
 }
 
 .skill-name {
@@ -836,24 +971,52 @@ onMounted(() => {
   padding: 40rpx 30rpx;
   color: white;
   text-align: center;
+  margin: 20rpx 30rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.achievements-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .achievement-title {
   color: white;
   justify-content: center;
+  position: relative;
+  z-index: 1;
 }
 
 .gashapon-machine {
-  background: linear-gradient(135deg, #ff6b6b, #ffa500);
+  background: linear-gradient(135deg, #ff6b6b, #ffa500, #ff6b6b);
+  background-size: 200% 200%;
   border-radius: 40rpx;
   padding: 40rpx;
   margin: 30rpx 0;
   position: relative;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 12rpx 40rpx rgba(255, 107, 107, 0.4);
+  animation: gradientShift 3s ease-in-out infinite;
+  z-index: 1;
 }
 
 .gashapon-machine:active {
-  transform: scale(1.02);
+  transform: scale(1.05);
+  box-shadow: 0 16rpx 48rpx rgba(255, 107, 107, 0.6);
 }
 
 .gashapon-title {
@@ -885,11 +1048,26 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   font-size: 36rpx;
+  transition: all 0.3s ease;
+  border: 2rpx solid rgba(255, 255, 255, 0.5);
 }
 
 .badge-slot.earned {
   background: rgba(255, 255, 255, 0.9);
   color: #333;
+  transform: scale(1.1);
+  box-shadow: 0 4rpx 16rpx rgba(255, 255, 255, 0.3);
+}
+
+.gashapon-decoration {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 20rpx;
+  background: linear-gradient(to right, transparent, rgba(0,0,0,0.1));
+  border-radius: 0 0 40rpx 40rpx;
+  z-index: -1;
 }
 
 /* 响应式适配 */
@@ -905,6 +1083,13 @@ onMounted(() => {
   .skills-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 40rpx;
+  }
+  
+  .top-progress,
+  .doudou-section,
+  .skills-section,
+  .achievements-section {
+    margin: 20rpx 20rpx;
   }
 }
 </style>
