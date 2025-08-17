@@ -105,7 +105,7 @@
       // 跳转到引导页面，由引导页面判断用户类型
       setTimeout(() => {
         uni.reLaunch({
-          url: '/pages/intro/intro'
+          url: '/pages/intro/intros'
         })
       }, 1000)
     } catch (error) {

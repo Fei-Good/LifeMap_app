@@ -2,6 +2,9 @@
  * AI大模型服务类
  * 用于调用大模型接口生成个性化报告
  */
+// 导入API服务
+import apiService from './apiService'
+
 class AIService {
   constructor() {
     // 配置豆包AI服务
@@ -20,19 +23,210 @@ class AIService {
    */
   async generatePersonalityReport(questionnaireAnswers, userInfo = {}) {
     try {
-      // 构建提示词
+      // 首先尝试调用后端API
+      const backendReport = await this.generateReportFromBackend(questionnaireAnswers, userInfo)
+      if (backendReport) {
+        return backendReport
+      }
+    } catch (error) {
+      console.warn('后端API调用失败，使用直接调用大模型方式:', error)
+    }
+
+    try {
+      // 备用方案：直接调用大模型接口
       const prompt = this.buildPrompt(questionnaireAnswers, userInfo)
-      
-      // 调用大模型接口
       const response = await this.callAIAPI(prompt)
-      
-      // 解析并格式化返回结果
       return this.parseAIResponse(response)
       
     } catch (error) {
       console.error('生成个性化报告失败:', error)
       // 返回兜底的默认报告
       return this.getDefaultReport(questionnaireAnswers)
+    }
+  }
+
+  /**
+   * 调用后端API生成个性化报告
+   * @param {Array} questionnaireAnswers 用户的问卷答案
+   * @param {Object} userInfo 用户基本信息
+   * @returns {Promise<Object>} 生成的报告内容
+   */
+  async generateReportFromBackend(questionnaireAnswers, userInfo = {}) {
+    try {
+      console.log('调用后端API生成个性化报告...')
+      
+      // 先提交问卷答案到后端
+      const submitResponse = await apiService.submitQuestionnaire(questionnaireAnswers)
+      console.log('问卷提交成功:', submitResponse)
+      
+      // 获取生成的个性化报告
+      if (submitResponse.data && submitResponse.data.personalityReport) {
+        const report = submitResponse.data.personalityReport
+        
+        // 转换为前端需要的格式
+        return this.convertBackendReportFormat(report)
+      } else {
+        // 如果提交后没有直接返回报告，尝试获取报告
+        const reportResponse = await apiService.getPersonalityReport()
+        if (reportResponse.data) {
+          return this.convertBackendReportFormat(reportResponse.data)
+        }
+      }
+      
+      return null
+    } catch (error) {
+      console.error('后端API生成报告失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 转换后端报告格式为前端需要的格式
+   * @param {Object} backendReport 后端返回的报告
+   * @returns {Object} 转换后的报告格式
+   */
+  convertBackendReportFormat(backendReport) {
+    // 如果后端返回的格式已经符合前端需求，直接返回
+    if (backendReport.emotionalSupport || backendReport.userConcerns || backendReport.personalGoals) {
+      return {
+        emotionalSupport: backendReport.emotionalSupport || this.generateDefaultEmotionalSupport(),
+        userConcerns: backendReport.userConcerns || this.generateDefaultUserConcerns(),
+        personalGoals: backendReport.personalGoals || this.generateDefaultPersonalGoals(),
+        actionSuggestions: backendReport.actionSuggestions || this.generateDefaultActionSuggestions(),
+        generatedAt: new Date().toISOString(),
+        source: 'backend_api'
+      }
+    }
+    
+    // 如果是标准个性化报告格式，转换为问卷结果页面需要的格式
+    return {
+      emotionalSupport: this.generateEmotionalSupportFromReport(backendReport),
+      userConcerns: this.generateUserConcernsFromReport(backendReport),
+      personalGoals: backendReport.lifeTips || backendReport.summary || this.generateDefaultPersonalGoals(),
+      actionSuggestions: this.convertSuggestionsToActions(backendReport.suggestions || []),
+      generatedAt: backendReport.generatedAt || new Date().toISOString(),
+      source: 'backend_api_converted'
+    }
+  }
+
+  /**
+   * 从标准报告生成情绪安慰内容
+   */
+  generateEmotionalSupportFromReport(report) {
+    const percentage = Math.floor(Math.random() * 20) + 65 // 65-85%之间
+    return `全球有${percentage}%的人具有与你相似的${report.title || '个性特征'}，你并不孤单。${report.description ? report.description.substring(0, 100) + '...' : 'DouDou相信你有独特的魅力和潜力。'} ❤️`
+  }
+
+  /**
+   * 从标准报告生成用户心声内容
+   */
+  generateUserConcernsFromReport(report) {
+    if (report.traits && report.traits.length > 0) {
+      return `通过分析，DouDou发现你是一个${report.traits.slice(0, 3).join('、')}的人。这些特质让你在人生路上有着独特的优势和思考方式。`
+    }
+    return `通过你的回答，DouDou感受到你是一个有想法、有目标的人。每个人都有自己的成长节奏，相信你会找到属于自己的精彩。`
+  }
+
+  /**
+   * 转换建议为行动建议格式
+   */
+  convertSuggestionsToActions(suggestions) {
+    const actionTypes = ['hard_skill', 'soft_skill', 'emotion_management']
+    
+    return suggestions.slice(0, 3).map((suggestion, index) => ({
+      type: actionTypes[index] || 'hard_skill',
+      content: typeof suggestion === 'string' ? suggestion : suggestion.text || suggestion.content || '继续保持积极的学习态度'
+    }))
+  }
+
+  /**
+   * 生成默认的情绪安慰内容
+   */
+  generateDefaultEmotionalSupport() {
+    const percentage = Math.floor(Math.random() * 20) + 65
+    return `全球有${percentage}%的人正在经历类似的成长挑战，你并不孤单。DouDou相信每个人都有独特的价值和潜力，让我们一起探索属于你的成长之路！ ❤️`
+  }
+
+  /**
+   * 生成默认的用户心声内容
+   */
+  generateDefaultUserConcerns() {
+    return '通过你的回答，DouDou能感受到你是一个有想法、有追求的人。每个人都有自己的成长节奏和方式，相信你会找到最适合自己的发展道路。'
+  }
+
+  /**
+   * 生成默认的个人目标
+   */
+  generateDefaultPersonalGoals() {
+    return '成为更好的自己，在工作和生活中都能保持积极向上的态度，持续学习和成长，建立有意义的人际关系。'
+  }
+
+  /**
+   * 生成默认的行动建议
+   */
+  generateDefaultActionSuggestions() {
+    return [
+      { type: 'hard_skill', content: '持续学习新技能，提升专业能力和竞争力' },
+      { type: 'soft_skill', content: '培养沟通协作能力，建立良好的人际关系' },
+      { type: 'emotion_management', content: '学会情绪管理，保持积极乐观的心态面对挑战' }
+    ]
+  }
+
+  /**
+   * 流式生成个性化报告
+   * @param {Array} questionnaireAnswers 用户的问卷答案
+   * @param {Object} userInfo 用户基本信息
+   * @param {Function} onProgress 进度回调函数
+   * @returns {Promise<Object>} 生成的报告内容
+   */
+  async generatePersonalityReportStream(questionnaireAnswers, userInfo = {}, onProgress) {
+    try {
+      // 首先尝试调用后端API
+      const backendReport = await this.generateReportFromBackend(questionnaireAnswers, userInfo)
+      if (backendReport) {
+        // 模拟流式显示
+        if (onProgress) {
+          const reportText = JSON.stringify(backendReport, null, 2)
+          await this.simulateStreamProgress(reportText, onProgress)
+        }
+        return backendReport
+      }
+    } catch (error) {
+      console.warn('后端流式API调用失败，使用本地流式方式:', error)
+    }
+
+    try {
+      // 备用方案：本地流式生成
+      const prompt = this.buildStreamPrompt(questionnaireAnswers, userInfo)
+      const response = await this.callStreamAPI(prompt, onProgress)
+      return this.parseStreamResponse(response)
+      
+    } catch (error) {
+      console.error('流式生成个性化报告失败:', error)
+      return this.getDefaultReport(questionnaireAnswers)
+    }
+  }
+
+  /**
+   * 模拟流式进度显示
+   * @param {string} text 完整文本
+   * @param {Function} onProgress 进度回调
+   */
+  async simulateStreamProgress(text, onProgress) {
+    const chunks = text.match(/.{1,10}/g) || [text]
+    let accumulatedText = ''
+    
+    for (let i = 0; i < chunks.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 30))
+      accumulatedText += chunks[i]
+      
+      if (onProgress) {
+        onProgress({
+          chunk: chunks[i],
+          accumulated: accumulatedText,
+          progress: (i + 1) / chunks.length
+        })
+      }
     }
   }
 
@@ -390,6 +584,127 @@ ${answerSummary}
       summary: "你是独一无二的，DouDou期待与你一起探索更多可能！",
       generatedAt: new Date().toISOString(),
       source: 'default'
+    }
+  }
+
+  /**
+   * 构建流式提示词
+   * @param {Array} answers 用户答案
+   * @param {Object} userInfo 用户信息
+   * @returns {string} 提示词
+   */
+  buildStreamPrompt(answers, userInfo) {
+    let prompt = `你是DouDou，一个温暖贴心的AI伙伴。请根据用户的问卷回答生成一份个性化报告，包含以下四个部分：
+
+1. 情绪安慰板块：以"全球有XX%的人正在经历..."开始，给予用户情感支持
+2. 用户心声：根据用户的主观回答，理解用户的烦恼或想做的事
+3. 个人目标：为用户设定可修改的个人成长目标
+4. 行动建议：提供具体的小目标，分为硬技能、软技能、情绪管理三类
+
+用户的问卷回答：
+`
+    
+    answers.forEach((answer, index) => {
+      if (answer.type === 'subjective') {
+        prompt += `问题${index + 1}：${answer.question}\n回答：${answer.answer}\n\n`
+      } else {
+        prompt += `问题${index + 1}：${answer.question}\n选择：${answer.selectedLabel} (${answer.selectedValue})\n\n`
+      }
+    })
+    
+    prompt += `
+请以JSON格式返回报告，包含：
+{
+  "emotionalSupport": "情绪安慰内容",
+  "userConcerns": "用户心声分析",
+  "personalGoals": "个人目标设定",
+  "actionSuggestions": [
+    {"type": "hard_skill", "content": "硬技能建议"},
+    {"type": "soft_skill", "content": "软技能建议"},
+    {"type": "emotion_management", "content": "情绪管理建议"}
+  ]
+}
+
+请确保内容温暖、积极、具有可操作性。`
+    
+    return prompt
+  }
+
+  /**
+   * 调用流式API
+   * @param {string} prompt 提示词
+   * @param {Function} onProgress 进度回调
+   * @returns {Promise<string>} API响应
+   */
+  async callStreamAPI(prompt, onProgress) {
+    try {
+      // 模拟流式响应（实际应该调用真实的流式API）
+      const mockResponse = await this.mockStreamResponse(prompt, onProgress)
+      return mockResponse
+      
+    } catch (error) {
+      console.error('流式API调用失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 模拟流式响应
+   * @param {string} prompt 提示词
+   * @param {Function} onProgress 进度回调
+   * @returns {Promise<string>} 模拟响应
+   */
+  async mockStreamResponse(prompt, onProgress) {
+    const mockReport = {
+      emotionalSupport: "全球有73%的人正在经历职场适应的挑战，你并不孤单。DouDou理解你的感受，每一份努力都值得被看见。让我们一起找到属于你的成长节奏！ ❤️",
+      userConcerns: "通过你的分享，DouDou感受到你在面对新环境时的勇敢和思考。这些都是成长路上珍贵的品质，相信你会找到属于自己的节奏。",
+      personalGoals: "成为一个适应力强、善于学习的职场新人，在工作和人际关系中都能积极主动地成长。",
+      actionSuggestions: [
+        { type: "hard_skill", content: "制定学习计划，每周掌握一个新的工作技能" },
+        { type: "soft_skill", content: "主动与同事交流，每天至少和一位同事进行友好互动" },
+        { type: "emotion_management", content: "建立情绪调节习惯，遇到挫折时给自己积极的心理暗示" }
+      ]
+    }
+
+    const fullText = JSON.stringify(mockReport, null, 2)
+    const chunks = fullText.match(/.{1,10}/g) || [fullText]
+    
+    let accumulatedText = ''
+    
+    for (let i = 0; i < chunks.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 50))
+      accumulatedText += chunks[i]
+      
+      if (onProgress) {
+        onProgress({
+          chunk: chunks[i],
+          accumulated: accumulatedText,
+          progress: (i + 1) / chunks.length
+        })
+      }
+    }
+    
+    return fullText
+  }
+
+  /**
+   * 解析流式响应
+   * @param {string} response 完整响应
+   * @returns {Object} 解析后的报告对象
+   */
+  parseStreamResponse(response) {
+    try {
+      const report = JSON.parse(response)
+      
+      return {
+        ...report,
+        generatedAt: new Date().toISOString(),
+        source: 'stream_generated'
+      }
+      
+    } catch (error) {
+      console.error('解析流式响应失败:', error)
+      throw error
     }
   }
 }

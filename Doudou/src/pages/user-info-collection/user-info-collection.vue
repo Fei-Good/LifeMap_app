@@ -126,7 +126,7 @@ const questionsData = ref([
   },
   {
     id: 3,
-    question: "DouDou发现KPI目标过高,怎么办？(＞﹏＜)",
+    question: "DouDou发现自己KPI目标过高,怎么办？(＞﹏＜)",
     image: "/static/QA/3_matting.gif",
     options: [
       { label: "A. 调整目标", value: "thoughtful" },
@@ -159,8 +159,8 @@ const questionsData = ref([
   },
   {
     id: 6,
-    question: "最近还好吗？有什么想和我说说的或者最近有什么想完成但还没有完成的？(つ´ω`)つ",
-    image: "/static/QA/5_matting.gif",
+    question: "最近还好吗？有什么想和我说说的？或者最近有什么想完成但还没有完成的？(つ´ω`)つ",
+    image: "/static/QA/6_matting.gif",
     type: "subjective",
     placeholder: "在这里写下你想说的话..."
   }
@@ -227,7 +227,17 @@ const nextQuestion = () => {
     }
   }
   
-  userAnswers.value.push(answer)
+  // 验证答案对象的完整性
+  if (answer && typeof answer === 'object' && answer.questionId && answer.question && answer.type) {
+    userAnswers.value.push(answer)
+  } else {
+    console.error('无效的答案对象:', answer)
+    uni.showToast({
+      title: '答案保存失败，请重试',
+      icon: 'none'
+    })
+    return
+  }
   
   // 检查是否是最后一题
   if (currentQuestionIndex.value === totalQuestions.value - 1) {
@@ -247,55 +257,69 @@ const completeQuestionnaire = async () => {
       mask: true
     })
     
-    // 提交问卷答案到API，获取个性化报告
-    const response = await apiService.submitQuestionnaire(userAnswers.value)
+    // 过滤并保存问卷答案到本地存储
+    const validAnswers = userAnswers.value.filter(answer => {
+      return answer && 
+             typeof answer === 'object' && 
+             answer.questionId && 
+             answer.question &&
+             answer.type &&
+             (answer.type === 'subjective' ? answer.answer : answer.selectedValue)
+    })
     
-    if (response.data && response.data.personalityReport) {
-      // 保存个性化报告到本地存储
-      uni.setStorageSync('personality_report', response.data.personalityReport)
-      
-      // 标记用户完成信息收集
-      await userService.markUserInfoCompleted()
-      
-      uni.hideLoading()
-      
-      // 显示成功消息
-      uni.showToast({
-        title: '个性化报告生成完成！',
-        icon: 'success',
-        duration: 2000
+    console.log('准备保存的答案数据:', validAnswers)
+    uni.setStorageSync('questionnaire_answers', validAnswers)
+    
+    // 标记用户完成信息收集
+    await userService.markUserInfoCompleted()
+    
+    uni.hideLoading()
+    
+    // 显示成功消息
+    uni.showToast({
+      title: '问卷完成，正在生成报告！',
+      icon: 'success',
+      duration: 2000
+    })
+    
+    // 延时跳转到问卷结果页面
+    setTimeout(() => {
+      uni.redirectTo({
+        url: '/pages/questionnaire-result/questionnaire-result'
       })
-      
-      // 延时跳转到聊天页面，显示报告
-      setTimeout(() => {
-        uni.reLaunch({
-          url: '/pages/chat/chat?showReport=true'
-        })
-      }, 2000)
-      
-    } else {
-      throw new Error('未获取到个性化报告')
-    }
+    }, 2000)
     
   } catch (error) {
     uni.hideLoading()
     
     console.error('提交问卷失败:', error)
     
-    // 如果API调用失败，仍然标记为完成，跳转到聊天页面
+    // 如果出现错误，仍然保存答案并跳转
     try {
+      // 过滤有效答案后再保存
+      const validAnswers = userAnswers.value.filter(answer => {
+        return answer && 
+               typeof answer === 'object' && 
+               answer.questionId && 
+               answer.question &&
+               answer.type &&
+               (answer.type === 'subjective' ? answer.answer : answer.selectedValue)
+      })
+      
+      console.log('错误处理中保存的答案数据:', validAnswers)
+      uni.setStorageSync('questionnaire_answers', validAnswers)
       await userService.markUserInfoCompleted()
       
       uni.showToast({
-        title: '问卷已保存，报告生成中...',
+        title: '问卷已保存，正在生成报告...',
         icon: 'none',
         duration: 2000
       })
       
-      // 跳转到聊天页面
+      // 跳转到问卷结果页面
       setTimeout(() => {
-        uni.reLaunch({
-          url: '/pages/chat/chat'
+        uni.redirectTo({
+          url: '/pages/questionnaire-result/questionnaire-result'
         })
       }, 2000)
       
@@ -314,35 +338,30 @@ onMounted(async () => {
   // 页面加载时的初始化
   console.log('用户信息收集页面已加载')
   
-  // 尝试从API获取问卷题目
+  // 使用本地问题数据，无需API调用
   try {
     uni.showLoading({
       title: '加载题目中...',
       mask: true
     })
     
-    const response = await apiService.getQuestionnaireQuestions()
+    // 模拟加载延迟，提供更好的用户体验
+    await new Promise(resolve => setTimeout(resolve, 500))
     
-    if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-      // 使用API返回的题目
-      questionsData.value = response.data
-      console.log('从API加载了', response.data.length, '道题目')
-    } else {
-      console.log('API返回的题目格式不正确，使用本地题目')
-    }
+    // 初始化用户答案数组
+    userAnswers.value = new Array(questionsData.value.length).fill(null)
     
-    uni.hideLoading()
+    console.log('本地问题数据加载完成，共', questionsData.value.length, '道题目')
     
   } catch (error) {
-    console.warn('从API获取问卷题目失败，使用本地题目:', error)
-    uni.hideLoading()
+    console.error('初始化失败:', error)
     
-    // API失败时显示提示，但仍然使用本地题目
     uni.showToast({
-      title: '网络连接不稳定，使用离线题目',
-      icon: 'none',
-      duration: 2000
+      title: '初始化失败，请重试',
+      icon: 'none'
     })
+  } finally {
+    uni.hideLoading()
   }
 })
 </script>

@@ -44,16 +44,16 @@
 			}
 		},
 		{
-			"path": "pages/questionnaire-result/questionnaire-result",
+			"path": "pages/map/map",
 			"style": {
-				"navigationBarTitleText": "测试结果",
+				"navigationBarTitleText": "成长地图",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "pages/map/map",
+			"path": "pages/questionnaire-result/questionnaire-result",
 			"style": {
-				"navigationBarTitleText": "成长地图",
+				"navigationBarTitleText": "个性化报告",
 				"navigationStyle": "custom"
 			}
 		}
