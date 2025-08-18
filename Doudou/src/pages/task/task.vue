@@ -268,28 +268,28 @@ export default {
     const data = reactive({
       pendingTasks: {
         skillLearning: [
-          { id: 1, title: '学习Figma变量知识', description: '掌握Figma设计系统中的变量使用方法', date: '2021.5.21', status: 'pending', isExpanded: true },
-          { id: 2, title: '完成UI组件库设计', description: '设计一套完整的UI组件库', date: '2021.5.22', status: 'pending', isExpanded: true }
+          { id: 1, title: '学习Figma变量知识', description: '掌握Figma设计系统中的变量使用方法', date: '2025.8.18', status: 'pending', isExpanded: true },
+          { id: 2, title: '完成UI组件库设计', description: '设计一套完整的UI组件库', date: '2025.8.15', status: 'pending', isExpanded: true }
         ],
         emotionManagement: [
-          { id: 3, title: '写交互学习日记', description: '花10分钟记录今天的学习心得', date: '2021.5.21', status: 'pending', isExpanded: false },
-          { id: 4, title: '情绪调节练习', description: '进行15分钟的正念冥想', date: '2021.5.22', status: 'pending', isExpanded: false }
+          { id: 3, title: '写交互学习日记', description: '花10分钟记录今天的学习心得', date: '2025.8.13', status: 'pending', isExpanded: false },
+          { id: 4, title: '情绪调节练习', description: '进行15分钟的正念冥想', date: '2025.8.14', status: 'pending', isExpanded: false }
         ],
         efficiencyImprovement: [
-          { id: 5, title: '建立Trello看板', description: '用Trello建立作品集制作看板', date: '2021.5.21', status: 'pending', isExpanded: false },
-          { id: 6, title: '时间管理优化', description: '制定每日时间分配计划', date: '2021.5.22', status: 'pending', isExpanded: false }
+          { id: 5, title: '建立Trello看板', description: '用Trello建立作品集制作看板', date: '2025.8.18', status: 'pending', isExpanded: false },
+          { id: 6, title: '时间管理优化', description: '制定每日时间分配计划', date: '2025.8.16', status: 'pending', isExpanded: false }
         ]
       },
       completedTasks: {
         skillLearning: [
-          { id: 7, title: '完成UI设计稿', description: '完成了一套完整的UI设计稿', date: '2021.5.20', status: 'completed' },
-          { id: 8, title: '学习React基础', description: '掌握了React的基本概念和用法', date: '2021.5.19', status: 'completed' }
+          { id: 7, title: '完成UI设计稿', description: '完成了一套完整的UI设计稿', date: '2025.8.15', status: 'completed' },
+          { id: 8, title: '学习React基础', description: '掌握了React的基本概念和用法', date: '2025.8.12', status: 'completed' }
         ],
         emotionManagement: [
-          { id: 9, title: '情绪调节练习', description: '完成了15分钟的正念冥想练习', date: '2021.5.18', status: 'completed' }
+          { id: 9, title: '情绪调节练习', description: '完成了15分钟的正念冥想练习', date: '2025.8.12', status: 'completed' }
         ],
         efficiencyImprovement: [
-          { id: 10, title: '完成项目文档', description: '编写了完整的项目开发文档', date: '2021.5.17', status: 'completed' }
+          { id: 10, title: '完成项目文档', description: '编写了完整的项目开发文档', date: '2025.8.18', status: 'completed' }
         ]
       }
     })

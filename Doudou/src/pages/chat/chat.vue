@@ -8,14 +8,14 @@
       <view class="goal-content">
         <view class="goal-info">
           <text class="goal-label">目标</text>
-          <text class="goal-title">成功跑路上岸</text>
-          <text class="goal-days">155天</text>
+          <text class="goal-title">15天完成新人Landing</text>
+          <text class="goal-days">10天</text>
           <text class="goal-subtitle">已坚持天数</text>
         </view>
         <view class="goal-avatar">
           <image 
             class="avatar-img"
-            src="@/static/DouDou比心.png"
+            src="/static/DouDou比心.png"
             mode="aspectFit"
           />
           <!-- 返回按钮 -->
@@ -66,7 +66,7 @@
           <view class="message-avatar">
             <image 
               class="avatar-small"
-              src="@/static/QA/火苗.png"
+              src="/static/QA/火苗.png"
               mode="aspectFit"
             />
           </view>
@@ -90,7 +90,7 @@
         <view class="message-avatar">
           <image 
             class="avatar-small"
-            src="@/static/QA/火苗.png"
+            src="/static/QA/火苗.png"
             mode="aspectFit"
           />
         </view>
@@ -110,7 +110,7 @@
         <view class="input-avatar">
           <image 
             class="doudou-avatar"
-            src="@/static/QA/火苗.png"
+            src="/static/QA/火苗.png"
             mode="aspectFit"
           />
         </view>
@@ -326,40 +326,24 @@ const getAIResponse = async (userMessage) => {
         content: msg.content
       }))
     
-    // 优先使用后端API的AI聊天服务
+    // 直接调用大模型接口
     try {
-      const response = await apiService.chatWithAI(userMessage, conversationHistory)
-      if (response.data && response.data.reply) {
-        return response.data.reply
-      }
-    } catch (apiError) {
-      console.warn('后端AI服务调用失败，使用本地AI服务:', apiError)
+      const response = await aiService.chatWithAI(userMessage, conversationHistory, {
+        maxTokens: 150, // 限制token数量，确保回复简洁
+        temperature: 0.7
+      })
       
-      // 备用方案：使用本地AI服务
-      try {
-        // 重新构建完整的对话历史供本地AI使用
-        const fullHistory = messages.value
-          .filter(msg => msg.type !== 'report')
-          .map(msg => ({
-            role: msg.isUser ? 'user' : 'assistant',
-            content: msg.content
-          }))
-        
-        // 添加当前用户消息
-        fullHistory.push({
-          role: 'user',
-          content: userMessage
-        })
-        
-        const localResponse = await aiService.callAIAPI(buildChatPrompt(fullHistory))
-        return localResponse || '我正在思考中...请稍等一下~'
-      } catch (localError) {
-        console.error('本地AI服务也调用失败:', localError)
-        throw localError
+      // 限制回复长度不超过50字
+      if (response && response.length > 50) {
+        return response.substring(0, 50) + '...'
       }
+      
+      return response || '我正在思考中...请稍等一下~'
+      
+    } catch (apiError) {
+      console.error('AI服务调用失败:', apiError)
+      throw apiError
     }
-    
-    return '我正在思考中...请稍等一下~'
     
   } catch (error) {
     console.error('AI服务调用失败:', error)
@@ -449,7 +433,7 @@ const goBack = () => {
 .chat-container {
   width: 100vw;
   height: 100vh;
-  background-image: url('@/static/chat.png');
+  background-image: url('/static/chat.png');
   background-size: contain;
   background-position: center bottom;
   background-repeat: no-repeat;

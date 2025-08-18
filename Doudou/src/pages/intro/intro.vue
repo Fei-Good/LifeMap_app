@@ -5,7 +5,7 @@
       <view class="doudou-avatar">
         <image 
           class="avatar-image"
-          src="@/static/QA/火苗.png"
+          src="/static/QA/火苗.png"
           mode="aspectFit"
         />
       </view>
@@ -37,7 +37,7 @@
       <view class="doudou-container" @click="handleDouDouClick">
         <image 
           class="doudou-character"
-          src="@/static/QA/2_matting.gif"
+          src="/static/QA/2_matting.gif"
           mode="aspectFit"
         />
       </view>
@@ -154,7 +154,7 @@ const goToQuestionnaire = () => {
 .intro-container {
   width: 100vw;
   height: 100vh;
-  background: url('@/static/QA/聊天背景.jpg') no-repeat center center;
+  background: url('/static/QA/聊天背景.jpg') no-repeat center center;
   background-size: cover;
   display: flex;
   flex-direction: column;

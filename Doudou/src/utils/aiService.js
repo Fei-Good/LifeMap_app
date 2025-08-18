@@ -358,9 +358,10 @@ ${answerSummary}
   /**
    * 调用AI API
    * @param {string} prompt 提示词
+   * @param {Object} options 配置选项
    * @returns {Promise<string>} AI响应内容
    */
-  async callAIAPI(prompt) {
+  async callAIAPI(prompt, options = {}) {
     try {
       const response = await fetch(`${this.apiConfig.baseUrl}/chat/completions`, {
         method: 'POST',
@@ -376,8 +377,8 @@ ${answerSummary}
               content: prompt
             }
           ],
-          max_tokens: 1500,
-          temperature: 0.7
+          max_tokens: options.max_tokens || 1500,
+          temperature: options.temperature || 0.7
         })
       })
       
@@ -705,6 +706,145 @@ ${answerSummary}
     } catch (error) {
       console.error('解析流式响应失败:', error)
       throw error
+    }
+  }
+
+  /**
+   * 调用AI API进行聊天对话
+   * @param {string} userMessage 用户消息
+   * @param {Array} conversationHistory 对话历史
+   * @param {Object} options 配置选项
+   * @returns {Promise<string>} AI回复内容
+   */
+  async chatWithAI(userMessage, conversationHistory = [], options = {}) {
+    try {
+      // 构建聊天提示词
+      const prompt = this.buildChatPrompt(userMessage, conversationHistory, options)
+      
+      // 调用AI API
+      const response = await this.callAIAPI(prompt, {
+        max_tokens: options.maxTokens || 150, // 限制token数量，确保回复简洁
+        temperature: options.temperature || 0.7,
+        stream: options.stream || false
+      })
+      
+      return response
+      
+    } catch (error) {
+      console.error('AI聊天失败:', error)
+      // 返回友好的错误回复
+      return this.getFriendlyFallbackResponse(userMessage)
+    }
+  }
+
+  /**
+   * 构建聊天提示词
+   * @param {string} userMessage 用户消息
+   * @param {Array} conversationHistory 对话历史
+   * @param {Object} options 配置选项
+   * @returns {string} 构建好的提示词
+   */
+  buildChatPrompt(userMessage, conversationHistory = [], options = {}) {
+    const systemPrompt = `你是DouDou，一个温暖、友善、专业的AI助手。你的任务是：
+1. 以温暖友好的语调与用户对话
+2. 根据用户的问题提供有用的建议和帮助
+3. 如果用户需要帮助提高效率、解决问题或获得咨询，请积极提供支持
+4. 保持积极正面的态度，适时给予鼓励
+5. 回复要简洁明了，不要过长
+
+重要：回答要简洁，不超过50字`
+
+    // 构建对话历史上下文
+    let contextPrompt = ''
+    if (conversationHistory.length > 0) {
+      // 只取最近6条消息作为上下文，避免token过多
+      const recentHistory = conversationHistory.slice(-6)
+      contextPrompt = '\n\n对话历史：\n' + recentHistory.map(msg => 
+        `${msg.role === 'user' ? '用户' : 'DouDou'}: ${msg.content}`
+      ).join('\n')
+    }
+
+    // 构建完整提示词
+    const fullPrompt = `${systemPrompt}${contextPrompt}
+
+用户当前消息：${userMessage}
+
+请作为DouDou回复，要求：
+1. 回复要自然友好，符合DouDou的人设
+2. 内容要具体实用，避免空泛的回答
+3. 如果用户需要帮助，要积极提供支持
+4. 回复长度严格控制，不超过50字
+5. 适当使用emoji表情增加亲和力
+
+DouDou的回复：`
+
+    return fullPrompt
+  }
+
+  /**
+   * 获取友好的兜底回复
+   * @param {string} userMessage 用户消息
+   * @returns {string} 兜底回复内容
+   */
+  getFriendlyFallbackResponse(userMessage) {
+    const fallbackResponses = [
+      '抱歉，我现在有点忙，请稍后再试一下~ 😅',
+      '网络有点卡，让我重新连接一下，请稍等~ 🌐',
+      '我这边遇到了一点小问题，但我会尽快恢复的！ 💪',
+      '技术故障，正在修复中，请耐心等待一下~ 🔧',
+      '系统维护中，我马上就能继续为你服务了！ ⚡'
+    ]
+    
+    // 根据用户消息内容选择合适的兜底回复
+    if (userMessage.includes('你好') || userMessage.includes('hi') || userMessage.includes('hello')) {
+      return '你好！我是DouDou，很高兴见到你！虽然现在有点小问题，但我很快就能继续为你服务了~ 😊'
+    }
+    
+    if (userMessage.includes('帮助') || userMessage.includes('问题') || userMessage.includes('怎么办')) {
+      return '我理解你的困扰，虽然现在暂时无法详细回复，但请相信问题总有解决的办法。稍后我会继续为你提供帮助！ 💪'
+    }
+    
+    // 随机选择一个兜底回复
+    const randomIndex = Math.floor(Math.random() * fallbackResponses.length)
+    return fallbackResponses[randomIndex]
+  }
+
+  /**
+   * 流式聊天（支持实时显示）
+   * @param {string} userMessage 用户消息
+   * @param {Array} conversationHistory 对话历史
+   * @param {Function} onProgress 进度回调
+   * @param {Object} options 配置选项
+   * @returns {Promise<string>} 完整回复
+   */
+  async chatWithAIStream(userMessage, conversationHistory = [], onProgress, options = {}) {
+    try {
+      const prompt = this.buildChatPrompt(userMessage, conversationHistory, options)
+      
+      if (options.stream) {
+        // 调用流式API
+        return await this.callStreamAPI(prompt, onProgress)
+      } else {
+        // 调用普通API
+        const response = await this.callAIAPI(prompt, options)
+        
+        // 模拟流式效果
+        if (onProgress) {
+          await this.simulateStreamProgress(response, onProgress)
+        }
+        
+        return response
+      }
+      
+    } catch (error) {
+      console.error('流式AI聊天失败:', error)
+      const fallbackResponse = this.getFriendlyFallbackResponse(userMessage)
+      
+      if (onProgress) {
+        await this.simulateStreamProgress(fallbackResponse, onProgress)
+      }
+      
+      return fallbackResponse
     }
   }
 }

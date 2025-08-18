@@ -14,7 +14,7 @@
     <!-- 用户信息 -->
     <view class="user-info">
       <view class="avatar-section">
-        <image class="user-avatar" src="/static/logo.png" mode="aspectFit" />
+        <image class="user-avatar" src="/static/login/DouDou_主形象.png" mode="aspectFit" />
       </view>
       <view class="info-section">
         <view class="info-item">

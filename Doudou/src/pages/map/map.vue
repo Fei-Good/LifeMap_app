@@ -27,7 +27,7 @@
           class="nav-button task-button" 
           @click="goToTaskPage"
         >
-          <span class="nav-icon">📋</span>
+          <span class="nav-icon">📋任务系统</span>
           <span class="nav-text">待办任务</span>
         </button>
         
@@ -38,7 +38,7 @@
           :disabled="false"
         >
           <span class="nav-text">{{ currentPage === totalPages ? '开始聊天' : '下一页' }}</span>
-          <span class="nav-icon">{{ currentPage === totalPages ? '💬' : '›' }}</span>
+          <span class="nav-icon">{{ currentPage === totalPages ? '💬DouDou聊天' : '›' }}</span>
         </button>
       </div>
     </div>

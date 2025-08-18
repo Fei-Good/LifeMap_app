@@ -5,7 +5,7 @@
       <view class="doudou-avatar">
         <image 
           class="avatar-image"
-          src="@/static/QA/火苗.png"
+          src="/static/QA/火苗.png"
           mode="aspectFit"
         />
       </view>
@@ -370,7 +370,7 @@ onMounted(async () => {
 .questionnaire-container {
   width: 100vw;
   height: 100vh;
-  background: url('@/static/QA/聊天背景.jpg') no-repeat center center;
+  background: url('/static/QA/聊天背景.jpg') no-repeat center center;
   background-size: cover;
   display: flex;
   flex-direction: column;
