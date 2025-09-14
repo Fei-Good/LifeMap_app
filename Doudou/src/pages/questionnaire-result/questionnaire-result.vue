@@ -5,7 +5,7 @@
       <view class="thank-you-header">
         <image 
           class="doudou-character"
-          src="/static/login/DouDou_主形象.png"
+          src="@/static/login/DouDou_主形象.png"
           mode="aspectFit"
         />
         <text class="thank-title">感谢你帮助DouDou</text>
@@ -20,7 +20,7 @@
         <view class="loading-animation">
           <image 
             class="loading-gif"
-            src="/static/QA/火苗.png"
+            src="@/static/QA/火苗.png"
             mode="aspectFit"
           />
           <text class="loading-text">DouDou正在为你生成专属报告...</text>
@@ -39,7 +39,7 @@
             <text class="comfort-text">{{ displayText.emotionalSupport }}</text>
             <image 
               class="doudou-corner"
-              src="/static/DouDou比心.png"
+              src="@/static/DouDou比心.png"
               mode="aspectFit"
             />
           </view>
@@ -96,7 +96,7 @@
           <view class="section-header">
             <image 
               class="doudou-goals"
-              src="/static/DouDou比心.png"
+              src="@/static/DouDou比心.png"
               mode="aspectFit"
             />
             <view class="goals-title">

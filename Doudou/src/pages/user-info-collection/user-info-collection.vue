@@ -5,7 +5,7 @@
       <view class="doudou-avatar">
         <image 
           class="avatar-image"
-          src="/static/QA/火苗.png"
+          src="@/static/QA/火苗.png"
           mode="aspectFit"
         />
       </view>
@@ -16,7 +16,7 @@
         <view class="progress-bar">
           <view 
             class="progress-fill" 
-            :style="{ width: progressPercentage + '%' }"
+            :style="{ width: getProgressPercentage() + '%' }"
           ></view>
         </view>
       </view>
@@ -29,7 +29,7 @@
       <view class="question-container">
         <view class="question-box">
           <view class="question-header">
-            <text class="question-label">( ˃̣̣̥o˂̣̣̥ ) 帮帮DouDou( ˃̣̣̥o˂̣̣̥ ) </text>
+            <text class="question-label">🥹🥹帮帮DouDou🥹🥹( ˃̣̣̥o˂̣̣̥ ) </text>
           </view>
           <view class="question-content">
             <text class="question-text">{{ currentQuestion.question }}</text>
@@ -100,7 +100,7 @@ const selectedOption = ref(-1)
 const subjectiveAnswer = ref('')
 const userAnswers = ref([])
 
-// 问卷数据
+// 问卷数据,先基于模拟数据，后续接入问题数据库（需要花大量时间进行数据清洗）影响因子，权重设计
 const questionsData = ref([
   {
     id: 1,//新人Landing期
@@ -172,6 +172,11 @@ const totalQuestions = computed(() => questionsData.value.length)
 const progressPercentage = computed(() => {
   return ((currentQuestionIndex.value + 1) / totalQuestions.value) * 100
 })
+
+// 添加一个方法来获取进度百分比，避免模板中的警告
+const getProgressPercentage = () => {
+  return ((currentQuestionIndex.value + 1) / totalQuestions.value) * 100
+}
 
 const currentQuestion = computed(() => {
   return questionsData.value[currentQuestionIndex.value] || {}
@@ -370,7 +375,7 @@ onMounted(async () => {
 .questionnaire-container {
   width: 100vw;
   height: 100vh;
-  background: url('/static/QA/聊天背景.jpg') no-repeat center center;
+  background: url('@/static/QA/聊天背景.jpg') no-repeat center center;
   background-size: cover;
   display: flex;
   flex-direction: column;

@@ -5,7 +5,7 @@
       <view class="doudou-avatar">
         <image 
           class="avatar-image"
-          src="/static/QA/火苗.png"
+          src="@/static/QA/火苗.png"
           mode="aspectFit"
         />
       </view>
@@ -65,6 +65,9 @@ import userService from '@/utils/userService'
 
 // 控制底部气泡显示
 const showBottomBubble = ref(false)
+
+// DouDou心情指数进度百分比
+const progressPercentage = ref(30) // 默认30%，可以根据实际需求调整
 
 // 页面加载时判断用户类型
 onMounted(() => {
@@ -154,7 +157,7 @@ const goToQuestionnaire = () => {
 .intro-container {
   width: 100vw;
   height: 100vh;
-  background: url('/static/QA/聊天背景.jpg') no-repeat center center;
+  background: url('@/static/QA/聊天背景.jpg') no-repeat center center;
   background-size: cover;
   display: flex;
   flex-direction: column;

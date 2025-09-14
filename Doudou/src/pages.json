@@ -56,6 +56,41 @@
 				"navigationBarTitleText": "个性化报告",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/crit/crit",
+			"style": {
+				"navigationBarTitleText": "疯狂暴击DouDou",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/game/game",
+			"style": {
+				"navigationBarTitleText": "Cocos游戏",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/game-center/game-center",
+			"style": {
+				"navigationBarTitleText": "游戏中心",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/hexagon-map/hexagon-map",
+			"style": {
+				"navigationBarTitleText": "成长地图",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/knowledge/knowledge",
+			"style": {
+				"navigationBarTitleText": "复盘知识库",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {

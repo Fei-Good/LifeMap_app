@@ -7,7 +7,7 @@ import apiService from './apiService'
 
 class AIService {
   constructor() {
-    // 配置豆包AI服务
+    // 配置豆包AI服务，私有仓库工程开发，API密钥不会暴露
     this.apiConfig = {
       baseUrl: 'https://ark.cn-beijing.volces.com/api/v3', // 豆包API地址
       apiKey: 'a4063a05-841a-4a52-8916-70ffc92d7f06', // API密钥
@@ -745,40 +745,35 @@ ${answerSummary}
    * @returns {string} 构建好的提示词
    */
   buildChatPrompt(userMessage, conversationHistory = [], options = {}) {
-    const systemPrompt = `你是DouDou，一个温暖、友善、专业的AI助手。你的任务是：
-1. 以温暖友好的语调与用户对话
-2. 根据用户的问题提供有用的建议和帮助
-3. 如果用户需要帮助提高效率、解决问题或获得咨询，请积极提供支持
-4. 保持积极正面的态度，适时给予鼓励
-5. 回复要简洁明了，不要过长
+    const systemPrompt = `你是DouDou，一个温暖、友善、专业的AI助手。
 
-重要：回答要简洁，不超过50字`
+你的核心能力：
+• 提供温暖贴心的情感支持和建议
+• 帮助用户解决工作、学习、生活中的问题
+• 给予积极正面的鼓励和指导
+• 用简洁明了的方式回答问题
+
+回答要求：
+• 语调温暖友好，像朋友一样交流
+• 回答简洁实用，控制在150字以内
+• 根据用户需求提供具体可行的建议
+• 保持积极正面的态度
+• 回答必须控制在100字以内
+
+请根据用户的问题，用温暖简洁的方式给予帮助。`
 
     // 构建对话历史上下文
     let contextPrompt = ''
     if (conversationHistory.length > 0) {
-      // 只取最近6条消息作为上下文，避免token过多
-      const recentHistory = conversationHistory.slice(-6)
-      contextPrompt = '\n\n对话历史：\n' + recentHistory.map(msg => 
+      // 只取最近4条消息作为上下文，保持简洁
+      const recentHistory = conversationHistory.slice(-4)
+      contextPrompt = '\n\n对话上下文：\n' + recentHistory.map(msg => 
         `${msg.role === 'user' ? '用户' : 'DouDou'}: ${msg.content}`
       ).join('\n')
     }
 
     // 构建完整提示词
-    const fullPrompt = `${systemPrompt}${contextPrompt}
-
-用户当前消息：${userMessage}
-
-请作为DouDou回复，要求：
-1. 回复要自然友好，符合DouDou的人设
-2. 内容要具体实用，避免空泛的回答
-3. 如果用户需要帮助，要积极提供支持
-4. 回复长度严格控制，不超过50字
-5. 适当使用emoji表情增加亲和力
-
-DouDou的回复：`
-
-    return fullPrompt
+    return `${systemPrompt}${contextPrompt}\n\n用户消息：${userMessage}`
   }
 
   /**
@@ -846,6 +841,233 @@ DouDou的回复：`
       
       return fallbackResponse
     }
+  }
+
+  /**
+   * 知识库总结相关方法
+   * 用于对收藏的对话进行深度分析和总结
+   */
+
+  /**
+   * 对收藏的对话进行AI总结分析
+   * @param {Array} selectedChats 选中的对话列表
+   * @param {Object} options 配置选项
+   * @returns {Promise<Object>} 总结结果
+   */
+  async summarizeChatsForKnowledge(selectedChats, options = {}) {
+    try {
+      // 构建知识库总结提示词
+      const prompt = this.buildKnowledgeSummaryPrompt(selectedChats, options)
+      
+      // 调用AI API进行总结
+      const response = await this.callAIAPI(prompt, {
+        max_tokens: options.maxTokens || 500,
+        temperature: options.temperature || 0.3, // 降低温度，使总结更稳定
+        ...options
+      })
+      
+      // 解析AI响应
+      return this.parseKnowledgeSummaryResponse(response, selectedChats)
+      
+    } catch (error) {
+      console.error('知识库总结失败:', error)
+      // 返回默认总结
+      return this.getDefaultKnowledgeSummary(selectedChats)
+    }
+  }
+
+  /**
+   * 构建知识库总结提示词
+   * @param {Array} selectedChats 选中的对话列表
+   * @param {Object} options 配置选项
+   * @returns {string} 构建好的提示词
+   */
+  buildKnowledgeSummaryPrompt(selectedChats, options = {}) {
+    const systemPrompt = `你是一个专业的对话分析师，专门负责对用户与AI助手的对话进行深度总结和分析。
+
+你的任务是：
+1. 分析对话内容，提取关键信息和洞察
+2. 识别用户的关注点、需求和问题模式
+3. 总结对话中的核心观点和建议
+4. 提供可执行的行动建议
+5. 生成有意义的标签分类
+
+分析要求：
+• 深度理解对话的上下文和背景
+• 提取用户的情感状态和需求变化
+• 识别重复出现的主题和模式
+• 总结AI建议的有效性和实用性
+• 提供个性化的改进建议
+
+请以专业、客观、温暖的态度进行分析，帮助用户更好地理解自己的对话模式和成长方向。`
+
+    // 构建对话内容
+    let conversationContent = ''
+    selectedChats.forEach((chat, index) => {
+      conversationContent += `\n\n=== 对话 ${index + 1} ===\n`
+      conversationContent += `时间：${new Date(chat.timestamp).toLocaleString()}\n`
+      conversationContent += `标题：${chat.title}\n`
+      conversationContent += `内容：\n`
+      
+      if (chat.messages && chat.messages.length > 0) {
+        chat.messages.forEach(msg => {
+          conversationContent += `${msg.isUser ? '用户' : 'AI'}: ${msg.content}\n`
+        })
+      } else {
+        conversationContent += chat.content || '无具体内容\n'
+      }
+    })
+
+    // 构建完整提示词
+    const fullPrompt = `${systemPrompt}
+
+请分析以下对话内容，并提供详细的总结报告：
+
+${conversationContent}
+
+请按照以下格式返回JSON格式的分析结果：
+{
+  "title": "总结标题（简洁有力）",
+  "summary": "核心总结（200-300字）",
+  "insights": ["关键洞察1", "关键洞察2", "关键洞察3"],
+  "actionableAdvice": ["可执行建议1", "可执行建议2", "可执行建议3"],
+  "tags": ["标签1", "标签2", "标签3"],
+  "emotionalPattern": "情感模式分析",
+  "growthAreas": ["成长领域1", "成长领域2"],
+  "analysisType": "ai_analysis"
+}
+
+要求：
+1. 总结要深入且有价值，不是简单的重复
+2. 洞察要具体且可操作
+3. 建议要个性化且实用
+4. 标签要准确反映对话主题
+5. 情感模式要客观分析用户的状态变化`
+
+    return fullPrompt
+  }
+
+  /**
+   * 解析知识库总结响应
+   * @param {string} response AI响应内容
+   * @param {Array} selectedChats 原始对话数据
+   * @returns {Object} 解析后的总结对象
+   */
+  parseKnowledgeSummaryResponse(response, selectedChats) {
+    try {
+      // 尝试解析JSON响应
+      const summaryData = JSON.parse(response)
+      
+      return {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        title: summaryData.title || '对话总结',
+        summary: summaryData.summary || '暂无总结内容',
+        insights: summaryData.insights || [],
+        actionableAdvice: summaryData.actionableAdvice || [],
+        tags: summaryData.tags || [],
+        emotionalPattern: summaryData.emotionalPattern || '',
+        growthAreas: summaryData.growthAreas || [],
+        analysisType: summaryData.analysisType || 'ai_analysis',
+        chatCount: selectedChats.length,
+        chats: selectedChats.map(chat => ({
+          id: chat.chatId || chat.id,
+          title: chat.title,
+          timestamp: chat.timestamp
+        })),
+        createdTime: Date.now(),
+        needsAIAnalysis: false // 已完成AI分析
+      }
+    } catch (error) {
+      console.error('解析AI总结响应失败:', error)
+      // 返回基于原始响应的简单总结
+      return this.getDefaultKnowledgeSummary(selectedChats, response)
+    }
+  }
+
+  /**
+   * 获取默认的知识库总结
+   * @param {Array} selectedChats 选中的对话列表
+   * @param {string} rawResponse 原始AI响应（可选）
+   * @returns {Object} 默认总结对象
+   */
+  getDefaultKnowledgeSummary(selectedChats, rawResponse = '') {
+    const totalChats = selectedChats.length
+    const timeRange = this.calculateTimeRange(selectedChats)
+    
+    return {
+      id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+      title: `对话复盘 - ${timeRange}`,
+      summary: rawResponse || `基于${totalChats}个对话的复盘总结。这些对话记录了你的思考过程、问题解决方式和成长轨迹。通过回顾这些对话，我们可以看到你在不同话题上的关注点和思考模式。`,
+      insights: [
+        '对话记录已保存',
+        '可在知识库中进行进一步分析',
+        '支持持续的学习和反思'
+      ],
+      actionableAdvice: [
+        '定期回顾对话内容，发现自己的思考模式',
+        '关注重复出现的问题，寻找根本解决方案',
+        '将AI建议应用到实际生活中'
+      ],
+      tags: this.extractBasicTags(selectedChats),
+      emotionalPattern: '需要进一步分析',
+      growthAreas: ['持续学习', '实践应用'],
+      analysisType: 'basic_summary',
+      chatCount: totalChats,
+      chats: selectedChats.map(chat => ({
+        id: chat.chatId || chat.id,
+        title: chat.title,
+        timestamp: chat.timestamp
+      })),
+      createdTime: Date.now(),
+      needsAIAnalysis: true // 标记需要进一步AI分析
+    }
+  }
+
+  /**
+   * 计算对话时间范围
+   * @param {Array} chats 对话列表
+   * @returns {string} 时间范围描述
+   */
+  calculateTimeRange(chats) {
+    if (chats.length === 0) return '未知时间'
+    
+    const timestamps = chats.map(chat => chat.timestamp).filter(t => t)
+    if (timestamps.length === 0) return '未知时间'
+    
+    const minTime = Math.min(...timestamps)
+    const maxTime = Math.max(...timestamps)
+    const minDate = new Date(minTime)
+    const maxDate = new Date(maxTime)
+    
+    if (minDate.toDateString() === maxDate.toDateString()) {
+      return minDate.toLocaleDateString()
+    } else {
+      return `${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()}`
+    }
+  }
+
+  /**
+   * 提取基础标签
+   * @param {Array} chats 对话列表
+   * @returns {Array} 标签列表
+   */
+  extractBasicTags(chats) {
+    const commonTags = ['工作', '学习', '情绪', '效率', '沟通', '技能', '生活', '成长']
+    const tags = []
+    
+    chats.forEach(chat => {
+      const content = (chat.messages && chat.messages.length > 0) 
+        ? chat.messages.map(msg => msg.content).join(' ')
+        : (chat.content || chat.title || '')
+      
+      commonTags.forEach(tag => {
+        if (content.includes(tag) && !tags.includes(tag)) {
+          tags.push(tag)
+        }
+      })
+    })
+    
+    return tags.slice(0, 5) // 最多5个标签
   }
 }
 

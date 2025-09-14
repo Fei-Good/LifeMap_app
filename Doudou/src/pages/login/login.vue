@@ -12,22 +12,50 @@
         
         <!-- 账号输入框 -->
         <div class="input-wrapper">
-          <input 
-            v-model="formData.account" 
-            type="text" 
-            placeholder="请输入账号" 
-            class="input-field"
-          />
+          <div class="input-container">
+            <input 
+              v-model="formData.account" 
+              type="text" 
+              placeholder="请输入账号（4-20位字母/数字）" 
+              class="input-field"
+              @input="validateAccount"
+              @blur="showAccountError = false"
+              @focus="showAccountError = true"
+            />
+            <div class="input-icon" v-if="accountValidation.isValid && formData.account">
+              <text class="icon-check">✓</text>
+            </div>
+          </div>
+          <div class="validation-message" v-if="showAccountError && formData.account && !accountValidation.isValid">
+            <text class="error-text">{{ accountValidation.message }}</text>
+          </div>
         </div>
         
         <!-- 密码输入框 -->
         <div class="input-wrapper">
-          <input 
-            v-model="formData.password" 
-            type="password" 
-            placeholder="请输入密码" 
-            class="input-field"
-          />
+          <div class="input-container">
+            <input 
+              v-model="formData.password" 
+              :type="showPassword ? 'text' : 'password'" 
+              placeholder="请输入密码（8-20位，含大小写）" 
+              class="input-field"
+              @input="validatePassword"
+              @blur="showPasswordError = false"
+              @focus="showPasswordError = true"
+            />
+            <div class="input-icon password-toggle" @click="togglePasswordVisibility">
+              <text class="icon-eye">{{ showPassword ? '👁️' : '👁️‍🗨️' }}</text>
+            </div>
+          </div>
+          <div class="validation-message" v-if="showPasswordError && formData.password && !passwordValidation.isValid">
+            <text class="error-text">{{ passwordValidation.message }}</text>
+          </div>
+          <div class="password-strength" v-if="formData.password && showPasswordError">
+            <div class="strength-bar">
+              <div class="strength-fill" :class="passwordStrength.level" :style="{ width: passwordStrength.width }"></div>
+            </div>
+            <text class="strength-text">{{ passwordStrength.text }}</text>
+          </div>
         </div>
         
         <!-- 忘记密码链接 -->
@@ -57,10 +85,143 @@
     password: ''
   })
   
+  // 密码可见性控制
+  const showPassword = ref(false)
+  
+  // 错误提示显示控制
+  const showAccountError = ref(false)
+  const showPasswordError = ref(false)
+  
+  // 账号验证
+  const accountValidation = reactive({
+    isValid: false,
+    message: ''
+  })
+  
+  // 密码验证
+  const passwordValidation = reactive({
+    isValid: false,
+    message: ''
+  })
+  
+  // 密码强度
+  const passwordStrength = reactive({
+    level: 'weak',
+    width: '0%',
+    text: ''
+  })
+  
   // 表单验证
   const isFormValid = computed(() => {
-    return formData.account.trim() && formData.password.trim()
+    return accountValidation.isValid && passwordValidation.isValid
   })
+
+  // 账号验证函数
+  const validateAccount = () => {
+    const account = formData.account.trim()
+    if (!account) {
+      accountValidation.isValid = false
+      accountValidation.message = ''
+      return
+    }
+    
+    if (account.length < 4) {
+      accountValidation.isValid = false
+      accountValidation.message = '账号长度至少4位'
+      return
+    }
+    
+    if (account.length > 20) {
+      accountValidation.isValid = false
+      accountValidation.message = '账号长度不能超过20位'
+      return
+    }
+    
+    const accountRegex = /^[a-zA-Z0-9]+$/
+    if (!accountRegex.test(account)) {
+      accountValidation.isValid = false
+      accountValidation.message = '账号只能包含字母和数字'
+      return
+    }
+    
+    accountValidation.isValid = true
+    accountValidation.message = ''
+  }
+
+  // 密码验证函数
+  const validatePassword = () => {
+    const password = formData.password
+    if (!password) {
+      passwordValidation.isValid = false
+      passwordValidation.message = ''
+      updatePasswordStrength(0)
+      return
+    }
+    
+    if (password.length < 8) {
+      passwordValidation.isValid = false
+      passwordValidation.message = '密码长度至少8位'
+      updatePasswordStrength(password.length / 8 * 20)
+      return
+    }
+    
+    if (password.length > 20) {
+      passwordValidation.isValid = false
+      passwordValidation.message = '密码长度不能超过20位'
+      updatePasswordStrength(100)
+      return
+    }
+    
+    // 检查密码复杂度
+    const hasLower = /[a-z]/.test(password)
+    const hasUpper = /[A-Z]/.test(password)
+    const hasNumber = /[0-9]/.test(password)
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+    
+    if (!hasLower || !hasUpper || !hasNumber || !hasSpecial) {
+      passwordValidation.isValid = false
+      passwordValidation.message = '密码必须包含大小写字母、数字和特殊符号'
+      updatePasswordStrength(calculatePasswordStrength(password))
+      return
+    }
+    
+    passwordValidation.isValid = true
+    passwordValidation.message = ''
+    updatePasswordStrength(100)
+  }
+
+  // 计算密码强度
+  const calculatePasswordStrength = (password) => {
+    let score = 0
+    if (password.length >= 8) score += 20
+    if (password.length >= 12) score += 20
+    if (/[a-z]/.test(password)) score += 20
+    if (/[A-Z]/.test(password)) score += 20
+    if (/[0-9]/.test(password)) score += 10
+    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 10
+    return Math.min(score, 100)
+  }
+
+  // 更新密码强度显示
+  const updatePasswordStrength = (strength) => {
+    passwordStrength.width = `${strength}%`
+    
+    if (strength < 30) {
+      passwordStrength.level = 'weak'
+      passwordStrength.text = '弱'
+    } else if (strength < 70) {
+      passwordStrength.level = 'medium'
+      passwordStrength.text = '中等'
+    } else {
+      passwordStrength.level = 'strong'
+      passwordStrength.text = '强'
+    }
+  }
+
+  // 切换密码可见性
+  const togglePasswordVisibility = () => {
+    showPassword.value = !showPassword.value
+  }
 
   // 格式化错误信息
   const formatErrorMessage = (error) => {
@@ -174,7 +335,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('/static/login/登录背景.jpg');
+    background-image: url('@/static/login/登录背景.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -239,6 +400,90 @@
     width: 100%;
     margin-bottom: 20px;
   }
+
+  .input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 3;
+  }
+
+  .icon-check {
+    color: #4CAF50;
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .icon-eye {
+    font-size: 16px;
+    color: #666;
+    transition: color 0.3s ease;
+  }
+
+  .password-toggle:hover .icon-eye {
+    color: #FF9500;
+  }
+
+  .validation-message {
+    margin-top: 5px;
+    padding-left: 5px;
+  }
+
+  .error-text {
+    color: #666;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .password-strength {
+    margin-top: 8px;
+    padding-left: 5px;
+  }
+
+  .strength-bar {
+    width: 100%;
+    height: 4px;
+    background-color: #E0E0E0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .strength-fill {
+    height: 100%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+  }
+
+  .strength-fill.weak {
+    background-color: #FF5722;
+  }
+
+  .strength-fill.medium {
+    background-color: #FF9800;
+  }
+
+  .strength-fill.strong {
+    background-color: #4CAF50;
+  }
+
+  .strength-text {
+    font-size: 11px;
+    color: #666;
+  }
   
   .forgot-password {
     width: 100%;
@@ -261,7 +506,7 @@
   .input-field {
     width: 100%;
     height: 50px;
-    padding: 0 20px;
+    padding: 0 50px 0 20px;
     border: none;
     border-radius: 25px;
     background-color: rgba(255, 255, 255, 0.9);

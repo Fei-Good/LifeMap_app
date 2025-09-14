@@ -12,42 +12,104 @@
       
       <!-- 用户名输入框 -->
       <div class="input-wrapper">
-        <input 
-          v-model="formData.username" 
-          type="text" 
-          placeholder="请输入用户名" 
-          class="input-field"
-        />
+        <div class="input-container">
+          <input 
+            v-model="formData.username" 
+            type="text" 
+            placeholder="请输入用户名（4-20位字母/数字）" 
+            class="input-field"
+            @input="validateUsername"
+            @blur="showUsernameError = false"
+            @focus="showUsernameError = true"
+          />
+          <div class="input-icon" v-if="usernameValidation.isValid && formData.username">
+            <text class="icon-check">✓</text>
+          </div>
+        </div>
+        <div class="validation-message" v-if="showUsernameError && formData.username && !usernameValidation.isValid">
+          <text class="error-text">{{ usernameValidation.message }}</text>
+        </div>
+        <div class="validation-message" v-if="showUsernameError && !formData.username">
+          <text class="hint-text">用户名支持字母、数字、汉字和下划线</text>
+        </div>
       </div>
       
       <!-- 邮箱输入框 -->
       <div class="input-wrapper">
-        <input 
-          v-model="formData.email" 
-          type="email" 
-          placeholder="请输入邮箱" 
-          class="input-field"
-        />
+        <div class="input-container">
+          <input 
+            v-model="formData.email" 
+            type="email" 
+            placeholder="请输入邮箱地址" 
+            class="input-field"
+            @input="validateEmail"
+            @blur="showEmailError = false"
+            @focus="showEmailError = true"
+          />
+          <div class="input-icon" v-if="emailValidation.isValid && formData.email">
+            <text class="icon-check">✓</text>
+          </div>
+        </div>
+        <div class="validation-message" v-if="showEmailError && formData.email && !emailValidation.isValid">
+          <text class="error-text">{{ emailValidation.message }}</text>
+        </div>
+        <div class="validation-message" v-if="showEmailError && !formData.email">
+          <text class="hint-text">请输入有效的邮箱地址，用于接收重要通知</text>
+        </div>
       </div>
       
       <!-- 密码输入框 -->
       <div class="input-wrapper">
-        <input 
-          v-model="formData.password" 
-          type="password" 
-          placeholder="请输入密码" 
-          class="input-field"
-        />
+        <div class="input-container">
+          <input 
+            v-model="formData.password" 
+            :type="showPassword ? 'text' : 'password'" 
+            placeholder="请输入密码（8-20位，含大小写）" 
+            class="input-field"
+            @input="validatePassword"
+            @blur="showPasswordError = false"
+            @focus="showPasswordError = true"
+          />
+          <div class="input-icon password-toggle" @click="togglePasswordVisibility">
+            <text class="icon-eye">{{ showPassword ? '👁️' : '👁️‍🗨️' }}</text>
+          </div>
+        </div>
+        <div class="validation-message" v-if="showPasswordError && formData.password && !passwordValidation.isValid">
+          <text class="error-text">{{ passwordValidation.message }}</text>
+        </div>
+        <div class="validation-message" v-if="showPasswordError && !formData.password">
+          <text class="hint-text">密码需包含大小写字母、数字和特殊符号</text>
+        </div>
+        <div class="password-strength" v-if="formData.password && showPasswordError">
+          <div class="strength-bar">
+            <div class="strength-fill" :class="passwordStrength.level" :style="{ width: passwordStrength.width }"></div>
+          </div>
+          <text class="strength-text">{{ passwordStrength.text }}</text>
+        </div>
       </div>
       
       <!-- 确认密码输入框 -->
       <div class="input-wrapper">
-        <input 
-          v-model="formData.confirmPassword" 
-          type="password" 
-          placeholder="请再次输入密码" 
-          class="input-field"
-        />
+        <div class="input-container">
+          <input 
+            v-model="formData.confirmPassword" 
+            :type="showConfirmPassword ? 'text' : 'password'" 
+            placeholder="请再次输入密码" 
+            class="input-field"
+            @input="validateConfirmPassword"
+            @blur="showConfirmPasswordError = false"
+            @focus="showConfirmPasswordError = true"
+          />
+          <div class="input-icon password-toggle" @click="toggleConfirmPasswordVisibility">
+            <text class="icon-eye">{{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}</text>
+          </div>
+        </div>
+        <div class="validation-message" v-if="showConfirmPasswordError && formData.confirmPassword && !confirmPasswordValidation.isValid">
+          <text class="error-text">{{ confirmPasswordValidation.message }}</text>
+        </div>
+        <div class="validation-message" v-if="showConfirmPasswordError && !formData.confirmPassword">
+          <text class="hint-text">请再次输入密码以确认</text>
+        </div>
       </div>
       
       <!-- 用户协议 -->
@@ -59,6 +121,9 @@
           <text class="agreement-text">我已阅读并同意</text>
           <text class="agreement-link" @click.stop="handleShowTerms">《用户协议》</text>
         </view>
+        <div class="validation-message" v-if="!formData.agreeToTerms && showAgreementError">
+          <text class="error-text">请阅读并同意用户协议</text>
+        </div>
       </div>
       
       <!-- 按钮组 -->
@@ -86,55 +151,259 @@ const formData = reactive({
   agreeToTerms: false
 })
 
-// 表单验证
-const isFormValid = computed(() => {
-  return formData.username.trim() && 
-         isValidUsername(formData.username) &&
-         formData.email.trim() && 
-         formData.password.trim() && 
-         formData.confirmPassword.trim() && 
-         formData.password === formData.confirmPassword &&
-         formData.agreeToTerms &&
-         isValidEmail(formData.email) &&
-         isValidPassword(formData.password)
+// 密码可见性控制
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+
+// 错误提示显示控制
+const showUsernameError = ref(false)
+const showEmailError = ref(false)
+const showPasswordError = ref(false)
+const showConfirmPasswordError = ref(false)
+const showAgreementError = ref(false)
+
+// 用户名验证
+const usernameValidation = reactive({
+  isValid: false,
+  message: ''
 })
 
-// 用户名格式验证（只能包含字母、数字、汉字和下划线）
-const isValidUsername = (username) => {
+// 邮箱验证
+const emailValidation = reactive({
+  isValid: false,
+  message: ''
+})
+
+// 密码验证
+const passwordValidation = reactive({
+  isValid: false,
+  message: ''
+})
+
+// 确认密码验证
+const confirmPasswordValidation = reactive({
+  isValid: false,
+  message: ''
+})
+
+// 密码强度
+const passwordStrength = reactive({
+  level: 'weak',
+  width: '0%',
+  text: ''
+})
+
+// 表单验证
+const isFormValid = computed(() => {
+  return usernameValidation.isValid &&
+         emailValidation.isValid &&
+         passwordValidation.isValid &&
+         confirmPasswordValidation.isValid &&
+         formData.agreeToTerms
+})
+
+// 用户名验证函数
+const validateUsername = () => {
+  const username = formData.username.trim()
+  if (!username) {
+    usernameValidation.isValid = false
+    usernameValidation.message = ''
+    return
+  }
+  
+  if (username.length < 4) {
+    usernameValidation.isValid = false
+    usernameValidation.message = '用户名长度至少4位'
+    return
+  }
+  
+  if (username.length > 20) {
+    usernameValidation.isValid = false
+    usernameValidation.message = '用户名长度不能超过20位'
+    return
+  }
+  
   const usernameRegex = /^[\u4e00-\u9fa5_a-zA-Z0-9]+$/
-  return usernameRegex.test(username)
+  if (!usernameRegex.test(username)) {
+    usernameValidation.isValid = false
+    usernameValidation.message = '用户名只能包含字母、数字、汉字和下划线'
+    return
+  }
+  
+  usernameValidation.isValid = true
+  usernameValidation.message = ''
 }
 
-// 邮箱格式验证
-const isValidEmail = (email) => {
+// 邮箱验证函数
+const validateEmail = () => {
+  const email = formData.email.trim()
+  if (!email) {
+    emailValidation.isValid = false
+    emailValidation.message = ''
+    return
+  }
+  
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
+  if (!emailRegex.test(email)) {
+    emailValidation.isValid = false
+    emailValidation.message = '请输入有效的邮箱地址'
+    return
+  }
+  
+  emailValidation.isValid = true
+  emailValidation.message = ''
 }
 
-// 密码强度验证（至少6位）
-const isValidPassword = (password) => {
-  return password.length >= 6
+// 密码验证函数
+const validatePassword = () => {
+  const password = formData.password
+  if (!password) {
+    passwordValidation.isValid = false
+    passwordValidation.message = ''
+    updatePasswordStrength(0)
+    return
+  }
+  
+  if (password.length < 8) {
+    passwordValidation.isValid = false
+    passwordValidation.message = '密码长度至少8位'
+    updatePasswordStrength(password.length / 8 * 20)
+    return
+  }
+  
+  if (password.length > 20) {
+    passwordValidation.isValid = false
+    passwordValidation.message = '密码长度不能超过20位'
+    updatePasswordStrength(100)
+    return
+  }
+  
+  // 检查密码复杂度
+  const hasLower = /[a-z]/.test(password)
+  const hasUpper = /[A-Z]/.test(password)
+  const hasNumber = /[0-9]/.test(password)
+  const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+  
+  if (!hasLower || !hasUpper || !hasNumber || !hasSpecial) {
+    passwordValidation.isValid = false
+    passwordValidation.message = '密码必须包含大小写字母、数字和特殊符号'
+    updatePasswordStrength(calculatePasswordStrength(password))
+    return
+  }
+  
+  passwordValidation.isValid = true
+  passwordValidation.message = ''
+  updatePasswordStrength(100)
+  
+  // 如果确认密码已填写，重新验证确认密码
+  if (formData.confirmPassword) {
+    validateConfirmPassword()
+  }
 }
+
+// 确认密码验证函数
+const validateConfirmPassword = () => {
+  const confirmPassword = formData.confirmPassword
+  if (!confirmPassword) {
+    confirmPasswordValidation.isValid = false
+    confirmPasswordValidation.message = ''
+    return
+  }
+  
+  if (confirmPassword !== formData.password) {
+    confirmPasswordValidation.isValid = false
+    confirmPasswordValidation.message = '两次密码输入不一致'
+    return
+  }
+  
+  confirmPasswordValidation.isValid = true
+  confirmPasswordValidation.message = ''
+}
+
+// 计算密码强度
+const calculatePasswordStrength = (password) => {
+  let score = 0
+  if (password.length >= 8) score += 20
+  if (password.length >= 12) score += 20
+  if (/[a-z]/.test(password)) score += 20
+  if (/[A-Z]/.test(password)) score += 20
+  if (/[0-9]/.test(password)) score += 10
+  if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 10
+  return Math.min(score, 100)
+}
+
+// 更新密码强度显示
+const updatePasswordStrength = (strength) => {
+  passwordStrength.width = `${strength}%`
+  
+  if (strength < 30) {
+    passwordStrength.level = 'weak'
+    passwordStrength.text = '弱'
+  } else if (strength < 70) {
+    passwordStrength.level = 'medium'
+    passwordStrength.text = '中等'
+  } else {
+    passwordStrength.level = 'strong'
+    passwordStrength.text = '强'
+  }
+}
+
+// 切换密码可见性
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value
+}
+
+// 切换确认密码可见性
+const toggleConfirmPasswordVisibility = () => {
+  showConfirmPassword.value = !showConfirmPassword.value
+}
+
+// 初始化验证状态
+const initializeValidation = () => {
+  // 如果表单已有数据，立即验证
+  if (formData.username.trim()) {
+    validateUsername()
+  }
+  if (formData.email.trim()) {
+    validateEmail()
+  }
+  if (formData.password.trim()) {
+    validatePassword()
+  }
+  if (formData.confirmPassword.trim()) {
+    validateConfirmPassword()
+  }
+}
+
+// 页面加载时初始化验证
+initializeValidation()
 
 // 注册处理
 const handleRegister = async () => {
   if (!isFormValid.value) {
-    if (!formData.username.trim()) {
-      uni.showToast({ title: '请输入用户名', icon: 'none' })
-    } else if (!isValidUsername(formData.username)) {
-      uni.showToast({ title: '用户名只能包含字母、数字、汉字和下划线', icon: 'none' })
-    } else if (!formData.email.trim()) {
-      uni.showToast({ title: '请输入邮箱', icon: 'none' })
-    } else if (!isValidEmail(formData.email)) {
-      uni.showToast({ title: '请输入有效的邮箱地址', icon: 'none' })
-    } else if (!formData.password.trim()) {
-      uni.showToast({ title: '请输入密码', icon: 'none' })
-    } else if (!isValidPassword(formData.password)) {
-      uni.showToast({ title: '密码长度至少6位', icon: 'none' })
-    } else if (formData.password !== formData.confirmPassword) {
-      uni.showToast({ title: '两次密码输入不一致', icon: 'none' })
+    // 使用新的验证系统显示具体错误信息
+    if (!usernameValidation.isValid && formData.username.trim()) {
+      uni.showToast({ title: usernameValidation.message, icon: 'none' })
+    } else if (!emailValidation.isValid && formData.email.trim()) {
+      uni.showToast({ title: emailValidation.message, icon: 'none' })
+    } else if (!passwordValidation.isValid && formData.password.trim()) {
+      uni.showToast({ title: passwordValidation.message, icon: 'none' })
+    } else if (!confirmPasswordValidation.isValid && formData.confirmPassword.trim()) {
+      uni.showToast({ title: confirmPasswordValidation.message, icon: 'none' })
     } else if (!formData.agreeToTerms) {
+      showAgreementError.value = true
       uni.showToast({ title: '请阅读并同意用户协议', icon: 'none' })
+    } else {
+      // 显示通用提示
+      if (!formData.username.trim()) {
+        uni.showToast({ title: '请输入用户名', icon: 'none' })
+      } else if (!formData.email.trim()) {
+        uni.showToast({ title: '请输入邮箱', icon: 'none' })
+      } else if (!formData.password.trim()) {
+        uni.showToast({ title: '请输入密码', icon: 'none' })
+      } else if (!formData.confirmPassword.trim()) {
+        uni.showToast({ title: '请确认密码', icon: 'none' })
+      }
     }
     return
   }
@@ -207,6 +476,9 @@ const handleBackToLogin = () => {
 // 切换协议同意状态
 const toggleAgreement = () => {
   formData.agreeToTerms = !formData.agreeToTerms
+  if (formData.agreeToTerms) {
+    showAgreementError.value = false
+  }
 }
 
 // 显示用户协议
@@ -221,6 +493,7 @@ const handleShowTerms = () => {
     success: (res) => {
       if (res.confirm) {
         formData.agreeToTerms = true
+        showAgreementError.value = false
         greetingText.value = '感谢你的信任！现在可以完成注册啦~ 🤝'
       }
       
@@ -247,7 +520,7 @@ const handleShowTerms = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/static/login/登录背景.jpg');
+  background-image: url('@/static/login/登录背景.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -313,10 +586,100 @@ const handleShowTerms = () => {
   margin-bottom: 15px;
 }
 
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+}
+
+.icon-check {
+  color: #4CAF50;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.icon-eye {
+  font-size: 16px;
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.password-toggle:hover .icon-eye {
+  color: #FF9500;
+}
+
+.validation-message {
+  margin-top: 5px;
+  padding-left: 5px;
+}
+
+.error-text {
+  color: #666;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.hint-text {
+  color: #999;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.password-strength {
+  margin-top: 8px;
+  padding-left: 5px;
+}
+
+.strength-bar {
+  width: 100%;
+  height: 4px;
+  background-color: #E0E0E0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.strength-fill {
+  height: 100%;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.strength-fill.weak {
+  background-color: #FF5722;
+}
+
+.strength-fill.medium {
+  background-color: #FF9800;
+}
+
+.strength-fill.strong {
+  background-color: #4CAF50;
+}
+
+.strength-text {
+  font-size: 11px;
+  color: #666;
+}
+
 .input-field {
   width: 100%;
   height: 45px;
-  padding: 0 20px;
+  padding: 0 50px 0 20px;
   border: none;
   border-radius: 22px;
   background-color: rgba(255, 255, 255, 0.9);

@@ -1,12 +1,11 @@
 <template>
   <div class="map-container">
-    <iframe 
-      ref="mapFrame"
-      :src="mapHtmlPath" 
-      frameborder="0" 
-      class="map-iframe"
-      @load="onIframeLoad"
-    ></iframe>
+    <img 
+      :src="mapImagePath"
+      alt="地图"
+      class="map-image"
+      @load="onImageLoad"
+    />
     
     <!-- 底部导航栏 -->
     <div class="bottom-navigation">
@@ -51,22 +50,20 @@ import { ref, onMounted } from 'vue'
 export default {
   name: 'Map',
   setup() {
-    const mapFrame = ref(null)
-    const mapHtmlPath = ref('/temp_pages/map_1.html')
+    const mapImagePath = ref('/static/map/map1.png')
     const currentPage = ref(1)
     const totalPages = ref(4) // 假设总共有5页
     
-    const onIframeLoad = () => {
-      console.log('Map HTML loaded successfully')
-      // 可以在这里添加iframe加载完成后的逻辑
+    const onImageLoad = () => {
+      console.log('Map image loaded successfully')
     }
     
     // 上一页功能
     const goToPrevPage = () => {
       if (currentPage.value > 1) {
         currentPage.value--
-        // 更新iframe的src属性
-        mapHtmlPath.value = `/temp_pages/map_${currentPage.value}.html`
+        // 更新图片路径
+        mapImagePath.value = `@/static/map/map${currentPage.value}.png`
         console.log(`切换到第${currentPage.value}页`)
       }
     }
@@ -75,8 +72,8 @@ export default {
     const goToNextPage = () => {
       if (currentPage.value < totalPages.value) {
         currentPage.value++
-        // 更新iframe的src属性
-        mapHtmlPath.value = `/temp_pages/map_${currentPage.value}.html`
+        // 更新图片路径
+        mapImagePath.value = `@/static/map/map${currentPage.value}.png`
         console.log(`切换到第${currentPage.value}页`)
       } else if (currentPage.value === totalPages.value) {
         // 第四页时，跳转到聊天页面
@@ -91,8 +88,8 @@ export default {
     const goToPage = (pageNumber) => {
       if (pageNumber >= 1 && pageNumber <= totalPages.value) {
         currentPage.value = pageNumber
-        // 更新iframe的src属性
-        mapHtmlPath.value = `/temp_pages/map_${currentPage.value}.html`
+        // 更新图片路径
+        mapImagePath.value = `@/static/map/map${currentPage.value}.png`
         console.log(`跳转到第${currentPage.value}页`)
       }
     }
@@ -110,11 +107,10 @@ export default {
     })
     
     return {
-      mapFrame,
-      mapHtmlPath,
+      mapImagePath,
       currentPage,
       totalPages,
-      onIframeLoad,
+      onImageLoad,
       goToPrevPage,
       goToNextPage,
       goToPage,
@@ -134,11 +130,11 @@ export default {
   flex-direction: column;
 }
 
-.map-iframe {
+.map-image {
   width: 100%;
   flex: 1;
-  border: none;
   display: block;
+  object-fit: contain;
 }
 
 /* 底部导航栏样式 */
