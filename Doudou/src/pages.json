@@ -1,6 +1,13 @@
 {
 	"pages": [ 
 		{
+			"path": "pages/menu/menu",
+			"style": {
+				"navigationBarTitleText": "DouDou应用总览",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/intro/intro",
 			"style": {
 				"navigationBarTitleText": "DouDou引导",
@@ -103,6 +110,20 @@
 			"path": "pages/ai-creation/ai-creation",
 			"style": {
 				"navigationBarTitleText": "AI创作",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/map-demo/map-demo",
+			"style": {
+				"navigationBarTitleText": "地图功能演示",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/life-journey/life-journey",
+			"style": {
+				"navigationBarTitleText": "人生地图",
 				"navigationStyle": "custom"
 			}
 		}
