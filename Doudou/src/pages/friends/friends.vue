@@ -1,4 +1,4 @@
-<template>
+小程序<template>
   <view class="friends-container">
     <!-- 状态栏占位（刘海屏/安全区） -->
     <view class="status-bar"></view>
@@ -462,7 +462,9 @@ const filteredFriends = computed(() => {
 
 // 方法
 const goBack = () => {
-  uni.navigateBack()
+  uni.navigateTo({
+    url: '/pages/chat/chat'
+  })
 }
 
 const filterFriends = () => {
