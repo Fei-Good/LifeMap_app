@@ -734,7 +734,11 @@ const onReachBottom = async () => {
   height: 100vh;
   height: 100dvh;
   min-height: 100svh;
-  background: #f5f5f5;
+  /* 对齐 chat 页背景风格 */
+  background-image: url('@/static/chat/chat_background.png');
+  background-size: contain;
+  background-position: center bottom;
+  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -752,18 +756,16 @@ const onReachBottom = async () => {
 
 /* 顶部标题栏 */
 .header {
+  /* 与 chat 页工具栏一致的半透明白底 */
   position: relative;
   height: 120rpx;
   z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10rpx);
+  border-bottom: 1rpx solid rgba(0,0,0,0.1);
 }
 
-.header-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
+.header-bg { display: none; }
 
 .header-content {
   position: absolute;
@@ -787,41 +789,28 @@ const onReachBottom = async () => {
 
 .back-button {
   padding: 10rpx 20rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 20rpx;
   cursor: pointer;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.08);
   transition: all 0.2s ease;
   
   &:active {
     transform: scale(0.95);
-    background: rgba(255, 255, 255, 0.3);
+    background: #ffffff;
   }
 }
 
-.back-text {
-  font-size: 28rpx;
-  color: #333;
-  font-weight: 500;
-}
+.back-text { font-size: 28rpx; color: #4A5568; font-weight: 600; }
 
 .header-center {
   flex: 2;
   text-align: center;
 }
 
-.page-title {
-  font-size: 36rpx;
-  font-weight: 600;
-  color: #333;
-  display: block;
-}
+.page-title { font-size: 36rpx; font-weight: 700; color: #2E3A59; display: block; }
 
-.page-subtitle {
-  font-size: 24rpx;
-  color: #666;
-  display: block;
-  margin-top: 5rpx;
-}
+.page-subtitle { font-size: 24rpx; color: #5A6C7D; display: block; margin-top: 5rpx; }
 
 .header-right {
   flex: 1;
@@ -835,25 +824,12 @@ const onReachBottom = async () => {
 }
 
 .add-friend-btn {
-  width: 60rpx;
-  height: 60rpx;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  /* 确保按钮本身也避开安全区 */
-  margin-right: env(safe-area-inset-right);
-  margin-right: constant(safe-area-inset-right);
-  /* 固定额外间距，使其更靠左显示 */
-  margin-right: 24rpx;
+  width: 60rpx; height: 60rpx; background: rgba(255,255,255,0.9);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s ease; margin-right: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.08);
   
-  &:active {
-    transform: scale(0.9);
-    background: rgba(255, 255, 255, 0.3);
-  }
+  &:active { transform: scale(0.9); background: #ffffff; }
 }
 
 .add-icon {
@@ -862,11 +838,7 @@ const onReachBottom = async () => {
 }
 
 /* 搜索栏 */
-.search-container {
-  padding: 20rpx 30rpx;
-  background: white;
-  border-bottom: 1rpx solid #eee;
-}
+.search-container { padding: 20rpx 30rpx; background: rgba(255,255,255,0.95); border-bottom: 1rpx solid rgba(0,0,0,0.08); backdrop-filter: blur(10rpx); }
 
 .search-box {
   position: relative;
@@ -893,37 +865,12 @@ const onReachBottom = async () => {
 }
 
 /* 分类标签 */
-.category-tabs {
-  display: flex;
-  background: white;
-  border-bottom: 1rpx solid #eee;
-  padding: 0 30rpx;
+.category-tabs { display: flex; background: rgba(255,255,255,0.95); border-bottom: 1rpx solid rgba(0,0,0,0.08); padding: 0 30rpx; }
+.tab-item { flex: 1; padding: 20rpx 0; text-align: center; cursor: pointer; transition: all 0.2s ease; border-bottom: 4rpx solid transparent; 
+  &.tab-active { border-bottom-color: #4A9EFF; }
 }
-
-.tab-item {
-  flex: 1;
-  padding: 20rpx 0;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-bottom: 4rpx solid transparent;
-  
-  &.tab-active {
-    border-bottom-color: #4CAF50;
-  }
-}
-
-.tab-text {
-  font-size: 28rpx;
-  color: #333;
-  font-weight: 500;
-}
-
-.tab-count {
-  font-size: 22rpx;
-  color: #999;
-  margin-left: 5rpx;
-}
+.tab-text { font-size: 28rpx; color: #2D3748; font-weight: 600; }
+.tab-count { font-size: 22rpx; color: #718096; margin-left: 5rpx; }
 
 /* 好友列表 */
 .friends-list {
@@ -969,27 +916,11 @@ const onReachBottom = async () => {
   gap: 20rpx;
 }
 
-.friend-card {
-  background: white;
-  border-radius: 20rpx;
-  padding: 30rpx;
-  display: flex;
-  align-items: center;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100%;
-  box-sizing: border-box;
-  padding-right: calc(30rpx + env(safe-area-inset-right));
-  overflow: hidden;
-  
-  &:active {
-    transform: scale(0.98);
-  }
-  
-  &.offline {
-    opacity: 0.7;
-  }
+.friend-card { background: rgba(255,255,255,0.95); border-radius: 20rpx; padding: 30rpx; display: flex; align-items: center; 
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.08); cursor: pointer; transition: all 0.2s ease; width: 100%; box-sizing: border-box; 
+  padding-right: calc(30rpx + env(safe-area-inset-right)); overflow: hidden;
+  &:active { transform: scale(0.98); }
+  &.offline { opacity: 0.85; }
 }
 
 .friend-avatar {
@@ -997,12 +928,7 @@ const onReachBottom = async () => {
   margin-right: 20rpx;
 }
 
-.avatar-image {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 50%;
-  border: 3rpx solid #f0f0f0;
-}
+.avatar-image { width: 80rpx; height: 80rpx; border-radius: 50%; border: 3rpx solid #f0f0f0; background: #fff; }
 
 .online-status {
   position: absolute;
@@ -1038,30 +964,11 @@ const onReachBottom = async () => {
   min-width: 0;
 }
 
-.friend-name {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #333;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.friend-name { font-size: 32rpx; font-weight: 700; color: #2D3748; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.friend-status {
-  font-size: 24rpx;
-  color: #4CAF50;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.friend-status { font-size: 24rpx; color: #4A9EFF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.friend-location {
-  font-size: 22rpx;
-  color: #999;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.friend-location { font-size: 22rpx; color: #718096; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .friend-actions {
   display: flex;
