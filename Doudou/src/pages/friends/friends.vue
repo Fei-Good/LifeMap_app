@@ -59,6 +59,7 @@
       class="friends-list" 
       scroll-y="true" 
       :show-scrollbar="false"
+      scroll-x="false"
       :refresher-enabled="true"
       :refresher-triggered="isRefreshing"
       @refresherrefresh="onRefresh"
@@ -559,6 +560,9 @@ const onReachBottom = async () => {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  padding-right: constant(safe-area-inset-right);
+  padding-right: env(safe-area-inset-right);
+  overflow-x: hidden;
 }
 
 /* 顶部安全区占位，避免内容被系统状态栏遮挡 */
@@ -736,6 +740,14 @@ const onReachBottom = async () => {
   /* H5下scroll-view在flex容器内常需显式高度为0配合flex:1以填满 */
   height: 0;
   padding: 20rpx 30rpx;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.friends-grid {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .section {
@@ -775,6 +787,7 @@ const onReachBottom = async () => {
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 100%;
   
   &:active {
     transform: scale(0.98);
