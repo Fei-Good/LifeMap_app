@@ -2940,7 +2940,7 @@ const handleWorkplaceVent = () => {
 }
 
 .doudou-chat-svg {
-  width: 260rpx;
+  width: 200rpx;
   height: auto;
   opacity: 0.85;
 }
