@@ -132,7 +132,7 @@
                 <view class="action-btn message-btn" @click.stop="sendMessage(friend)">
                   <text class="action-icon">📝</text>
                 </view>
-                <view class="action-btn more-btn" @click.stop="showFriendMenu(friend)">
+                <view class="action-btn more-btn" @click.stop="openFriendMenu(friend)">
                   <text class="action-icon">⋯</text>
                 </view>
               </view>
@@ -199,7 +199,7 @@
     </view>
 
     <!-- 好友菜单弹窗 -->
-    <view class="friend-menu-popup" v-if="showFriendMenu" @click="closeFriendMenu">
+    <view class="friend-menu-popup" v-if="showFriendMenuVisible" @click="closeFriendMenu">
       <view class="menu-content" @click.stop>
         <view class="menu-item" @click="startChat(selectedFriend)">
           <text class="menu-icon">💬</text>
@@ -229,7 +229,7 @@ import { ref, computed, onMounted } from 'vue'
 const searchText = ref('')
 const activeCategory = ref('all')
 const showAddDialog = ref(false)
-const showFriendMenu = ref(false)
+const showFriendMenuVisible = ref(false)
 const selectedFriend = ref(null)
 const newFriendId = ref('')
 const verifyMessage = ref('')
@@ -474,13 +474,13 @@ const sendFriendRequest = () => {
   closeAddFriendDialog()
 }
 
-const showFriendMenu = (friend) => {
+const openFriendMenu = (friend) => {
   selectedFriend.value = friend
-  showFriendMenu.value = true
+  showFriendMenuVisible.value = true
 }
 
 const closeFriendMenu = () => {
-  showFriendMenu.value = false
+  showFriendMenuVisible.value = false
   selectedFriend.value = null
 }
 
