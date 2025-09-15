@@ -1187,42 +1187,49 @@ const onReachBottom = async () => {
 }
 
 .profile-content {
-  width: 86%; max-width: 640rpx; background: #fff; border-radius: 24rpx;
+  width: 90%; max-width: 700rpx; background: #fff; border-radius: 24rpx;
   overflow: hidden; box-shadow: 0 20rpx 60rpx rgba(0,0,0,0.12);
   transform: translateY(10rpx); animation: popup-fade-in 220ms ease-out;
 }
 
 .profile-header { 
-  display: flex; gap: 20rpx; align-items: center; 
+  display: flex; gap: 24rpx; align-items: center; 
   background: linear-gradient(135deg, #f6fff6 0%, #ffffff 70%);
-  border-radius: 16rpx; 
-  padding: 16rpx; 
+  border-radius: 20rpx; 
+  padding: 24rpx; 
+  margin-bottom: 20rpx;
 }
 .profile-avatar { 
-  width: 120rpx; height: 120rpx; border-radius: 16rpx; 
+  width: 140rpx; height: 140rpx; border-radius: 20rpx; 
   box-shadow: 0 0 0 4rpx #fff, 0 0 0 8rpx rgba(76,175,80,0.15);
 }
 .profile-main { flex: 1; min-width: 0; }
-.profile-name { font-size: 34rpx; font-weight: 700; color: #2f2f2f; }
-.profile-meta { display: flex; align-items: center; gap: 12rpx; color: #666; font-size: 24rpx; margin-top: 8rpx; }
-.status-dot { width: 14rpx; height: 14rpx; border-radius: 50%; box-shadow: 0 0 0 4rpx rgba(76,175,80,0.08); animation: pulse 1.6s infinite; }
+.profile-name { font-size: 38rpx; font-weight: 700; color: #2f2f2f; }
+.profile-meta { display: flex; align-items: center; gap: 16rpx; color: #666; font-size: 26rpx; margin-top: 12rpx; }
+.status-dot { width: 16rpx; height: 16rpx; border-radius: 50%; box-shadow: 0 0 0 4rpx rgba(76,175,80,0.08); animation: pulse 1.6s infinite; }
 .status-dot.online { background: #4CAF50; }
 .status-dot.busy { background: #FF5722; }
 .status-dot.away { background: #FF9800; }
 .status-dot.offline { background: #9E9E9E; }
 
-.profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12rpx; margin-top: 16rpx; }
-.profile-actions { display: flex; gap: 16rpx; margin-top: 20rpx; }
+.profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16rpx; margin-bottom: 24rpx; }
+.profile-actions { display: flex; gap: 20rpx; }
 
-/* 资料弹窗内卡片与按钮美化 */
-.stat-card { background: #fff; border-radius: 14rpx; padding: 22rpx; text-align: center; box-shadow: 0 8rpx 22rpx rgba(0,0,0,0.05); }
-.stat-value { font-size: 34rpx; font-weight: 700; color: #2f2f2f; }
-.stat-label { font-size: 22rpx; color: #888; }
+/* 手机端优化的资料弹窗内卡片与按钮 */
+.stat-card { 
+  background: #fff; border-radius: 16rpx; padding: 28rpx 20rpx; text-align: center; 
+  box-shadow: 0 8rpx 22rpx rgba(0,0,0,0.05); 
+  border: 1rpx solid #f5f5f5;
+}
+.stat-value { font-size: 36rpx; font-weight: 700; color: #2f2f2f; display: block; }
+.stat-label { font-size: 24rpx; color: #888; margin-top: 8rpx; display: block; }
 
 .profile-actions .action-btn { 
-  background: #f2f2f2; color: #333; border-radius: 14rpx;
+  flex: 1; padding: 24rpx 0; text-align: center;
+  background: #f2f2f2; color: #333; border-radius: 16rpx;
   box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.06);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
+  font-size: 28rpx; font-weight: 500;
 }
 .profile-actions .action-btn:active { transform: scale(0.98); box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06); }
 .profile-actions .action-btn.primary { background: linear-gradient(135deg, #5bcf5d 0%, #4CAF50 100%); color: #fff; }
