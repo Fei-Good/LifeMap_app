@@ -233,6 +233,52 @@
       </view>
     </view>
 
+    <!-- 好友资料弹窗 -->
+    <view class="profile-popup" v-if="showProfileDialog" @click="closeProfileDialog">
+      <view class="popup-content profile-content" @click.stop>
+        <view class="popup-header">
+          <text class="popup-title">好友资料</text>
+          <view class="close-btn" @click="closeProfileDialog">
+            <text class="close-icon">✕</text>
+          </view>
+        </view>
+        <view class="popup-body">
+          <view class="profile-header">
+            <image class="profile-avatar" :src="profileFriend.avatar || '/textures/地图功能/好友（后续可能替换）.png'" mode="aspectFill" />
+            <view class="profile-main">
+              <text class="profile-name">{{ profileFriend.name }}</text>
+              <view class="profile-meta">
+                <view class="status-dot" :class="profileFriend.status || (profileFriend.isOnline ? 'online' : 'offline')"></view>
+                <text class="status-text">{{ getStatusText(profileFriend.status || (profileFriend.isOnline ? 'online' : 'offline')) }}</text>
+                <text class="divider">·</text>
+                <text class="location">{{ profileFriend.location || '未知城市' }}</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="profile-stats">
+            <view class="stat-card">
+              <text class="stat-value">{{ profileStats.chats }}</text>
+              <text class="stat-label">聊天次数</text>
+            </view>
+            <view class="stat-card">
+              <text class="stat-value">{{ profileStats.days }}</text>
+              <text class="stat-label">认识天数</text>
+            </view>
+            <view class="stat-card">
+              <text class="stat-value">{{ profileStats.score }}</text>
+              <text class="stat-label">亲密度</text>
+            </view>
+          </view>
+
+          <view class="profile-actions">
+            <view class="action-btn primary" @click.stop="startChat(profileFriend)"><text>发消息</text></view>
+            <view class="action-btn" @click.stop="startCall(profileFriend)"><text>语音通话</text></view>
+          </view>
+        </view>
+      </view>
+    </view>
+
     <!-- 好友菜单弹窗 -->
     <view class="friend-menu-popup" v-if="showFriendMenuVisible" @click="closeFriendMenu">
       <view class="menu-content" @click.stop>
@@ -269,6 +315,9 @@ const showFriendMenuVisible = ref(false)
 const selectedFriend = ref(null)
 const newFriendId = ref('')
 const verifyMessage = ref('')
+const showProfileDialog = ref(false)
+const profileFriend = ref({})
+const profileStats = ref({ chats: 0, days: 0, score: 0 })
 
 // 添加好友搜索相关
 const searchLoading = ref(false)
@@ -471,14 +520,15 @@ const getLastSeenText = (lastSeen) => {
 }
 
 const openFriendProfile = (friend) => {
-  const url = `/pages/friend-profile/friend-profile?friendId=${friend.id || ''}`
-  uni.navigateTo({
-    url,
-    success: (res) => {
-      // 通过 eventChannel 传递完整对象，避免资料页再拉取
-      res.eventChannel?.emit?.('friendData', friend)
-    }
-  })
+  profileFriend.value = friend
+  // 模拟统计数据，可替换为接口
+  profileStats.value = { chats: 128, days: 365, score: 86 }
+  showProfileDialog.value = true
+}
+
+const closeProfileDialog = () => {
+  showProfileDialog.value = false
+  profileFriend.value = {}
 }
 
 const startChat = (friend) => {
@@ -1125,6 +1175,36 @@ const onReachBottom = async () => {
   justify-content: center;
   z-index: 1000;
 }
+
+/* 复用同样遮罩风格的资料弹窗 */
+.profile-popup {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+
+.profile-content {
+  width: 86%; max-width: 640rpx; background: #fff; border-radius: 24rpx;
+  overflow: hidden; box-shadow: 0 20rpx 60rpx rgba(0,0,0,0.12);
+  transform: translateY(10rpx); animation: popup-fade-in 220ms ease-out;
+}
+
+.profile-header { display: flex; gap: 20rpx; align-items: center; }
+.profile-avatar { width: 120rpx; height: 120rpx; border-radius: 16rpx; }
+.profile-main { flex: 1; min-width: 0; }
+.profile-name { font-size: 34rpx; font-weight: 700; color: #2f2f2f; }
+.profile-meta { display: flex; align-items: center; gap: 12rpx; color: #666; font-size: 24rpx; margin-top: 8rpx; }
+.status-dot { width: 14rpx; height: 14rpx; border-radius: 50%; }
+.status-dot.online { background: #4CAF50; }
+.status-dot.busy { background: #FF5722; }
+.status-dot.away { background: #FF9800; }
+.status-dot.offline { background: #9E9E9E; }
+
+.profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12rpx; margin-top: 16rpx; }
+.profile-actions { display: flex; gap: 16rpx; margin-top: 20rpx; }
 
 .popup-content {
   width: 86%;
