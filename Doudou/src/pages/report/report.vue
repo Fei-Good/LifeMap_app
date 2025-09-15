@@ -353,7 +353,97 @@ const onRadarChartReady = () => {
 // 生命周期
 onMounted(() => {
   console.log('动态报告页面加载完成')
+  // 优先从“复盘知识库”载入数据以填充报告
+  loadFromKnowledgeStorage()
 })
+
+// 从本地“知识库”载入数据以驱动报告各模块
+const loadFromKnowledgeStorage = () => {
+  try {
+    const cards = uni.getStorageSync('knowledge_cards') || []
+    if (!Array.isArray(cards) || cards.length === 0) return
+
+    // 使用最近一张知识卡片作为数据源
+    const latest = cards[0]
+
+    // A. 情绪模式/安慰文案（用 summary/insights 近似映射）
+    if (latest.summary && typeof latest.summary === 'string') {
+      comfortMessage.value = latest.summary.substring(0, 80)
+    }
+    if (Array.isArray(latest.insights) && latest.insights.length) {
+      // 将洞察前三条映射为“情绪高频点”展示
+      emotionTriggers.value = latest.insights.slice(0, 3).map((text, i) => ({
+        id: i + 1,
+        text: String(text).substring(0, 18),
+        frequency: 3 - i + 3 // 简单占位频次
+      }))
+      radarInsights.value = latest.insights.slice(0, 3).map((text) => ({
+        icon: '💡',
+        title: '洞察',
+        description: String(text)
+      }))
+    }
+
+    // B. 优势画像（用 tags 近似：分值做简单衰减）
+    if (Array.isArray(latest.tags) && latest.tags.length) {
+      topStrengths.value = latest.tags.slice(0, 5).map((tag, idx) => ({
+        name: String(tag),
+        description: '来自知识库标签',
+        score: Math.max(60, 92 - idx * 6)
+      }))
+      // 雷达图按标签数量简单填充
+      const names = latest.tags.slice(0, 6).map((t) => String(t).substring(0, 6))
+      if (names.length) {
+        const values = names.map((_, i) => Math.max(55, 90 - i * 5))
+        radarChartData.value = {
+          indicator: names.map((n) => ({ name: n, max: 100 })),
+          series: [{ name: '当前能力', value: values, color: '#FF9500' }]
+        }
+      }
+    }
+
+    // C. 场景借力（用 chats/insights 近似合成）
+    if (Array.isArray(latest.chats) && latest.chats.length) {
+      scenarioLeverage.value = latest.chats.slice(0, 2).map((c, i) => ({
+        id: i + 1,
+        context: c.title || `对话 ${i + 1}`,
+        category: '复盘要点',
+        strength: (latest.tags && latest.tags[i]) ? latest.tags[i] : '沟通/学习',
+        result: '已沉淀为知识卡片要点',
+        impact: Math.max(70, 95 - i * 7)
+      }))
+    }
+
+    // D. 思维转型（用 insights/summary 拆分为对照）
+    if (Array.isArray(latest.insights) && latest.insights.length >= 2) {
+      studentMindset.value = latest.insights.slice(0, 3).map((t, i) => ({ id: i + 1, text: String(t).substring(0, 14) }))
+      workplaceMindset.value = latest.insights.slice(0, 3).map((t, i) => ({ id: i + 1, text: `面向行动：${String(t).substring(0, 10)}` }))
+    }
+
+    // E. 目标展示（基于标签/对话数量生成占位目标）
+    const goalBase = (latest.tags && latest.tags[0]) ? String(latest.tags[0]) : '提升沟通能力'
+    goalShowcase.value = [
+      {
+        id: 1,
+        title: `围绕“${goalBase}”的实践`,
+        progress: 65,
+        strength: goalBase,
+        action: '每周输出复盘卡1张，复盘一次对话',
+        outcome: '沉淀方法论，提升落地能力'
+      },
+      {
+        id: 2,
+        title: '构建复盘-行动闭环',
+        progress: 50,
+        strength: '持续学习',
+        action: '知识卡片→行动清单→复盘更新',
+        outcome: '形成稳定成长节奏'
+      }
+    ]
+  } catch (e) {
+    console.warn('加载知识库卡片失败：', e)
+  }
+}
 </script>
 
 <style lang="scss" scoped>
