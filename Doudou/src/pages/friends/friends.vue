@@ -1276,8 +1276,10 @@ const onReachBottom = async () => {
   height: 120rpx;
   resize: none;
   display: block;
+  width: 100%;
+  box-sizing: border-box;
   /* 预留右侧空间，避免被遮挡 */
-  padding-right: 64rpx;
+  padding-right: calc(64rpx + env(safe-area-inset-right));
 }
 
 /* 适配 uni-input 内部结构，确保宽度与右内边距充足（避免被裁剪） */
@@ -1296,12 +1298,13 @@ const onReachBottom = async () => {
 :deep(.uni-textarea-wrapper) {
   width: 100%;
   box-sizing: border-box;
+  padding-right: calc(64rpx + env(safe-area-inset-right));
 }
 
 :deep(.uni-textarea-textarea) {
   width: 100%;
   box-sizing: border-box;
-  padding-right: 64rpx;
+  padding-right: calc(64rpx + env(safe-area-inset-right));
 }
 
 .popup-footer {
