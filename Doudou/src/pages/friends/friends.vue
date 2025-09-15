@@ -788,6 +788,9 @@ const onReachBottom = async () => {
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
+  box-sizing: border-box;
+  padding-right: calc(30rpx + env(safe-area-inset-right));
+  overflow: hidden;
   
   &:active {
     transform: scale(0.98);
@@ -841,27 +844,38 @@ const onReachBottom = async () => {
   display: flex;
   flex-direction: column;
   gap: 5rpx;
+  min-width: 0;
 }
 
 .friend-name {
   font-size: 32rpx;
   font-weight: 600;
   color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .friend-status {
   font-size: 24rpx;
   color: #4CAF50;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .friend-location {
   font-size: 22rpx;
   color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .friend-actions {
   display: flex;
   gap: 15rpx;
+  flex: none;
 }
 
 .action-btn {
@@ -873,6 +887,7 @@ const onReachBottom = async () => {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
   
   &.chat-btn {
     background: #E3F2FD;
