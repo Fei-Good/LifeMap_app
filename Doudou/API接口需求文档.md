@@ -19,6 +19,7 @@
 - [9. 成就系统](#9-成就系统)
 - [10. 系统配置](#10-系统配置)
 - [11. 错误码对照表](#11-错误码对照表)
+- [12. AI创作系统](#12-ai创作系统)
 
 ---
 
@@ -502,6 +503,230 @@ Authorization: Bearer {token}  // 需要登录的接口
   "message": "报告重新生成成功",
   "data": {
     // 新的报告内容
+  }
+}
+```
+
+---
+
+## 12. AI创作系统
+
+### 12.1 创建AI创作任务
+- **接口**: `POST /api/ai/create`
+- **说明**: 基于聊天记录、知识卡片和自定义文本生成图片或视频
+- **权限**: 需要登录
+
+**请求参数:**
+```json
+{
+  "type": "image",                    // 创作类型："image" 或 "video"
+  "content": "创作提示词内容",         // 基于选择内容构建的提示词
+  "options": {                        // 创作选项
+    "style": "default",               // 风格：default, artistic, realistic 等
+    "quality": "high",                // 质量：low, medium, high
+    "dimensions": "1024x1024"         // 尺寸：图片默认1024x1024，视频默认1280x720
+  },
+  "sourceData": {                     // 源数据（可选，用于记录）
+    "selectedChats": [...],           // 选中的聊天记录
+    "selectedKnowledge": [...],       // 选中的知识卡片
+    "customText": "自定义文本内容"     // 自定义文本
+  }
+}
+```
+
+**成功响应:**
+```json
+{
+  "code": 200,
+  "message": "创作任务创建成功",
+  "data": {
+    "id": "creation_12345",
+    "type": "image",
+    "status": "processing",           // 状态：processing, completed, failed
+    "result": null,                   // 创作完成后的结果
+    "url": null,                      // 创作结果URL
+    "thumbnail": null,                // 缩略图URL
+    "metadata": {
+      "prompt": "处理后的提示词",
+      "style": "default",
+      "quality": "high",
+      "dimensions": "1024x1024",
+      "estimatedTime": 30             // 预计完成时间（秒）
+    },
+    "createdAt": "2024-12-20T10:30:00.000Z",
+    "completedAt": null
+  }
+}
+```
+
+**失败响应:**
+```json
+{
+  "code": 400,
+  "message": "参数错误：缺少必要的创作内容"
+}
+```
+
+### 12.2 查询创作状态
+- **接口**: `GET /api/ai/creations/{creationId}`
+- **说明**: 查询特定创作任务的状态和结果
+- **权限**: 需要登录
+
+**成功响应（处理中）:**
+```json
+{
+  "code": 200,
+  "data": {
+    "id": "creation_12345",
+    "type": "image",
+    "status": "processing",
+    "progress": 65,                   // 进度百分比
+    "currentStep": "渲染最终结果...",  // 当前步骤描述
+    "result": null,
+    "url": null,
+    "thumbnail": null,
+    "metadata": {...},
+    "createdAt": "2024-12-20T10:30:00.000Z",
+    "completedAt": null
+  }
+}
+```
+
+**成功响应（已完成）:**
+```json
+{
+  "code": 200,
+  "data": {
+    "id": "creation_12345",
+    "type": "image",
+    "status": "completed",
+    "progress": 100,
+    "result": {
+      "title": "基于对话内容的创意图片",
+      "description": "根据您提供的内容生成的创意作品",
+      "style": "artistic",
+      "dimensions": "1024x1024",
+      "format": "PNG",
+      "fileSize": "2.5MB"
+    },
+    "url": "https://example.com/creations/image_12345.png",
+    "thumbnail": "https://example.com/creations/thumb_12345.jpg",
+    "metadata": {...},
+    "createdAt": "2024-12-20T10:30:00.000Z",
+    "completedAt": "2024-12-20T10:32:15.000Z"
+  }
+}
+```
+
+### 12.3 获取创作历史
+- **接口**: `GET /api/ai/creations`
+- **说明**: 获取用户的AI创作历史记录
+- **权限**: 需要登录
+
+**请求参数:**
+```
+?page=1&limit=20&type=image&status=completed
+```
+
+**成功响应:**
+```json
+{
+  "code": 200,
+  "data": {
+    "creations": [
+      {
+        "id": "creation_12345",
+        "type": "image",
+        "status": "completed",
+        "result": {
+          "title": "创意图片标题",
+          "description": "创作描述"
+        },
+        "url": "https://example.com/creations/image_12345.png",
+        "thumbnail": "https://example.com/creations/thumb_12345.jpg",
+        "createdAt": "2024-12-20T10:30:00.000Z",
+        "completedAt": "2024-12-20T10:32:15.000Z"
+      }
+    ],
+    "pagination": {
+      "total": 25,
+      "page": 1,
+      "limit": 20,
+      "pages": 2
+    }
+  }
+}
+```
+
+### 12.4 删除创作记录
+- **接口**: `DELETE /api/ai/creations/{creationId}`
+- **说明**: 删除指定的创作记录和相关文件
+- **权限**: 需要登录
+
+**成功响应:**
+```json
+{
+  "code": 200,
+  "message": "创作记录删除成功"
+}
+```
+
+### 12.5 获取创作统计
+- **接口**: `GET /api/ai/creations/stats`
+- **说明**: 获取用户的创作统计信息
+- **权限**: 需要登录
+
+**成功响应:**
+```json
+{
+  "code": 200,
+  "data": {
+    "totalCreations": 25,
+    "imageCount": 18,
+    "videoCount": 7,
+    "completedCount": 23,
+    "failedCount": 2,
+    "totalStorageUsed": "45.8MB",
+    "thisMonthCount": 8,
+    "lastCreatedAt": "2024-12-20T10:32:15.000Z"
+  }
+}
+```
+
+### 12.6 批量操作创作记录
+- **接口**: `POST /api/ai/creations/batch`
+- **说明**: 批量删除或导出创作记录
+- **权限**: 需要登录
+
+**请求参数:**
+```json
+{
+  "action": "delete",               // 操作类型：delete, export
+  "creationIds": [                  // 创作记录ID列表
+    "creation_12345",
+    "creation_12346"
+  ]
+}
+```
+
+**成功响应:**
+```json
+{
+  "code": 200,
+  "message": "批量操作完成",
+  "data": {
+    "successCount": 2,
+    "failedCount": 0,
+    "details": [
+      {
+        "id": "creation_12345",
+        "status": "success"
+      },
+      {
+        "id": "creation_12346", 
+        "status": "success"
+      }
+    ]
   }
 }
 ```

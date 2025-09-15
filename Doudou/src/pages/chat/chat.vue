@@ -779,30 +779,10 @@ const loadFavoriteChats = () => {
 }
 
 const toggleChatFavorite = () => {
-  const currentChat = chatHistories.value.find(chat => chat.id === currentChatId.value)
-  if (!currentChat) {
-    // 如果当前对话不在历史记录中，先保存
-    saveChatHistory()
-    const savedChat = chatHistories.value.find(chat => chat.id === currentChatId.value)
-    if (savedChat) {
-      addChatToFavorites(savedChat)
-    }
-    return
-  }
-  
-  const existingIndex = favoriteChats.value.findIndex(fav => fav.chatId === currentChatId.value)
-  
-  if (existingIndex >= 0) {
-    // 取消收藏
-    favoriteChats.value.splice(existingIndex, 1)
-    uni.showToast({ title: '已取消收藏', icon: 'success' })
-  } else {
-    // 添加收藏
-    addChatToFavorites(currentChat)
-    uni.showToast({ title: '已添加收藏', icon: 'success' })
-  }
-  
-  uni.setStorageSync('favorite_chats', favoriteChats.value)
+  // 跳转到AI创作页面
+  uni.navigateTo({
+    url: '/pages/ai-creation/ai-creation'
+  })
 }
 
 const addChatToFavorites = (chat) => {

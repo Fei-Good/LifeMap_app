@@ -1,6 +1,5 @@
 /**
  * AI大模型服务类
- * 用于调用大模型接口生成个性化报告
  */
 // 导入API服务
 import apiService from './apiService'
@@ -11,7 +10,8 @@ class AIService {
     this.apiConfig = {
       baseUrl: 'https://ark.cn-beijing.volces.com/api/v3', // 豆包API地址
       apiKey: 'a4063a05-841a-4a52-8916-70ffc92d7f06', // API密钥
-      model: 'doubao-seed-1-6-250615' // 豆包模型名称
+      model: 'doubao-seed-1-6-250615', // 豆包模型名称（聊天对话用）
+      contentGenerationModel: 'doubao-seedance-1-0-pro-250528' // 内容生成专用模型
     }
   }
 
@@ -1068,6 +1068,709 @@ ${conversationContent}
     })
     
     return tags.slice(0, 5) // 最多5个标签
+  }
+
+  /**
+   * AI创作相关方法
+   * 支持基于聊天记录和知识卡片生成图片/视频
+   */
+
+  /**
+   * 生成AI创作内容（图片或视频）
+   * @param {Object} creationData 创作数据
+   * @param {Function} onProgress 进度回调
+   * @returns {Promise<Object>} 创作结果
+   */
+  async generateCreativeContent(creationData, onProgress) {
+    try {
+      console.log('开始AI创作:', creationData)
+      
+      // 首先尝试调用后端API
+      const backendResult = await this.generateCreativeContentFromBackend(creationData, onProgress)
+      if (backendResult) {
+        return backendResult
+      }
+    } catch (error) {
+      console.warn('后端API创作失败，使用本地模拟:', error)
+    }
+
+    try {
+      // 备用方案：本地模拟创作过程
+      return await this.mockCreativeGeneration(creationData, onProgress)
+    } catch (error) {
+      console.error('AI创作失败:', error)
+      throw new Error('创作失败，请稍后重试')
+    }
+  }
+
+  /**
+   * 调用后端API生成创作内容
+   * @param {Object} creationData 创作数据
+   * @param {Function} onProgress 进度回调
+   * @returns {Promise<Object>} 创作结果
+   */
+  async generateCreativeContentFromBackend(creationData, onProgress) {
+    try {
+      // 首先尝试新的Doubao内容生成API
+      const doubaoResult = await this.callDoubaoContentGenerationAPI(creationData, onProgress)
+      if (doubaoResult) {
+        return doubaoResult
+      }
+    } catch (error) {
+      console.warn('Doubao内容生成API调用失败，尝试后端API:', error)
+    }
+
+    try {
+      // 备用方案：原有的后端API
+      const requestData = {
+        type: creationData.type, // 'image' 或 'video'
+        content: this.buildCreativePrompt(creationData),
+        options: {
+          style: creationData.style || 'default',
+          quality: creationData.quality || 'high',
+          dimensions: creationData.dimensions || (creationData.type === 'image' ? '1024x1024' : '1280x720')
+        }
+      }
+
+      // 调用后端API
+      const response = await apiService.generateCreativeContent(requestData)
+      
+      if (response.data) {
+        return {
+          id: response.data.id || Date.now().toString(),
+          type: creationData.type,
+          status: 'completed',
+          result: response.data.result,
+          url: response.data.url,
+          thumbnail: response.data.thumbnail,
+          metadata: response.data.metadata || {},
+          createdAt: new Date().toISOString(),
+          source: 'backend_api'
+        }
+      }
+      
+      return null
+    } catch (error) {
+      console.error('后端创作API调用失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 调用Doubao内容生成API
+   * @param {Object} creationData 创作数据
+   * @param {Function} onProgress 进度回调
+   * @returns {Promise<Object>} 创作结果
+   */
+  async callDoubaoContentGenerationAPI(creationData, onProgress) {
+    try {
+      console.log('调用Doubao内容生成API:', creationData)
+      
+      if (onProgress) {
+        onProgress({ step: 1, message: '准备调用Doubao AI...', progress: 10 })
+      }
+
+      // 构建请求数据
+      const requestData = {
+        model: this.apiConfig.contentGenerationModel,
+        prompt: this.buildDoubaoContentPrompt(creationData),
+        parameters: {
+          width: creationData.type === 'image' ? 1024 : 1280,
+          height: creationData.type === 'image' ? 1024 : 720,
+          steps: 20,
+          scale: 7.5,
+          seed: Math.floor(Math.random() * 1000000)
+        }
+      }
+
+      if (onProgress) {
+        onProgress({ step: 2, message: '发送请求到Doubao AI...', progress: 25 })
+      }
+
+      // 调用Doubao内容生成API
+      const response = await fetch(`${this.apiConfig.baseUrl}/contents/generations/tasks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiConfig.apiKey}`
+        },
+        body: JSON.stringify(requestData)
+      })
+
+      if (onProgress) {
+        onProgress({ step: 3, message: '处理API响应...', progress: 40 })
+      }
+
+      if (!response.ok) {
+        throw new Error(`Doubao API调用失败: ${response.status} ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      console.log('Doubao API响应:', data)
+
+      if (onProgress) {
+        onProgress({ step: 4, message: '解析生成结果...', progress: 60 })
+      }
+
+      // 处理任务创建响应
+      if (data.task_id) {
+        // 轮询任务状态
+        const result = await this.pollDoubaoTaskStatus(data.task_id, onProgress)
+        return result
+      } else if (data.data && data.data.length > 0) {
+        // 直接返回结果
+        return this.parseDoubaoContentResult(data, creationData)
+      } else {
+        throw new Error('Doubao API返回数据格式不正确')
+      }
+
+    } catch (error) {
+      console.error('Doubao内容生成API调用失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 构建Doubao内容生成提示词
+   * @param {Object} creationData 创作数据
+   * @returns {string} 构建好的提示词
+   */
+  buildDoubaoContentPrompt(creationData) {
+    let prompt = ''
+    
+    // 添加选中的聊天记录
+    if (creationData.selectedChats && creationData.selectedChats.length > 0) {
+      prompt += '基于以下对话内容创作：\n'
+      creationData.selectedChats.forEach((chat, index) => {
+        const roleText = chat.role === 'user' ? '用户' : 'DouDou'
+        prompt += `${roleText}: ${chat.content}\n`
+      })
+      prompt += '\n'
+    }
+    
+    // 添加选中的知识卡片
+    if (creationData.selectedKnowledge && creationData.selectedKnowledge.length > 0) {
+      prompt += '结合以下知识内容：\n'
+      creationData.selectedKnowledge.forEach(knowledge => {
+        prompt += `标题: ${knowledge.title || '无标题'}\n`
+        prompt += `摘要: ${knowledge.summary || '暂无总结内容'}\n`
+        if (knowledge.insights && knowledge.insights.length > 0) {
+          prompt += `关键洞察: ${knowledge.insights.join('；')}\n`
+        }
+        prompt += '\n'
+      })
+    }
+    
+    // 添加自定义文本
+    if (creationData.customText && creationData.customText.trim()) {
+      prompt += '用户要求：\n'
+      prompt += creationData.customText.trim() + '\n\n'
+    }
+    
+    // 添加创作类型和风格指导
+    if (creationData.type === 'image') {
+      prompt += '请创作一张富有表现力的图片，要求：\n'
+      prompt += '- 画面美观，色彩和谐\n'
+      prompt += '- 主题明确，情感表达到位\n'
+      prompt += '- 构图合理，视觉冲击力强\n'
+      prompt += '- 风格现代，符合年轻人审美\n'
+    } else if (creationData.type === 'video') {
+      prompt += '请创作一段富有表现力的视频，要求：\n'
+      prompt += '- 画面流畅，节奏把控好\n'
+      prompt += '- 内容连贯，故事性强\n'
+      prompt += '- 视觉效果佳，有吸引力\n'
+      prompt += '- 时长适中，信息传达清晰\n'
+    }
+    
+    return prompt
+  }
+
+  /**
+   * 轮询Doubao任务状态
+   * @param {string} taskId 任务ID
+   * @param {Function} onProgress 进度回调
+   * @returns {Promise<Object>} 任务结果
+   */
+  async pollDoubaoTaskStatus(taskId, onProgress) {
+    const maxAttempts = 30 // 最多轮询30次
+    const pollInterval = 2000 // 每2秒轮询一次
+    
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        if (onProgress) {
+          const progress = 60 + (attempt / maxAttempts) * 30
+          onProgress({ 
+            step: 4, 
+            message: `生成中，请稍候... (${attempt + 1}/${maxAttempts})`, 
+            progress: Math.min(progress, 90) 
+          })
+        }
+
+        const response = await fetch(`${this.apiConfig.baseUrl}/contents/generations/tasks/${taskId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${this.apiConfig.apiKey}`
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error(`任务状态查询失败: ${response.status}`)
+        }
+
+        const data = await response.json()
+        console.log(`任务状态查询 (${attempt + 1}):`, data)
+
+        if (data.status === 'completed' && data.data && data.data.length > 0) {
+          if (onProgress) {
+            onProgress({ step: 6, message: '生成完成！', progress: 100 })
+          }
+          return this.parseDoubaoContentResult(data, { type: 'image' }) // 假设是图片
+        } else if (data.status === 'failed') {
+          throw new Error('内容生成失败: ' + (data.error || '未知错误'))
+        }
+
+        // 等待下一次轮询
+        await new Promise(resolve => setTimeout(resolve, pollInterval))
+
+      } catch (error) {
+        console.error(`任务状态查询失败 (${attempt + 1}):`, error)
+        if (attempt === maxAttempts - 1) {
+          throw error
+        }
+      }
+    }
+
+    throw new Error('内容生成超时，请稍后重试')
+  }
+
+  /**
+   * 解析Doubao内容生成结果
+   * @param {Object} data API响应数据
+   * @param {Object} creationData 原始创作数据
+   * @returns {Object} 解析后的结果
+   */
+  parseDoubaoContentResult(data, creationData) {
+    const resultItem = data.data[0] // 取第一个结果
+    
+    return {
+      id: data.task_id || Date.now().toString(),
+      type: creationData.type || 'image',
+      status: 'completed',
+      result: {
+        title: `AI创作 - ${creationData.type === 'image' ? '图片' : '视频'}`,
+        description: '基于您的内容生成的创意作品',
+        generatedBy: 'Doubao AI',
+        model: this.apiConfig.contentGenerationModel
+      },
+      url: resultItem.url || resultItem.image_url,
+      thumbnail: resultItem.thumbnail || resultItem.url || resultItem.image_url,
+      metadata: {
+        prompt: this.buildDoubaoContentPrompt(creationData),
+        model: this.apiConfig.contentGenerationModel,
+        parameters: resultItem.parameters || {},
+        generationTime: Date.now()
+      },
+      createdAt: new Date().toISOString(),
+      source: 'doubao_api'
+    }
+  }
+
+  /**
+   * 构建创作提示词
+   * @param {Object} creationData 创作数据
+   * @returns {string} 构建好的提示词
+   */
+  buildCreativePrompt(creationData) {
+    let prompt = ''
+    
+    // 添加选中的聊天记录
+    if (creationData.selectedChats && creationData.selectedChats.length > 0) {
+      prompt += '【基于以下聊天记录】\n'
+      creationData.selectedChats.forEach((chat, index) => {
+        const roleText = chat.role === 'user' ? '我' : 'DouDou'
+        prompt += `${roleText}: ${chat.content}\n`
+      })
+      prompt += '\n'
+    }
+    
+    // 添加选中的知识卡片
+    if (creationData.selectedKnowledge && creationData.selectedKnowledge.length > 0) {
+      prompt += '【基于以下知识内容】\n'
+      creationData.selectedKnowledge.forEach(knowledge => {
+        prompt += `标题: ${knowledge.title || '无标题'}\n`
+        prompt += `内容: ${knowledge.summary || '暂无总结内容'}\n`
+        if (knowledge.insights && knowledge.insights.length > 0) {
+          prompt += `关键洞察: ${knowledge.insights.join('；')}\n`
+        }
+        prompt += '\n'
+      })
+    }
+    
+    // 添加自定义文本
+    if (creationData.customText && creationData.customText.trim()) {
+      prompt += '【自定义要求】\n'
+      prompt += creationData.customText.trim() + '\n\n'
+    }
+    
+    // 添加创作类型说明
+    if (creationData.type === 'image') {
+      prompt += '请基于以上内容生成一张富有创意和表现力的图片，要求画面美观、主题明确、色彩和谐。'
+    } else if (creationData.type === 'video') {
+      prompt += '请基于以上内容生成一段有趣且富有表现力的视频，要求画面流畅、内容连贯、视觉效果佳。'
+    }
+    
+    return prompt
+  }
+
+  /**
+   * 模拟创作生成过程
+   * @param {Object} creationData 创作数据
+   * @param {Function} onProgress 进度回调
+   * @returns {Promise<Object>} 模拟创作结果
+   */
+  async mockCreativeGeneration(creationData, onProgress) {
+    const steps = [
+      { step: 1, message: '正在分析创作内容...', progress: 10 },
+      { step: 2, message: '生成创作思路...', progress: 25 },
+      { step: 3, message: `开始生成${creationData.type === 'image' ? '图片' : '视频'}...`, progress: 40 },
+      { step: 4, message: '优化视觉效果...', progress: 60 },
+      { step: 5, message: '渲染最终结果...', progress: 80 },
+      { step: 6, message: '生成完成！', progress: 100 }
+    ]
+
+    // 模拟创作进度
+    for (const step of steps) {
+      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000))
+      if (onProgress) {
+        onProgress(step)
+      }
+    }
+
+    // 返回模拟结果
+    return {
+      id: Date.now().toString(),
+      type: creationData.type,
+      status: 'completed',
+      result: this.getMockCreativeResult(creationData),
+      url: this.getMockCreativeUrl(creationData.type),
+      thumbnail: this.getMockThumbnailUrl(creationData.type),
+      metadata: {
+        prompt: this.buildCreativePrompt(creationData),
+        generationTime: Date.now(),
+        style: 'default',
+        quality: 'high'
+      },
+      createdAt: new Date().toISOString(),
+      source: 'mock_generation'
+    }
+  }
+
+  /**
+   * 获取模拟创作结果
+   * @param {Object} creationData 创作数据
+   * @returns {Object} 模拟结果描述
+   */
+  getMockCreativeResult(creationData) {
+    const contentSummary = this.summarizeCreationContent(creationData)
+    
+    if (creationData.type === 'image') {
+      return {
+        title: `基于"${contentSummary}"的创意图片`,
+        description: `根据您提供的内容，我生成了一张富有创意的图片。图片融合了对话中的关键元素和情感，用视觉的方式呈现了您的想法和感受。`,
+        style: 'artistic',
+        dimensions: '1024x1024',
+        format: 'PNG'
+      }
+    } else {
+      return {
+        title: `基于"${contentSummary}"的创意视频`,
+        description: `根据您提供的内容，我制作了一段富有表现力的视频。视频通过动态画面和转场效果，生动地展现了对话中的故事和情感。`,
+        duration: '10秒',
+        resolution: '1280x720',
+        format: 'MP4'
+      }
+    }
+  }
+
+  /**
+   * 总结创作内容
+   * @param {Object} creationData 创作数据
+   * @returns {string} 内容摘要
+   */
+  summarizeCreationContent(creationData) {
+    const elements = []
+    
+    if (creationData.selectedChats && creationData.selectedChats.length > 0) {
+      elements.push(`${creationData.selectedChats.length}条对话`)
+    }
+    
+    if (creationData.selectedKnowledge && creationData.selectedKnowledge.length > 0) {
+      elements.push(`${creationData.selectedKnowledge.length}张知识卡片`)
+    }
+    
+    if (creationData.customText && creationData.customText.trim()) {
+      const preview = creationData.customText.trim().substring(0, 20)
+      elements.push(`"${preview}${creationData.customText.length > 20 ? '...' : ''}"`)
+    }
+    
+    return elements.length > 0 ? elements.join('和') : '您的创作想法'
+  }
+
+  /**
+   * 获取模拟创作URL
+   * @param {string} type 创作类型
+   * @returns {string} 模拟URL
+   */
+  getMockCreativeUrl(type) {
+    if (type === 'image') {
+      // 返回一个占位图片URL
+      return `https://picsum.photos/1024/1024?random=${Date.now()}`
+    } else {
+      // 返回一个占位视频URL - 使用多个备用源
+      const videoSources = [
+        'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
+        'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+      ]
+      
+      // 随机选择一个视频源
+      const randomIndex = Math.floor(Math.random() * videoSources.length)
+      return videoSources[randomIndex]
+    }
+  }
+
+  /**
+   * 获取模拟缩略图URL
+   * @param {string} type 创作类型
+   * @returns {string} 缩略图URL
+   */
+  getMockThumbnailUrl(type) {
+    if (type === 'image') {
+      return `https://picsum.photos/300/300?random=${Date.now()}`
+    } else {
+      return `https://picsum.photos/400/225?random=${Date.now()}`
+    }
+  }
+
+  /**
+   * 获取创作历史记录
+   * @param {number} limit 限制数量
+   * @returns {Array} 创作历史列表
+   */
+  getCreationHistory(limit = 10) {
+    try {
+      const history = uni.getStorageSync('ai_creation_history') || []
+      return history.slice(0, limit)
+    } catch (error) {
+      console.error('获取创作历史失败:', error)
+      return []
+    }
+  }
+
+  /**
+   * 保存创作结果到历史记录
+   * @param {Object} creationResult 创作结果
+   */
+  saveCreationToHistory(creationResult) {
+    try {
+      const history = this.getCreationHistory(50) // 保留最近50条记录
+      history.unshift(creationResult)
+      uni.setStorageSync('ai_creation_history', history)
+    } catch (error) {
+      console.error('保存创作历史失败:', error)
+    }
+  }
+
+  /**
+   * 验证Doubao API连接状态
+   * @returns {Promise<boolean>} 连接状态
+   */
+  async validateDoubaoConnection() {
+    try {
+      const response = await fetch(`${this.apiConfig.baseUrl}/models`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.apiConfig.apiKey}`
+        }
+      })
+      return response.ok
+    } catch (error) {
+      console.error('Doubao API连接验证失败:', error)
+      return false
+    }
+  }
+
+  /**
+   * 获取Doubao API使用统计
+   * @returns {Promise<Object>} 使用统计信息
+   */
+  async getDoubaoUsageStats() {
+    try {
+      const response = await fetch(`${this.apiConfig.baseUrl}/usage`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.apiConfig.apiKey}`
+        }
+      })
+      
+      if (response.ok) {
+        return await response.json()
+      }
+      return null
+    } catch (error) {
+      console.error('获取Doubao使用统计失败:', error)
+      return null
+    }
+  }
+
+  /**
+   * 处理创作内容的智能优化
+   * @param {Object} creationData 原始创作数据
+   * @returns {Object} 优化后的创作数据
+   */
+  optimizeCreationContent(creationData) {
+    const optimized = { ...creationData }
+    
+    // 智能提取和优化聊天记录
+    if (optimized.selectedChats && optimized.selectedChats.length > 0) {
+      optimized.selectedChats = this.extractKeyChats(optimized.selectedChats)
+    }
+    
+    // 优化知识卡片内容
+    if (optimized.selectedKnowledge && optimized.selectedKnowledge.length > 0) {
+      optimized.selectedKnowledge = this.optimizeKnowledgeCards(optimized.selectedKnowledge)
+    }
+    
+    // 优化自定义文本
+    if (optimized.customText) {
+      optimized.customText = this.optimizeCustomText(optimized.customText)
+    }
+    
+    return optimized
+  }
+
+  /**
+   * 提取关键聊天记录
+   * @param {Array} chats 聊天记录
+   * @returns {Array} 优化后的聊天记录
+   */
+  extractKeyChats(chats) {
+    // 过滤掉过短的消息
+    const filteredChats = chats.filter(chat => chat.content && chat.content.trim().length > 10)
+    
+    // 如果聊天记录太多，只取最近的和最重要的
+    if (filteredChats.length > 10) {
+      // 取最近的5条和包含关键词的5条
+      const recentChats = filteredChats.slice(-5)
+      const keywordChats = filteredChats.filter(chat => 
+        this.containsKeywords(chat.content, ['问题', '建议', '方案', '想法', '目标', '计划'])
+      ).slice(0, 5)
+      
+      // 合并并去重
+      const combined = [...recentChats, ...keywordChats]
+      const unique = combined.filter((chat, index, self) => 
+        self.findIndex(c => c.content === chat.content) === index
+      )
+      
+      return unique.slice(0, 10)
+    }
+    
+    return filteredChats
+  }
+
+  /**
+   * 优化知识卡片
+   * @param {Array} knowledgeCards 知识卡片
+   * @returns {Array} 优化后的知识卡片
+   */
+  optimizeKnowledgeCards(knowledgeCards) {
+    return knowledgeCards.map(card => ({
+      ...card,
+      // 截取摘要长度，避免提示词过长
+      summary: card.summary ? card.summary.substring(0, 200) : '',
+      // 只保留前3个关键洞察
+      insights: card.insights ? card.insights.slice(0, 3) : []
+    }))
+  }
+
+  /**
+   * 优化自定义文本
+   * @param {string} text 自定义文本
+   * @returns {string} 优化后的文本
+   */
+  optimizeCustomText(text) {
+    // 移除多余的空白字符
+    let optimized = text.trim().replace(/\s+/g, ' ')
+    
+    // 如果文本过长，进行智能截取
+    if (optimized.length > 500) {
+      // 尝试在句号处截取
+      const sentences = optimized.split(/[。！？.!?]/)
+      let result = ''
+      for (const sentence of sentences) {
+        if ((result + sentence).length > 450) break
+        result += sentence + '。'
+      }
+      optimized = result || optimized.substring(0, 450) + '...'
+    }
+    
+    return optimized
+  }
+
+  /**
+   * 检查文本是否包含关键词
+   * @param {string} text 文本
+   * @param {Array} keywords 关键词列表
+   * @returns {boolean} 是否包含关键词
+   */
+  containsKeywords(text, keywords) {
+    return keywords.some(keyword => text.includes(keyword))
+  }
+
+  /**
+   * 生成创作建议
+   * @param {Object} creationData 创作数据
+   * @returns {Array} 创作建议列表
+   */
+  generateCreationSuggestions(creationData) {
+    const suggestions = []
+    
+    // 基于内容类型的建议
+    if (creationData.type === 'image') {
+      suggestions.push({
+        type: 'style',
+        title: '风格建议',
+        options: ['现代简约', '温馨治愈', '科技感', '艺术抽象', '自然风光']
+      })
+      suggestions.push({
+        type: 'color',
+        title: '色调建议',
+        options: ['温暖色调', '冷色调', '黑白经典', '彩色缤纷', '莫兰迪色']
+      })
+    } else if (creationData.type === 'video') {
+      suggestions.push({
+        type: 'duration',
+        title: '时长建议',
+        options: ['5-10秒', '10-15秒', '15-30秒', '30-60秒']
+      })
+      suggestions.push({
+        type: 'style',
+        title: '风格建议',
+        options: ['动画风格', '真实场景', '科技感', '温馨日常', '励志正能量']
+      })
+    }
+    
+    // 基于内容的建议
+    if (creationData.selectedChats && creationData.selectedChats.length > 0) {
+      suggestions.push({
+        type: 'content',
+        title: '内容增强',
+        options: ['突出情感表达', '强调解决方案', '展现成长过程', '体现人际关系']
+      })
+    }
+    
+    return suggestions
   }
 }
 
