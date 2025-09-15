@@ -598,6 +598,9 @@ const onReachBottom = async () => {
   justify-content: space-between;
   padding: 0 30rpx;
   z-index: 2;
+  /* 右侧安全区，避免右上角按钮被裁剪 */
+  padding-right: calc(30rpx + env(safe-area-inset-right));
+  padding-right: calc(30rpx + constant(safe-area-inset-right));
 }
 
 .header-left {
@@ -646,6 +649,9 @@ const onReachBottom = async () => {
   flex: 1;
   display: flex;
   justify-content: flex-end;
+  /* 冗余保护：再加一层右侧安全区 */
+  padding-right: env(safe-area-inset-right);
+  padding-right: constant(safe-area-inset-right);
 }
 
 .add-friend-btn {
