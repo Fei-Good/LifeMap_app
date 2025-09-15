@@ -354,7 +354,7 @@ const friends = ref([
   {
     id: 'friend_liguozheng',
     name: '李国正',
-    avatar: '/static/avatars/李国正.jpeg',
+    avatar: '/static/avatars/liguozheng.jpeg',
     status: 'online',
     location: '武汉',
     mbti: 'ENTP',
@@ -365,7 +365,7 @@ const friends = ref([
   {
     id: 'friend_afly',
     name: '阿飞',
-    avatar: '/static/avatars/阿飞.jpeg',
+    avatar: '/static/avatars/afei.jpeg',
     status: 'busy',
     location: '汕头',
     mbti: 'INFJ',
@@ -376,7 +376,7 @@ const friends = ref([
   {
     id: 'friend_haodi',
     name: '浩迪',
-    avatar: '/static/avatars/浩迪.jpeg',
+    avatar: '/static/avatars/haodi.jpeg',
     status: 'away',
     location: '广州',
     mbti: 'INFP',
@@ -387,7 +387,7 @@ const friends = ref([
   {
     id: 'friend_edvina',
     name: 'Edvina',
-    avatar: '/static/avatars/Edvina.jpeg',
+    avatar: '/static/avatars/edvina.jpeg',
     status: 'offline',
     location: '新加坡',
     mbti: 'ENTJ',
