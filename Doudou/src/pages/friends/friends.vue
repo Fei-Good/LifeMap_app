@@ -282,7 +282,10 @@
 
           <view class="profile-actions">
             <view class="action-btn" @click.stop="openSharedSkills(profileFriend)"><text>技能库</text></view>
-            <view class="action-btn primary" @click.stop="startChat(profileFriend)"><text>发消息</text></view>
+            <view class="action-btn primary" @click.stop="startChat(profileFriend)">
+              <text class="nav-icon">🔥</text>
+              <text class="nav-text">DouDou</text>
+            </view>
             <view class="action-btn" @click.stop="startCall(profileFriend)"><text>语音通话</text></view>
           </view>
         </view>
@@ -1153,7 +1156,20 @@ const onReachBottom = async () => {
   font-size: 28rpx; font-weight: 500;
 }
 .profile-actions .action-btn:active { transform: scale(0.98); box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06); }
-.profile-actions .action-btn.primary { background: linear-gradient(135deg, #5bcf5d 0%, #4CAF50 100%); color: #fff; }
+.profile-actions .action-btn.primary {
+  display: flex; align-items: center; gap: 8rpx;
+  background: rgba(255, 153, 0, 0.12);
+  border: 1rpx solid #FFC58F;
+  color: #FF9900;
+}
+.profile-actions .action-btn.primary .nav-icon {
+  width: 50rpx; height: 50rpx; border-radius: 50%;
+  background: #FFC58F; color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 24rpx;
+}
+.profile-actions .action-btn.primary .nav-text {
+  font-size: 26rpx; color: #FF9900; font-weight: 600;
+}
 
 @keyframes pulse {
   0% { transform: scale(1); opacity: 1; }
