@@ -266,12 +266,16 @@
         </view>
       </view>
     </view>
+
+    <!-- 底部导航栏 -->
+    <BottomNavigation currentPage="knowledge" />
   </view>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import aiService from '@/utils/aiService'
+import BottomNavigation from '@/components/BottomNavigation.vue'
 
 // 工具函数
 const generateMessageId = () => {
@@ -639,6 +643,7 @@ const aiAnalyzeSingleCard = async (card) => {
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  padding-bottom: 68px; /* 为底部导航栏留出空间 */
 }
 
 /* 状态栏占位 */

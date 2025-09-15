@@ -485,6 +485,9 @@
         </scroll-view>
       </view>
     </view>
+
+    <!-- 底部导航栏 -->
+    <BottomNavigation currentPage="chat" />
   </view>
 </template>
 
@@ -492,6 +495,7 @@
 import { ref, onMounted, nextTick } from 'vue'
 import aiService from '@/utils/aiService'
 import apiService from '@/utils/apiService'
+import BottomNavigation from '@/components/BottomNavigation.vue'
 
 // 角色配置
 const roleConfig = {
@@ -1433,6 +1437,7 @@ const goBack = () => {
   background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
+  padding-bottom: 68px; /* 为底部导航栏留出空间 */
   position: relative;
   overflow: hidden;
   

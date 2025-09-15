@@ -91,6 +91,13 @@
 				"navigationBarTitleText": "复盘知识库",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/report/report",
+			"style": {
+				"navigationBarTitleText": "成长报告",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {
