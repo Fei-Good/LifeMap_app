@@ -98,6 +98,13 @@
 				"navigationBarTitleText": "成长报告",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/ai-creation/ai-creation",
+			"style": {
+				"navigationBarTitleText": "AI创作",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {

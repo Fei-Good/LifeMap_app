@@ -441,6 +441,60 @@ class ApiService {
     })
   }
 
+  /**
+   * AI创作内容生成
+   * @param {object} creationData 创作数据
+   * @returns {Promise} 创作结果
+   */
+  async generateCreativeContent(creationData) {
+    return await this.request({
+      url: '/ai/create',
+      method: 'POST',
+      data: creationData,
+      needAuth: true
+    })
+  }
+
+  /**
+   * 获取AI创作历史
+   * @param {object} params 查询参数
+   * @returns {Promise} 创作历史列表
+   */
+  async getCreationHistory(params = {}) {
+    return await this.request({
+      url: '/ai/creations',
+      method: 'GET',
+      data: params,
+      needAuth: true
+    })
+  }
+
+  /**
+   * 获取创作详情
+   * @param {string} creationId 创作ID
+   * @returns {Promise} 创作详情
+   */
+  async getCreationDetail(creationId) {
+    return await this.request({
+      url: `/ai/creations/${creationId}`,
+      method: 'GET',
+      needAuth: true
+    })
+  }
+
+  /**
+   * 删除创作记录
+   * @param {string} creationId 创作ID
+   * @returns {Promise} 删除结果
+   */
+  async deleteCreation(creationId) {
+    return await this.request({
+      url: `/ai/creations/${creationId}`,
+      method: 'DELETE',
+      needAuth: true
+    })
+  }
+
   // ==================== 任务系统 ====================
 
   /**
