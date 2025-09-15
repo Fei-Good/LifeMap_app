@@ -253,6 +253,9 @@
                 <text class="divider">·</text>
                 <text class="location">{{ profileFriend.location || '未知城市' }}</text>
               </view>
+              <view v-if="profileFriend.mbti" class="profile-tags">
+                <text class="mbti-badge">{{ profileFriend.mbti }}</text>
+              </view>
             </view>
           </view>
 
@@ -346,55 +349,49 @@ const categories = ref([
   { key: 'recent', name: '最近' }
 ])
 
-// 好友数据
+// 好友数据（精简为指定4人）
 const friends = ref([
   {
-    id: 'friend1',
-    name: '小明',
-    avatar: '/textures/地图功能/好友（后续可能替换）.png',
+    id: 'friend_liguozheng',
+    name: '李国正',
+    avatar: '/static/avatars/李国正.jpeg',
     status: 'online',
-    location: '北京',
-    lastSeen: new Date(Date.now() - 1000 * 60 * 5), // 5分钟前
+    location: '武汉',
+    mbti: 'ENTP',
+    lastSeen: new Date(Date.now() - 1000 * 60 * 3),
     isOnline: true,
     category: 'recent'
   },
   {
-    id: 'friend2',
-    name: '小红',
-    avatar: '/textures/地图功能/好友（后续可能替换）.png',
+    id: 'friend_afly',
+    name: '阿飞',
+    avatar: '/static/avatars/阿飞.jpeg',
     status: 'busy',
-    location: '上海',
-    lastSeen: new Date(Date.now() - 1000 * 60 * 30), // 30分钟前
+    location: '汕头',
+    mbti: 'INFJ',
+    lastSeen: new Date(Date.now() - 1000 * 60 * 15),
     isOnline: true,
     category: 'recent'
   },
   {
-    id: 'friend3',
-    name: '小李',
-    avatar: '/textures/地图功能/好友（后续可能替换）.png',
+    id: 'friend_haodi',
+    name: '浩迪',
+    avatar: '/static/avatars/浩迪.jpeg',
     status: 'away',
     location: '广州',
-    lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2小时前
+    mbti: 'INFP',
+    lastSeen: new Date(Date.now() - 1000 * 60 * 60),
     isOnline: true,
     category: 'recent'
   },
   {
-    id: 'friend4',
-    name: '小王',
-    avatar: '/textures/地图功能/好友（后续可能替换）.png',
+    id: 'friend_edvina',
+    name: 'Edvina',
+    avatar: '/static/avatars/Edvina.jpeg',
     status: 'offline',
-    location: '深圳',
-    lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1天前
-    isOnline: false,
-    category: 'recent'
-  },
-  {
-    id: 'friend5',
-    name: '小张',
-    avatar: '/textures/地图功能/好友（后续可能替换）.png',
-    status: 'offline',
-    location: '杭州',
-    lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3天前
+    location: '新加坡',
+    mbti: 'ENTJ',
+    lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 24),
     isOnline: false,
     category: 'recent'
   }
@@ -519,8 +516,13 @@ const getLastSeenText = (lastSeen) => {
   }
 }
 
+const formatMbti = (mbti) => {
+  if (!mbti) return ''
+  return String(mbti).toUpperCase()
+}
+
 const openFriendProfile = (friend) => {
-  profileFriend.value = friend
+  profileFriend.value = { ...friend, mbti: formatMbti(friend.mbti) }
   // 模拟统计数据，可替换为接口
   profileStats.value = { chats: 128, days: 365, score: 86 }
   showProfileDialog.value = true
@@ -689,37 +691,22 @@ const removeFriend = (friend) => {
 // 生命周期
 onMounted(async () => {
   console.log('好友列表页面加载完成')
-  // 初始加载（追加到默认静态数据后面，真实环境可改为覆盖）
-  isRefreshing.value = true
-  page.value = 1
-  const res = await fetchFriends(page.value)
-  friends.value = [...friends.value, ...res.list]
-  hasMore.value = res.hasMore
-  isRefreshing.value = false
+  // 固定四位模拟好友，关闭自动加载更多
+  hasMore.value = false
 })
 
 // 下拉刷新
 const onRefresh = async () => {
   if (isRefreshing.value) return
   isRefreshing.value = true
-  page.value = 1
-  const res = await fetchFriends(page.value)
-  // 刷新覆盖列表（这里保留最初的静态种子数据也可按需清空）
-  const seed = friends.value.slice(0, 5)
-  friends.value = [...seed, ...res.list]
-  hasMore.value = res.hasMore
+  // 模拟刷新：延迟后结束
+  await new Promise(r => setTimeout(r, 400))
   isRefreshing.value = false
 }
 
 // 触底加载更多
 const onReachBottom = async () => {
-  if (isLoadingMore.value || !hasMore.value) return
-  isLoadingMore.value = true
-  page.value += 1
-  const res = await fetchFriends(page.value)
-  friends.value = [...friends.value, ...res.list]
-  hasMore.value = res.hasMore
-  isLoadingMore.value = false
+  // 固定数据，不再加载
 }
 </script>
 
@@ -1206,6 +1193,8 @@ const onReachBottom = async () => {
 .profile-main { flex: 1; min-width: 0; }
 .profile-name { font-size: 38rpx; font-weight: 700; color: #2f2f2f; }
 .profile-meta { display: flex; align-items: center; gap: 16rpx; color: #666; font-size: 26rpx; margin-top: 12rpx; }
+.profile-tags { margin-top: 10rpx; }
+.mbti-badge { display: inline-block; padding: 8rpx 14rpx; border-radius: 999rpx; background: #eef9ff; color: #0077cc; font-size: 22rpx; font-weight: 600; }
 .status-dot { width: 16rpx; height: 16rpx; border-radius: 50%; box-shadow: 0 0 0 4rpx rgba(76,175,80,0.08); animation: pulse 1.6s infinite; }
 .status-dot.online { background: #4CAF50; }
 .status-dot.busy { background: #FF5722; }
