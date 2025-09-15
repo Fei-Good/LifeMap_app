@@ -175,11 +175,42 @@
         <view class="popup-body">
           <view class="input-group">
             <text class="input-label">好友ID或昵称</text>
-            <input 
-              class="input-field" 
-              placeholder="请输入好友ID或昵称"
-              v-model="newFriendId"
-            />
+            <view class="search-input-wrapper">
+              <input 
+                class="input-field" 
+                placeholder="请输入好友ID或昵称"
+                v-model="newFriendId"
+                @input="onSearchInput"
+                @confirm="onSearchInput"
+                confirm-type="search"
+              />
+              <view v-if="newFriendId" class="clear-btn" @click="clearSearch">✕</view>
+            </view>
+            <!-- 搜索建议列表 -->
+            <view class="suggestions" v-if="newFriendId">
+              <view v-if="searchLoading" class="suggestion-loading">正在搜索...</view>
+              <view v-else-if="searchError" class="suggestion-error">{{ searchError }}</view>
+              <view v-else>
+                <view 
+                  v-for="user in suggestions" 
+                  :key="user.id || user.userId || user.username"
+                  class="suggestion-item"
+                  :class="{ selected: selectedUser && (selectedUser.id || selectedUser.userId) === (user.id || user.userId) }"
+                  @click="selectSuggestion(user)"
+                >
+                  <image 
+                    class="suggestion-avatar" 
+                    :src="user.avatar || '/textures/地图功能/好友（后续可能替换）.png'" 
+                    mode="aspectFill"
+                  />
+                  <view class="suggestion-info">
+                    <text class="suggestion-name">{{ user.name || user.nickname || user.username }}</text>
+                    <text class="suggestion-meta">ID: {{ user.id || user.userId || '-' }}</text>
+                  </view>
+                </view>
+                <view v-if="!suggestions.length" class="suggestion-empty">无匹配结果</view>
+              </view>
+            </view>
           </view>
           <view class="input-group">
             <text class="input-label">验证消息</text>
@@ -194,7 +225,7 @@
           <view class="popup-btn cancel-btn" @click="closeAddFriendDialog">
             <text class="btn-text">取消</text>
           </view>
-          <view class="popup-btn confirm-btn" @click="sendFriendRequest">
+          <view class="popup-btn confirm-btn" :class="{ disabled: isConfirmDisabled }" @click="sendFriendRequest" :aria-disabled="isConfirmDisabled">
             <text class="btn-text">发送请求</text>
           </view>
         </view>
@@ -227,6 +258,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import apiService from '../../utils/apiService.js'
 
 // 响应式数据
 const searchText = ref('')
@@ -236,6 +268,18 @@ const showFriendMenuVisible = ref(false)
 const selectedFriend = ref(null)
 const newFriendId = ref('')
 const verifyMessage = ref('')
+
+// 添加好友搜索相关
+const searchLoading = ref(false)
+const searchError = ref('')
+const suggestions = ref([])
+const selectedUser = ref(null)
+let searchTimer = null
+
+const isConfirmDisabled = computed(() => {
+  // 没有选择用户，且输入也为空，则禁用
+  return !(selectedUser.value || (newFriendId.value && newFriendId.value.trim().length >= 1))
+})
 
 // 刷新与分页状态
 const isRefreshing = ref(false)
@@ -458,10 +502,21 @@ const closeAddFriendDialog = () => {
   showAddDialog.value = false
   newFriendId.value = ''
   verifyMessage.value = ''
+  searchLoading.value = false
+  searchError.value = ''
+  suggestions.value = []
+  selectedUser.value = null
+  if (searchTimer) {
+    clearTimeout(searchTimer)
+    searchTimer = null
+  }
 }
 
-const sendFriendRequest = () => {
-  if (!newFriendId.value.trim()) {
+const sendFriendRequest = async () => {
+  if (isConfirmDisabled.value) {
+    return
+  }
+  if (!selectedUser.value && !newFriendId.value.trim()) {
     uni.showToast({
       title: '请输入好友ID或昵称',
       icon: 'none'
@@ -469,12 +524,75 @@ const sendFriendRequest = () => {
     return
   }
 
-  uni.showToast({
-    title: '好友请求已发送',
-    icon: 'success'
-  })
-  
+  try {
+    // 这里可以调用实际的添加好友 API，例如 apiService.addFriend
+    // 暂时使用提示模拟
+    const displayName = selectedUser.value?.name || selectedUser.value?.nickname || selectedUser.value?.username || newFriendId.value
+    uni.showToast({
+      title: `已向 ${displayName} 发送请求`,
+      icon: 'success'
+    })
+  } catch (e) {
+    uni.showToast({
+      title: e.message || '发送失败',
+      icon: 'none'
+    })
+    return
+  }
+
   closeAddFriendDialog()
+}
+
+const onSearchInput = () => {
+  selectedUser.value = null
+  searchError.value = ''
+  if (searchTimer) clearTimeout(searchTimer)
+  const keyword = newFriendId.value.trim()
+  if (!keyword) {
+    suggestions.value = []
+    searchLoading.value = false
+    return
+  }
+  searchLoading.value = true
+  searchTimer = setTimeout(fetchSuggestions, 300)
+}
+
+const fetchSuggestions = async () => {
+  const keyword = newFriendId.value.trim()
+  if (!keyword) {
+    searchLoading.value = false
+    suggestions.value = []
+    return
+  }
+  try {
+    searchError.value = ''
+    const res = await apiService.searchUsers(keyword, 8)
+    // 兼容不同返回结构
+    suggestions.value = res?.data?.users || res?.data || res || []
+  } catch (e) {
+    console.error('搜索用户失败:', e)
+    searchError.value = e.message || '搜索失败，请稍后重试'
+    suggestions.value = []
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+const selectSuggestion = (user) => {
+  selectedUser.value = user
+  newFriendId.value = user.name || user.nickname || user.username || `${user.id || user.userId}`
+}
+
+const clearSearch = () => {
+  newFriendId.value = ''
+  suggestions.value = []
+  selectedUser.value = null
+  searchError.value = ''
+  searchLoading.value = false
+  if (searchTimer) {
+    clearTimeout(searchTimer)
+    searchTimer = null
+  }
 }
 
 const openFriendMenu = (friend) => {
@@ -1075,6 +1193,81 @@ const onReachBottom = async () => {
   }
 }
 
+.search-input-wrapper {
+  position: relative;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 16rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 24rpx;
+}
+
+.suggestions {
+  margin-top: 16rpx;
+  background: #fff;
+  border: 2rpx solid #eee;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.suggestion-loading,
+.suggestion-error,
+.suggestion-empty {
+  padding: 24rpx;
+  font-size: 26rpx;
+  color: #999;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+  cursor: pointer;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &.selected {
+    background: #f6fff6;
+  }
+}
+
+.suggestion-avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: #f0f0f0;
+}
+
+.suggestion-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestion-name {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.suggestion-meta {
+  font-size: 22rpx;
+  color: #999;
+}
+
 .textarea-field {
   height: 120rpx;
   resize: none;
@@ -1108,6 +1301,9 @@ const onReachBottom = async () => {
     
     &:active {
       background: #45a049;
+    }
+    &.disabled {
+      opacity: 0.6;
     }
   }
 }
