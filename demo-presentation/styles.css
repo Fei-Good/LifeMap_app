@@ -1,0 +1,34 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #111; background: #0f1115; }
+
+.hero { height: 80vh; display: grid; place-items: center; background: radial-gradient(1200px 600px at 50% 0%, #1a1e27, #0f1115); color: #fff; }
+.hero-content h1 { font-size: 48px; margin: 0 0 12px; }
+.hero-content p { opacity: .8; margin: 0; }
+
+main { width: 100%; }
+.section { min-height: 100vh; display: grid; grid-template-columns: 1fr minmax(280px, 520px) 1fr; gap: 24px; align-items: center; padding: 60px 24px; background: #0f1115; }
+.section.alt { background: #0b0d12; }
+
+.side { color: #e5e7eb; max-width: 520px; }
+.side h2 { font-size: 28px; margin: 0 0 8px; color: #fff; }
+.side p { margin: 0; opacity: .85; line-height: 1.65; }
+
+.phone { display: grid; place-items: center; }
+.device { width: 360px; height: 740px; border-radius: 36px; padding: 10px; background: linear-gradient(145deg, #1d2230, #0b0f18); box-shadow: 0 20px 60px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.06); }
+.device iframe { width: 100%; height: 100%; border: none; border-radius: 26px; background: #fff; }
+
+.footer { padding: 36px; text-align: center; color: #9ca3af; background: #0b0d12; }
+
+/* reveal animations */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* responsive */
+@media (max-width: 1024px) {
+  .section { grid-template-columns: 1fr; gap: 32px; text-align: center; }
+  .side { margin: 0 auto; }
+}
+
+@media (max-width: 420px) {
+  .device { width: 300px; height: 620px; border-radius: 28px; }
+}
