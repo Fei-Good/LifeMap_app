@@ -126,6 +126,13 @@
 				"navigationBarTitleText": "人生地图",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/friends/friends",
+			"style": {
+				"navigationBarTitleText": "好友列表",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {

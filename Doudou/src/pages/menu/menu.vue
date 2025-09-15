@@ -106,6 +106,14 @@ const pages = ref([
     status: '可用'
   },
   {
+    path: 'pages/friends/friends',
+    title: '好友列表',
+    description: '管理你的好友关系',
+    icon: '👥',
+    category: 'core',
+    status: '可用'
+  },
+  {
     path: 'pages/task/task',
     title: '任务系统',
     description: '日常任务管理和完成',
