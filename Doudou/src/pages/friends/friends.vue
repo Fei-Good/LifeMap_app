@@ -377,7 +377,7 @@ const friends = ref([
     name: '阿飞',
     avatar: '/static/avatars/afei.jpeg',
     status: 'busy',
-    location: '汕头',
+    location: '杭州',
     mbti: 'INFJ',
     lastSeen: new Date(Date.now() - 1000 * 60 * 15),
     isOnline: true,
