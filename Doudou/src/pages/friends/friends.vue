@@ -94,6 +94,9 @@
                 <text class="friend-location">{{ friend.location }}</text>
               </view>
               <view class="friend-actions">
+                <view class="action-btn skills-btn" @click.stop="openSharedSkills(friend)">
+                  <text class="action-icon">📚</text>
+                </view>
                 <view class="action-btn chat-btn" @click.stop="startChat(friend)">
                   <text class="action-icon">💬</text>
                 </view>
@@ -132,6 +135,9 @@
                 <text class="friend-location">{{ friend.location }}</text>
               </view>
               <view class="friend-actions">
+                <view class="action-btn skills-btn" @click.stop="openSharedSkills(friend)">
+                  <text class="action-icon">📚</text>
+                </view>
                 <view class="action-btn message-btn" @click.stop="sendMessage(friend)">
                   <text class="action-icon">📝</text>
                 </view>
@@ -275,6 +281,7 @@
           </view>
 
           <view class="profile-actions">
+            <view class="action-btn" @click.stop="openSharedSkills(profileFriend)"><text>技能库</text></view>
             <view class="action-btn primary" @click.stop="startChat(profileFriend)"><text>发消息</text></view>
             <view class="action-btn" @click.stop="startCall(profileFriend)"><text>语音通话</text></view>
           </view>
@@ -543,6 +550,14 @@ const startCall = (friend) => {
   uni.showToast({
     title: `正在呼叫 ${friend.name}...`,
     icon: 'none'
+  })
+}
+
+const openSharedSkills = (friend) => {
+  // 跳转到知识库页，并带上好友ID以过滤共享资源
+  const id = friend?.id || ''
+  uni.navigateTo({
+    url: `/pages/knowledge/knowledge?friendId=${encodeURIComponent(id)}&friendName=${encodeURIComponent(friend?.name || '')}`
   })
 }
 
@@ -1068,6 +1083,14 @@ const onReachBottom = async () => {
     
     &:active {
       background: #BBDEFB;
+    }
+  }
+  
+  &.skills-btn {
+    background: #EAF7FF;
+    
+    &:active {
+      background: #D6EEFF;
     }
   }
   
