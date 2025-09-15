@@ -2,14 +2,30 @@
   <view class="questionnaire-result-container">
     <!-- 顶部感谢区域 -->
     <view class="header-section">
-      <view class="thank-you-header">
+      <view class="doudou-avatar">
         <image 
-          class="doudou-character"
-          src="@/static/login/DouDou_主形象.png"
+          class="avatar-image"
+          src="@/static/QA/火苗.png"
           mode="aspectFit"
         />
-        <text class="thank-title">感谢你帮助DouDou</text>
-        <text class="thank-subtitle">其实DouDou和你一样，都在成长的路上</text>
+      </view>
+      <view class="thank-you-header">
+        <view class="doudou-main-character">
+          <image 
+            class="doudou-character"
+            src="@/static/login/DouDou_主形象.png"
+            mode="aspectFit"
+          />
+          <view class="sparkle-effects">
+            <text class="sparkle sparkle-1">✨</text>
+            <text class="sparkle sparkle-2">💫</text>
+            <text class="sparkle sparkle-3">⭐</text>
+          </view>
+        </view>
+        <view class="thank-message">
+          <text class="thank-title">感谢你帮助DouDou (´∀｀)♡</text>
+          <text class="thank-subtitle">其实DouDou和你一样，都在成长的路上呢～</text>
+        </view>
       </view>
     </view>
 
@@ -18,12 +34,20 @@
       <!-- 加载状态 -->
       <view v-if="isGenerating" class="loading-section">
         <view class="loading-animation">
-          <image 
-            class="loading-gif"
-            src="@/static/QA/火苗.png"
-            mode="aspectFit"
-          />
-          <text class="loading-text">DouDou正在为你生成专属报告...</text>
+          <view class="loading-doudou">
+            <image 
+              class="loading-gif"
+              src="@/static/QA/2_matting.gif"
+              mode="aspectFit"
+            />
+            <view class="loading-effects">
+              <text class="loading-dot dot-1">●</text>
+              <text class="loading-dot dot-2">●</text>
+              <text class="loading-dot dot-3">●</text>
+            </view>
+          </view>
+          <text class="loading-text">DouDou正在努力为你生成专属报告...</text>
+          <text class="loading-subtext">请稍等片刻，马上就好啦 (｡♥‿♥｡)</text>
         </view>
       </view>
 
@@ -32,26 +56,56 @@
         <!-- 第一部分：你并不孤单 -->
         <view class="report-section emotion-comfort" v-if="reportData.emotionalSupport">
           <view class="section-header">
-            <text class="section-icon">⭐</text>
-            <text class="section-title">你并不孤单</text>
+            <view class="header-doudou">
+              <image 
+                class="section-doudou"
+                src="@/static/QA/1_matting.gif"
+                mode="aspectFit"
+              />
+            </view>
+            <view class="header-content">
+              <text class="section-icon">💝</text>
+              <text class="section-title">你并不孤单哦</text>
+              <text class="section-subtitle">DouDou陪着你呢～</text>
+            </view>
           </view>
           <view class="section-content">
             <text class="comfort-text">{{ displayText.emotionalSupport }}</text>
-            <image 
-              class="doudou-corner"
-              src="@/static/DouDou比心.png"
-              mode="aspectFit"
-            />
+            <view class="comfort-decoration">
+              <image 
+                class="doudou-corner"
+                src="@/static/DouDou比心.png"
+                mode="aspectFit"
+              />
+              <view class="heart-effects">
+                <text class="heart heart-1">💕</text>
+                <text class="heart heart-2">💖</text>
+                <text class="heart heart-3">💗</text>
+              </view>
+            </view>
           </view>
         </view>
 
         <!-- 第二部分：当前的困扰 -->
         <view class="report-section user-concerns" v-if="reportData.userConcerns">
           <view class="section-header">
-            <text class="section-icon">🤔</text>
-            <text class="section-title">当前的困扰</text>
+            <view class="header-doudou">
+              <image 
+                class="section-doudou"
+                src="@/static/QA/3_matting.gif"
+                mode="aspectFit"
+              />
+            </view>
+            <view class="header-content">
+              <text class="section-icon">🤗</text>
+              <text class="section-title">DouDou理解你的感受</text>
+              <text class="section-subtitle">每个人都会有困扰的时候</text>
+            </view>
           </view>
           <view class="section-content">
+            <view class="concerns-display">
+              <text class="concerns-text">{{ displayText.userConcerns }}</text>
+            </view>
             <view class="concerns-list">
               <view class="concern-item">
                 <view class="bullet-point"></view>
@@ -71,22 +125,40 @@
 
         <!-- 第三部分：你的理想人生 -->
         <view class="report-section personal-goals" v-if="reportData.personalGoals">
-          <view class="ideal-life-label">
-            <text class="label-text">你的理想人生</text>
+          <view class="section-header">
+            <view class="header-doudou">
+              <image 
+                class="section-doudou"
+                src="@/static/QA/4_matting.gif"
+                mode="aspectFit"
+              />
+            </view>
+            <view class="header-content">
+              <text class="section-icon">🌟</text>
+              <text class="section-title">你的理想人生</text>
+              <text class="section-subtitle">让DouDou看看你的梦想吧！</text>
+            </view>
           </view>
           <view class="section-content">
             <view class="goals-display">
               <text class="goals-text">{{ displayText.personalGoals }}</text>
-              <button class="edit-icon" @click="toggleEditMode">✏️</button>
+              <button class="edit-icon" @click="toggleEditMode">
+                <text class="edit-emoji">✏️</text>
+                <text class="edit-text">编辑</text>
+              </button>
             </view>
             <view v-if="isEditingGoals" class="goals-edit">
               <textarea 
                 class="goals-textarea"
                 v-model="editableGoals"
-                placeholder="编辑你的理想人生..."
+                placeholder="请写下你的理想人生，DouDou会陪你一起实现它～"
                 maxlength="500"
                 show-count
               />
+              <view class="edit-actions">
+                <button class="save-btn" @click="toggleEditMode">保存 💾</button>
+                <button class="cancel-btn" @click="isEditingGoals = false">取消</button>
+              </view>
             </view>
           </view>
         </view>
@@ -94,14 +166,17 @@
         <!-- 第四部分：目标分类和行动建议 -->
         <view class="report-section action-suggestions" v-if="reportData.actionSuggestions && reportData.actionSuggestions.length > 0">
           <view class="section-header">
-            <image 
-              class="doudou-goals"
-              src="@/static/DouDou比心.png"
-              mode="aspectFit"
-            />
-            <view class="goals-title">
-              <text class="title-main">为了迈向你的理想人生</text>
-              <text class="title-underline">你需要完成以下目标</text>
+            <view class="header-doudou">
+              <image 
+                class="section-doudou"
+                src="@/static/QA/5_matting.gif"
+                mode="aspectFit"
+              />
+            </view>
+            <view class="header-content">
+              <text class="section-icon">🎨</text>
+              <text class="section-title">一起制定成长计划吧！</text>
+              <text class="section-subtitle">DouDou为你准备了这些小目标</text>
             </view>
           </view>
           
@@ -152,14 +227,31 @@
 
     <!-- 底部按钮 -->
     <view class="bottom-action" v-if="!isGenerating">
+      <view class="doudou-encouragement">
+        <image 
+          class="encouragement-doudou"
+          src="@/static/QA/6_matting.gif"
+          mode="aspectFit"
+        />
+        <view class="encouragement-text">
+          <text class="main-text">准备好了吗？</text>
+          <text class="sub-text">DouDou要和你一起出发啦！ (｡♥‿♥｡)</text>
+        </view>
+      </view>
       <view class="report-source" v-if="reportData.source">
         <text class="source-text">
           {{ getSourceText(reportData.source) }}
         </text>
       </view>
       <button class="action-button" @click="startJourney">
-        <text class="rocket-icon">🚀</text>
-        <text class="button-text">DouDou陪你行动起来</text>
+        <view class="button-content">
+          <text class="rocket-icon">🚀</text>
+          <view class="button-text-group">
+            <text class="button-text">DouDou陪你行动起来</text>
+            <text class="button-subtext">让我们一起加油吧！</text>
+          </view>
+          <text class="arrow-icon">→</text>
+        </view>
       </button>
     </view>
   </view>
@@ -567,43 +659,119 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .questionnaire-result-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #FFE0B2 0%, #FFCC80 100%);
+  background: linear-gradient(135deg, #FFE0B2 0%, #FFCC80 50%, #FFB74D 100%);
   padding-bottom: 120rpx;
+  position: relative;
+  overflow-x: hidden;
 }
-
 
 /* 顶部感谢区域 */
 .header-section {
-  padding: 120rpx 30rpx 40rpx;
+  padding: 60rpx 30rpx 40rpx;
   text-align: center;
+  position: relative;
+}
+
+.doudou-avatar {
+  position: absolute;
+  top: 20rpx;
+  left: 30rpx;
+  z-index: 10;
+}
+
+.avatar-image {
+  width: 60rpx;
+  height: 60rpx;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10rpx); }
 }
 
 .thank-you-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30rpx;
+  gap: 40rpx;
+  margin-top: 40rpx;
+}
+
+.doudou-main-character {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .doudou-character {
-  width: 150rpx;
-  height: 150rpx;
+  width: 200rpx;
+  height: 200rpx;
   border-radius: 50%;
-  background: rgba(255, 193, 7, 0.2);
+  background: radial-gradient(circle, rgba(255, 193, 7, 0.3) 0%, rgba(255, 193, 7, 0) 70%);
   padding: 20rpx;
+  filter: drop-shadow(0 10rpx 30rpx rgba(0, 0, 0, 0.15));
+}
+
+.sparkle-effects {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.sparkle {
+  position: absolute;
+  font-size: 30rpx;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.sparkle-1 {
+  top: 20rpx;
+  right: 30rpx;
+  animation-delay: 0s;
+}
+
+.sparkle-2 {
+  bottom: 40rpx;
+  left: 20rpx;
+  animation-delay: 0.7s;
+}
+
+.sparkle-3 {
+  top: 50rpx;
+  left: 10rpx;
+  animation-delay: 1.4s;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+
+.thank-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
 }
 
 .thank-title {
-  font-size: 36rpx;
-  font-weight: 600;
+  font-size: 40rpx;
+  font-weight: 700;
   color: #2E3A59;
-  text-shadow: 0 2rpx 8rpx rgba(255, 255, 255, 0.3);
+  text-shadow: 0 2rpx 8rpx rgba(255, 255, 255, 0.5);
+  text-align: center;
+  line-height: 1.3;
 }
 
 .thank-subtitle {
-  font-size: 28rpx;
+  font-size: 30rpx;
   color: #666;
-  text-shadow: 0 1rpx 4rpx rgba(255, 255, 255, 0.2);
+  text-shadow: 0 1rpx 4rpx rgba(255, 255, 255, 0.3);
+  text-align: center;
+  line-height: 1.4;
 }
 
 /* 加载状态 */
@@ -613,32 +781,86 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   padding: 100rpx 30rpx;
+  min-height: 400rpx;
 }
 
 .loading-animation {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 40rpx;
+  gap: 50rpx;
+}
+
+.loading-doudou {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .loading-gif {
-  width: 100rpx;
-  height: 100rpx;
-  animation: pulse 1.5s ease-in-out infinite;
+  width: 150rpx;
+  height: 150rpx;
+  animation: bounce 2s ease-in-out infinite;
+  filter: drop-shadow(0 10rpx 20rpx rgba(0, 0, 0, 0.1));
 }
 
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.1); opacity: 1; }
+@keyframes bounce {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20rpx); }
+}
+
+.loading-effects {
+  position: absolute;
+  width: 200rpx;
+  height: 200rpx;
+  pointer-events: none;
+}
+
+.loading-dot {
+  position: absolute;
+  font-size: 20rpx;
+  color: #FF9500;
+  animation: loadingDots 1.5s ease-in-out infinite;
+}
+
+.dot-1 {
+  top: 30rpx;
+  right: 20rpx;
+  animation-delay: 0s;
+}
+
+.dot-2 {
+  bottom: 50rpx;
+  left: 30rpx;
+  animation-delay: 0.5s;
+}
+
+.dot-3 {
+  top: 60rpx;
+  left: 10rpx;
+  animation-delay: 1s;
+}
+
+@keyframes loadingDots {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
 }
 
 .loading-text {
-  font-size: 32rpx;
+  font-size: 36rpx;
   color: #2E3A59;
   text-align: center;
-  opacity: 0.9;
-  font-weight: 500;
+  font-weight: 600;
+  text-shadow: 0 2rpx 8rpx rgba(255, 255, 255, 0.3);
+}
+
+.loading-subtext {
+  font-size: 28rpx;
+  color: #666;
+  text-align: center;
+  margin-top: 15rpx;
+  opacity: 0.8;
 }
 
 /* 报告内容区域 */
@@ -663,21 +885,56 @@ onMounted(async () => {
 .section-header {
   display: flex;
   align-items: center;
-  margin-bottom: 30rpx;
-  padding-bottom: 20rpx;
-  border-bottom: 2rpx solid rgba(255, 149, 0, 0.2);
+  margin-bottom: 40rpx;
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 25rpx;
+  backdrop-filter: blur(10rpx);
+  box-shadow: 0 5rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
+.header-doudou {
+  margin-right: 25rpx;
+  flex-shrink: 0;
+}
+
+.section-doudou {
+  width: 80rpx;
+  height: 80rpx;
+  animation: wiggle 3s ease-in-out infinite;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+.header-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
 .section-icon {
-  font-size: 40rpx;
-  margin-right: 15rpx;
+  font-size: 32rpx;
   color: #FF9500;
+  margin-bottom: 5rpx;
 }
 
 .section-title {
-  font-size: 38rpx;
+  font-size: 36rpx;
   font-weight: 700;
   color: #333;
+  line-height: 1.2;
+}
+
+.section-subtitle {
+  font-size: 26rpx;
+  color: #666;
+  opacity: 0.8;
+  line-height: 1.3;
 }
 
 .edit-button {
@@ -711,76 +968,207 @@ onMounted(async () => {
 
 /* 你并不孤单部分 */
 .emotion-comfort {
-  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 50%, #FFCC80 100%);
+  border: 3rpx solid rgba(255, 193, 7, 0.3);
+}
+
+.comfort-decoration {
+  position: relative;
+  margin-top: 30rpx;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .doudou-corner {
+  width: 100rpx;
+  height: 100rpx;
+  opacity: 0.9;
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.heart-effects {
   position: absolute;
-  bottom: -20rpx;
-  right: -20rpx;
-  width: 80rpx;
-  height: 80rpx;
-  opacity: 0.8;
+  width: 120rpx;
+  height: 120rpx;
+  pointer-events: none;
+}
+
+.heart {
+  position: absolute;
+  font-size: 24rpx;
+  animation: floatHeart 3s ease-in-out infinite;
+}
+
+.heart-1 {
+  top: 10rpx;
+  left: 10rpx;
+  animation-delay: 0s;
+}
+
+.heart-2 {
+  bottom: 20rpx;
+  right: 15rpx;
+  animation-delay: 1s;
+}
+
+.heart-3 {
+  top: 30rpx;
+  right: 5rpx;
+  animation-delay: 2s;
+}
+
+@keyframes floatHeart {
+  0%, 100% { opacity: 0.6; transform: translateY(0px) scale(0.8); }
+  50% { opacity: 1; transform: translateY(-15rpx) scale(1); }
 }
 
 /* 当前的困扰部分 */
+.user-concerns {
+  background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 50%, #A5D6A7 100%);
+  border: 3rpx solid rgba(76, 175, 80, 0.3);
+}
+
+.concerns-display {
+  margin-bottom: 30rpx;
+  padding: 25rpx;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 20rpx;
+  border-left: 5rpx solid #4CAF50;
+}
+
+.concerns-text {
+  font-size: 32rpx;
+  color: #444;
+  line-height: 1.8;
+  font-style: italic;
+}
+
 .concerns-list {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: 25rpx;
 }
 
 .concern-item {
   display: flex;
   align-items: center;
-  gap: 20rpx;
+  gap: 25rpx;
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 15rpx;
+  transition: all 0.3s ease;
+}
+
+.concern-item:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateX(10rpx);
 }
 
 .bullet-point {
-  width: 16rpx;
-  height: 16rpx;
-  background: #FF9500;
+  width: 20rpx;
+  height: 20rpx;
+  background: linear-gradient(45deg, #4CAF50, #45a049);
   border-radius: 50%;
   flex-shrink: 0;
+  box-shadow: 0 2rpx 8rpx rgba(76, 175, 80, 0.3);
 }
 
 .concern-text {
   font-size: 30rpx;
   color: #444;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-weight: 500;
 }
 
 /* 你的理想人生部分 */
-.ideal-life-label {
-  text-align: center;
-  margin-bottom: 30rpx;
-}
-
-.label-text {
-  background: linear-gradient(45deg, #FF9500, #FF8F00);
-  color: #fff;
-  padding: 15rpx 40rpx;
-  border-radius: 50rpx;
-  font-size: 32rpx;
-  font-weight: 600;
-  display: inline-block;
+.personal-goals {
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%);
+  border: 3rpx solid rgba(33, 150, 243, 0.3);
 }
 
 .goals-display {
   display: flex;
   align-items: flex-start;
-  gap: 20rpx;
+  gap: 25rpx;
   position: relative;
+  padding: 25rpx;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 20rpx;
+  border-left: 5rpx solid #2196F3;
 }
 
 .edit-icon {
-  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5rpx;
+  background: linear-gradient(45deg, #2196F3, #1976D2);
+  color: white;
   border: none;
-  font-size: 40rpx;
-  color: #2196F3;
-  padding: 10rpx;
+  border-radius: 15rpx;
+  padding: 15rpx 20rpx;
   cursor: pointer;
   flex-shrink: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 15rpx rgba(33, 150, 243, 0.3);
+}
+
+.edit-icon:hover {
+  transform: translateY(-2rpx);
+  box-shadow: 0 6rpx 20rpx rgba(33, 150, 243, 0.4);
+}
+
+.edit-emoji {
+  font-size: 28rpx;
+}
+
+.edit-text {
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 20rpx;
+  justify-content: flex-end;
+}
+
+.save-btn, .cancel-btn {
+  padding: 15rpx 30rpx;
+  border-radius: 25rpx;
+  border: none;
+  font-size: 28rpx;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-btn {
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  color: white;
+  box-shadow: 0 4rpx 15rpx rgba(76, 175, 80, 0.3);
+}
+
+.cancel-btn {
+  background: rgba(158, 158, 158, 0.2);
+  color: #666;
+  border: 2rpx solid #ccc;
+}
+
+.save-btn:hover {
+  transform: translateY(-2rpx);
+  box-shadow: 0 6rpx 20rpx rgba(76, 175, 80, 0.4);
+}
+
+.cancel-btn:hover {
+  background: rgba(158, 158, 158, 0.3);
 }
 
 /* 目标编辑 */
@@ -807,31 +1195,9 @@ onMounted(async () => {
 }
 
 /* 目标分类和行动建议部分 */
-.goals-title {
-  display: flex;
-  flex-direction: column;
-  gap: 10rpx;
-}
-
-.title-main {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #333;
-}
-
-.title-underline {
-  font-size: 28rpx;
-  color: #FF9500;
-  text-decoration: underline;
-  text-decoration-color: #FF9500;
-  text-decoration-thickness: 2rpx;
-}
-
-.doudou-goals {
-  width: 80rpx;
-  height: 80rpx;
-  margin-right: 20rpx;
-  flex-shrink: 0;
+.action-suggestions {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 50%, #FFE082 100%);
+  border: 3rpx solid rgba(255, 193, 7, 0.3);
 }
 
 /* 目标分类 */
@@ -990,15 +1356,57 @@ onMounted(async () => {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 20rpx 30rpx 30rpx;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10rpx);
-  box-shadow: 0 -5rpx 20rpx rgba(0, 0, 0, 0.1);
+  padding: 25rpx 30rpx 35rpx;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(15rpx);
+  box-shadow: 0 -8rpx 30rpx rgba(0, 0, 0, 0.15);
+  border-top: 3rpx solid rgba(255, 149, 0, 0.2);
+}
+
+.doudou-encouragement {
+  display: flex;
+  align-items: center;
+  gap: 25rpx;
+  margin-bottom: 25rpx;
+  padding: 20rpx;
+  background: rgba(255, 149, 0, 0.1);
+  border-radius: 20rpx;
+  border: 2rpx solid rgba(255, 149, 0, 0.2);
+}
+
+.encouragement-doudou {
+  width: 80rpx;
+  height: 80rpx;
+  animation: encouragementBounce 2s ease-in-out infinite;
+}
+
+@keyframes encouragementBounce {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.1) rotate(5deg); }
+}
+
+.encouragement-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.main-text {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #2E3A59;
+}
+
+.sub-text {
+  font-size: 26rpx;
+  color: #666;
+  opacity: 0.9;
 }
 
 .report-source {
   text-align: center;
-  margin-bottom: 20rpx;
+  margin-bottom: 25rpx;
 }
 
 .source-text {
@@ -1009,33 +1417,86 @@ onMounted(async () => {
 
 .action-button {
   width: 100%;
-  height: 100rpx;
-  background: linear-gradient(45deg, #FF9500, #FF8F00);
+  height: 110rpx;
+  background: linear-gradient(45deg, #FF9500, #FF8F00, #FF6F00);
   border: none;
-  border-radius: 50rpx;
-  font-size: 36rpx;
-  font-weight: 600;
+  border-radius: 55rpx;
   color: #fff;
-  box-shadow: 0 8rpx 25rpx rgba(255, 149, 0, 0.4);
+  box-shadow: 0 10rpx 30rpx rgba(255, 149, 0, 0.4);
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15rpx;
+  position: relative;
+  overflow: hidden;
   
   &:active {
-    transform: translateY(2rpx);
-    box-shadow: 0 4rpx 15rpx rgba(255, 149, 0, 0.4);
+    transform: translateY(3rpx);
+    box-shadow: 0 6rpx 20rpx rgba(255, 149, 0, 0.4);
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shine 3s ease-in-out infinite;
   }
 }
 
+@keyframes shine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.button-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40rpx;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
 .rocket-icon {
-  font-size: 40rpx;
+  font-size: 45rpx;
+  animation: rocketMove 2s ease-in-out infinite;
+}
+
+@keyframes rocketMove {
+  0%, 100% { transform: translateX(0px); }
+  50% { transform: translateX(10rpx); }
+}
+
+.button-text-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5rpx;
 }
 
 .button-text {
   font-size: 36rpx;
-  font-weight: 600;
+  font-weight: 700;
+  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.2);
+}
+
+.button-subtext {
+  font-size: 24rpx;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.arrow-icon {
+  font-size: 40rpx;
+  font-weight: bold;
+  animation: arrowPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes arrowPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
 }
 
 /* 响应式适配 */

@@ -39,19 +39,57 @@
 
       <!-- B. 优势画像 -->
       <view class="report-section strength-profile">
-        <view class="section-header">
-          <text class="section-title">
+        <view class="section-header strength-header">
+          <view class="title-with-icon">
             <text class="section-icon">⭐</text>
-            核心优势
-          </text>
+            <text class="section-title">核心优势画像</text>
+          </view>
+          <text class="section-subtitle">DouDou 为你分析的能力雷达图</text>
+          <view class="header-doudou-large">
+            <image 
+              class="section-doudou-large"
+              src="@/static/QA/5_matting.gif"
+              mode="aspectFit"
+            />
+          </view>
         </view>
         <view class="section-content">
+          <!-- 雷达图区域 -->
+          <view class="radar-section">
+            <RadarChart 
+              :data="radarChartData"
+              :title="'🏆 能力雷达图'"
+              :subtitle="'DouDou 为你精心分析的个人能力画像'"
+              :width="420"
+              :height="420"
+              :animated="true"
+              :show-legend="false"
+              :show-data-labels="true"
+              :grid-color="'#e8f4fd'"
+              :label-color="'#2E3A59'"
+              :default-color="'#FF9500'"
+              @chart-ready="onRadarChartReady"
+            />
+          </view>
+          
+          <!-- 优势列表 -->
           <view class="strength-grid">
             <view v-for="(strength, index) in topStrengths.slice(0, 3)" :key="index" class="strength-card">
               <view class="strength-rank">{{ index + 1 }}</view>
               <view class="strength-info">
                 <text class="strength-name">{{ strength.name }}</text>
                 <text class="strength-score">{{ strength.score }}%</text>
+              </view>
+            </view>
+          </view>
+          
+          <!-- 雷达图洞察 -->
+          <view class="radar-insights">
+            <view class="insight-item" v-for="(insight, index) in radarInsights" :key="index">
+              <text class="insight-icon">{{ insight.icon }}</text>
+              <view class="insight-content">
+                <text class="insight-title">{{ insight.title }}</text>
+                <text class="insight-desc">{{ insight.description }}</text>
               </view>
             </view>
           </view>
@@ -156,6 +194,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
+import RadarChart from '@/components/RadarChart.vue'
 
 // A. 情绪模式总结数据
 const emotionTriggers = ref([
@@ -176,12 +215,42 @@ const topStrengths = ref([
   { name: '团队协作', description: '善于与他人合作，营造良好氛围', score: 78 }
 ])
 
-const radarAxes = ref([
-  { name: '执行力', angle: 0, value: 82 },
-  { name: '影响力', angle: 72, value: 75 },
-  { name: '关系', angle: 144, value: 78 },
-  { name: '战略思维', angle: 216, value: 70 },
-  { name: '学习力', angle: 288, value: 88 }
+// 雷达图数据
+const radarChartData = ref({
+  indicator: [
+    { name: '沟通能力', max: 100 },
+    { name: '学习能力', max: 100 },
+    { name: '抗压能力', max: 100 },
+    { name: '创新能力', max: 100 },
+    { name: '团队协作', max: 100 },
+    { name: '执行力', max: 100 }
+  ],
+  series: [
+    {
+      name: '当前能力',
+      value: [92, 88, 75, 70, 78, 82],
+      color: '#FF9500'
+    }
+  ]
+})
+
+// 雷达图洞察
+const radarInsights = ref([
+  {
+    icon: '🏆',
+    title: '优势能力',
+    description: '你的沟通能力表现出色（92分），这是你的核心竞争力！'
+  },
+  {
+    icon: '🎯',
+    title: '提升空间',
+    description: '创新能力还有提升空间（70分），DouDou会帮你制定提升计划。'
+  },
+  {
+    icon: '⭐',
+    title: '综合评价',
+    description: '你的能力均衡发展，有很好的成长潜力！'
+  }
 ])
 
 // C. 场景借力数据（重点内容）
@@ -275,6 +344,11 @@ const radarClipPath = computed(() => {
   }).join(', ')
   return `polygon(${points})`
 })
+
+// 雷达图准备就绪回调
+const onRadarChartReady = () => {
+  console.log('雷达图加载完成')
+}
 
 // 生命周期
 onMounted(() => {
@@ -405,24 +479,27 @@ onMounted(() => {
 }
 
 .section-header {
-  margin-bottom: 30rpx;
-  padding-bottom: 20rpx;
-  border-bottom: 2rpx solid rgba(255, 149, 0, 0.2);
+  display: flex;
+  align-items: center;
+  margin-bottom: 40rpx;
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 25rpx;
+  backdrop-filter: blur(10rpx);
+  box-shadow: 0 5rpx 20rpx rgba(0, 0, 0, 0.1);
 }
 
 .section-title {
-  font-size: 38rpx;
+  font-size: 36rpx;
   font-weight: 700;
   color: #333;
-  display: flex;
-  align-items: center;
+  line-height: 1.2;
 }
 
 .section-icon {
-  font-size: 40rpx;
-  margin-right: 15rpx;
+  font-size: 32rpx;
   color: #FF9500;
-  flex-shrink: 0;
+  margin-bottom: 5rpx;
 }
 
 .section-content {
@@ -485,13 +562,125 @@ onMounted(() => {
 
 /* B. 优势画像样式 */
 .strength-profile {
-  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%);
+  border: 3rpx solid rgba(33, 150, 243, 0.3);
+}
+
+/* 核心优势画像专用样式 */
+.strength-header {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20rpx;
+  position: relative;
+}
+
+.title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 15rpx;
+  justify-content: center;
+}
+
+.header-doudou-large {
+  position: absolute;
+  top: -20rpx;
+  right: -20rpx;
+  z-index: 10;
+}
+
+.section-doudou-large {
+  width: 150rpx;
+  height: 150rpx;
+  animation: bounce 2s ease-in-out infinite;
+  filter: drop-shadow(0 8rpx 16rpx rgba(255, 149, 0, 0.3));
+}
+
+@keyframes bounce {
+  0%, 100% { 
+    transform: translateY(0px) scale(1);
+  }
+  50% { 
+    transform: translateY(-10px) scale(1.05);
+  }
+}
+
+/* 保留原有的小版本样式用于其他部分 */
+.header-doudou {
+  margin-right: 25rpx;
+  flex-shrink: 0;
+}
+
+.section-doudou {
+  width: 80rpx;
+  height: 80rpx;
+  animation: wiggle 3s ease-in-out infinite;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+.header-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.section-subtitle {
+  font-size: 26rpx;
+  color: #666;
+  opacity: 0.8;
+  line-height: 1.3;
+}
+
+.radar-section {
+  margin: 40rpx 0;
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(227, 242, 253, 0.8) 100%);
+  border-radius: 30rpx;
+  padding: 30rpx;
+  box-shadow: 
+    0 20rpx 40rpx rgba(33, 150, 243, 0.15),
+    0 8rpx 16rpx rgba(33, 150, 243, 0.1),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.8);
+  border: 2rpx solid rgba(33, 150, 243, 0.1);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -2rpx;
+    left: -2rpx;
+    right: -2rpx;
+    bottom: -2rpx;
+    background: linear-gradient(45deg, 
+      rgba(33, 150, 243, 0.1) 0%, 
+      rgba(255, 149, 0, 0.1) 25%, 
+      rgba(33, 150, 243, 0.1) 50%, 
+      rgba(255, 149, 0, 0.1) 75%, 
+      rgba(33, 150, 243, 0.1) 100%);
+    border-radius: 32rpx;
+    z-index: -1;
+    animation: borderGlow 4s ease-in-out infinite;
+  }
+}
+
+@keyframes borderGlow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
 }
 
 .strength-grid {
   display: flex;
   flex-direction: column;
   gap: 20rpx;
+  margin: 30rpx 0;
 }
 
 .strength-card {
@@ -538,6 +727,91 @@ onMounted(() => {
   font-weight: 700;
   color: #2196F3;
   flex-shrink: 0;
+}
+
+/* 雷达图洞察样式 */
+.radar-insights {
+  margin-top: 40rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 25rpx;
+}
+
+.insight-item {
+  display: flex;
+  align-items: center;
+  gap: 25rpx;
+  padding: 30rpx;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 25rpx;
+  border-left: 6rpx solid #2196F3;
+  transition: all 0.4s ease;
+  box-shadow: 0 5rpx 20rpx rgba(33, 150, 243, 0.1);
+  backdrop-filter: blur(10rpx);
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateX(15rpx) translateY(-5rpx);
+    box-shadow: 0 15rpx 35rpx rgba(33, 150, 243, 0.2);
+    border-left-color: #1976D2;
+  }
+  
+  &:nth-child(1) {
+    animation: slideInLeft 0.6s ease-out 0.2s both;
+  }
+  
+  &:nth-child(2) {
+    animation: slideInLeft 0.6s ease-out 0.4s both;
+  }
+  
+  &:nth-child(3) {
+    animation: slideInLeft 0.6s ease-out 0.6s both;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.insight-icon {
+  font-size: 45rpx;
+  width: 60rpx;
+  text-align: center;
+  flex-shrink: 0;
+  animation: iconBounce 2s ease-in-out infinite;
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.insight-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.insight-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #333;
+  text-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.1);
+}
+
+.insight-desc {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+  font-weight: 500;
 }
 
 
