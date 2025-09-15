@@ -59,18 +59,20 @@ const series = computed(() => Array.isArray(props.data?.series) ? props.data.ser
 
 const angleStep = computed(() => (indicators.value.length ? (Math.PI * 2) / indicators.value.length : 0))
 
+// 由于外层 <g> 已经 translate(cx, cy)，此处返回相对中心的坐标
 const axes = computed(() => {
   return indicators.value.map((ind, i) => {
     const ang = -Math.PI / 2 + i * angleStep.value
-    return { x: cx.value + Math.cos(ang) * radius.value, y: cy.value + Math.sin(ang) * radius.value }
+    return { x: Math.cos(ang) * radius.value, y: Math.sin(ang) * radius.value }
   })
 })
 
+// 标签需要使用绝对坐标（未处于 translate 组内）
 const labels = computed(() => {
   return indicators.value.map((ind, i) => {
     const ang = -Math.PI / 2 + i * angleStep.value
-    const tx = cx.value + Math.cos(ang) * (radius.value + 12)
-    const ty = cy.value + Math.sin(ang) * (radius.value + 12)
+    const tx = cx.value + Math.cos(ang) * (radius.value + 14)
+    const ty = cy.value + Math.sin(ang) * (radius.value + 14)
     return { name: ind.name || `I${i + 1}` , tx, ty }
   })
 })
@@ -83,7 +85,7 @@ const points = computed(() => {
     const v = Math.max(0, Math.min(max, vals[i] ?? 0)) / max
     const ang = -Math.PI / 2 + i * angleStep.value
     const r = v * radius.value
-    return { x: cx.value + Math.cos(ang) * r, y: cy.value + Math.sin(ang) * r }
+    return { x: Math.cos(ang) * r, y: Math.sin(ang) * r }
   })
 })
 
