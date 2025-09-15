@@ -77,6 +77,20 @@
 				"navigationBarTitleText": "AI创作",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/friends/friends",
+			"style": {
+				"navigationBarTitleText": "好友列表",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/report/report",
+			"style": {
+				"navigationBarTitleText": "成长报告",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {
