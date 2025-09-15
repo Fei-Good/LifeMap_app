@@ -870,7 +870,7 @@ const onReachBottom = async () => {
 /* 分类标签 */
 .category-tabs { display: flex; background: rgba(255,255,255,0.95); border-bottom: 1rpx solid rgba(0,0,0,0.08); padding: 0 30rpx; }
 .tab-item { flex: 1; padding: 20rpx 0; text-align: center; cursor: pointer; transition: all 0.2s ease; border-bottom: 4rpx solid transparent; 
-  &.tab-active { border-bottom-color: #4A9EFF; }
+  &.tab-active { border-bottom-color: #FF9900; }
 }
 .tab-text { font-size: 28rpx; color: #2D3748; font-weight: 600; }
 .tab-count { font-size: 22rpx; color: #718096; margin-left: 5rpx; }
@@ -969,7 +969,7 @@ const onReachBottom = async () => {
 
 .friend-name { font-size: 32rpx; font-weight: 700; color: #2D3748; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.friend-status { font-size: 24rpx; color: #4A9EFF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.friend-status { font-size: 24rpx; color: #FF9900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .friend-location { font-size: 22rpx; color: #718096; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -991,10 +991,10 @@ const onReachBottom = async () => {
   flex-shrink: 0;
   
   &.chat-btn {
-    background: #E3F2FD;
+    background: rgba(255, 153, 0, 0.12);
     
     &:active {
-      background: #BBDEFB;
+      background: rgba(255, 153, 0, 0.22);
     }
   }
   
@@ -1007,32 +1007,33 @@ const onReachBottom = async () => {
   }
   
   &.call-btn {
-    background: #E8F5E8;
+    background: rgba(255, 193, 7, 0.12);
     
     &:active {
-      background: #C8E6C9;
+      background: rgba(255, 193, 7, 0.22);
     }
   }
   
   &.message-btn {
-    background: #FFF3E0;
+    background: rgba(255, 235, 59, 0.12);
     
     &:active {
-      background: #FFE0B2;
+      background: rgba(255, 235, 59, 0.22);
     }
   }
   
   &.more-btn {
-    background: #F3E5F5;
+    background: rgba(255, 204, 128, 0.18);
     
     &:active {
-      background: #E1BEE7;
+      background: rgba(255, 204, 128, 0.28);
     }
   }
 }
 
 .action-icon {
   font-size: 28rpx;
+  color: #FF9900;
 }
 
 /* 空状态 */
