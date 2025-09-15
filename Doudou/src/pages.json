@@ -44,13 +44,6 @@
 			}
 		},
 		{
-			"path": "pages/map/map",
-			"style": {
-				"navigationBarTitleText": "成长地图",
-				"navigationStyle": "custom"
-			}
-		},
-		{
 			"path": "pages/questionnaire-result/questionnaire-result",
 			"style": {
 				"navigationBarTitleText": "个性化报告",
@@ -65,23 +58,9 @@
 			}
 		},
 		{
-			"path": "pages/game/game",
-			"style": {
-				"navigationBarTitleText": "Cocos游戏",
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/game-center/game-center",
-			"style": {
-				"navigationBarTitleText": "游戏中心",
-				"navigationStyle": "custom"
-			}
-		},
-		{
 			"path": "pages/hexagon-map/hexagon-map",
 			"style": {
-				"navigationBarTitleText": "成长地图",
+				"navigationBarTitleText": "地图",
 				"navigationStyle": "custom"
 			}
 		},

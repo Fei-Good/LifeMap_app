@@ -3,30 +3,100 @@
     <!-- 状态栏占位 -->
     <view class="status-bar"></view>
     
-    <!-- 顶部功能按钮组 -->
+    <!-- 顶部工具栏 -->
     <view class="header-toolbar">
-      <view class="toolbar-left">
-        <view class="back-button" @click="goBack">
-          <text class="back-text">返回</text>
-        </view>
-        <view class="app-title"></view>
+      <!-- 侧边栏触发按钮 -->
+      <view class="menu-btn" @click="toggleSidebar">
+        <text class="menu-icon">☰</text>
       </view>
-      <view class="header-buttons">
-        <view class="header-btn" @click="showHistoryList">
-          <text class="btn-icon">📝历史</text>
+      
+      <!-- DouDou标题和图片 -->
+      <view class="app-title-container">
+        <image class="doudou-logo" src="@/static/chat/DouDou文字.png" mode="aspectFit"></image>
+      </view>
+      
+      <!-- AI创作机器人icon -->
+      <view class="robot-btn" @click="toggleChatFavorite">
+        <image class="robot-icon" src="@/static/chat/AI创作.svg" mode="aspectFit"></image>
+      </view>
+    </view>
+
+    <!-- 侧边栏 -->
+    <view 
+      class="sidebar-overlay" 
+      v-show="showSidebar"
+      @click="hideSidebar"
+    >
+      <view class="sidebar" @click.stop>
+        <view class="sidebar-header">
+          <text class="sidebar-title">职场搭子DouDou</text>
+          <view class="close-btn" @click="hideSidebar">×</view>
         </view>
-        <view class="header-btn" @click="showFavoriteList">
-          <text class="btn-icon">⭐收藏</text>
+        
+        <view class="sidebar-content">
+          <!-- 新建对话 -->
+          <view class="sidebar-item" @click="startNewChat(); hideSidebar()">
+            <view class="sidebar-icon">➕️</view>
+            <text class="sidebar-text">新建对话</text>
+          </view>
+          
+          <!-- 历史记录 -->
+          <view class="sidebar-item" @click="showHistoryList">
+            <view class="sidebar-icon">📝</view>
+            <text class="sidebar-text">聊天历史</text>
+          </view>
+          
+          <!-- 收藏对话 -->
+          <view class="sidebar-item" @click="showFavoriteList">
+            <view class="sidebar-icon">⭐</view>
+            <text class="sidebar-text">收藏对话</text>
+          </view>
         </view>
-        <view class="header-btn" @click="showKnowledgeList">
-          <text class="btn-icon">📚知识库</text>
-        </view>
-        <view class="header-btn" @click="toggleChatFavorite">
-          <text class="btn-icon">AI创作</text>
-        </view>
-        <view class="header-btn" @click="startNewChat">
-          <text class="btn-icon">➕</text>
-        </view>
+      </view>
+    </view>
+
+    <!-- 聊天区域快捷操作 -->
+    <view v-if="isChatStarted" class="quick-actions">
+      <view class="quick-btn" @click="handleFunction('efficiency')">
+        <text class="quick-text">🫣 情绪疏导</text>
+      </view>
+      <view class="quick-btn" @click="handleFunction('chat')">
+        <text class="quick-text">💬 常见问题</text>
+      </view>
+    </view>
+
+    <!-- 浮动操作栏 -->
+    <view v-if="isChatStarted" class="floating-actions">
+      <!-- 角色选择 -->
+      <view 
+        class="floating-item role-selector-item"
+        :class="{ 'active': currentRole !== 'doudou' }"
+        @click="toggleRoleSelector"
+      >
+        <image 
+          class="floating-icon"
+          :src="roleConfig[currentRole].avatar"
+          mode="aspectFit"
+        />
+        <text class="floating-text">{{ roleConfig[currentRole].name }}</text>
+      </view>
+      
+      <!-- 暴打老板 -->
+      <view 
+        class="floating-item boss-fight-item"
+        @click="handleBossFight"
+      >
+        <text class="floating-icon">👊</text>
+        <text class="floating-text">暴打老板</text>
+      </view>
+      
+      <!-- 领取任务 -->
+      <view 
+        class="floating-item task-item"
+        @click="handleReceiveTask"
+      >
+        <text class="floating-icon">📋</text>
+        <text class="floating-text">领取任务</text>
       </view>
     </view>
 
@@ -485,6 +555,24 @@
         </scroll-view>
       </view>
     </view>
+
+    <!-- 底部导航栏 -->
+    <view class="bottom-nav">
+      <view class="nav-item" @click="navigateToMap">
+        <view class="nav-icon">🗺️</view>
+        <text class="nav-text">地图</text>
+      </view>
+      
+      <view class="nav-item active">
+        <view class="nav-icon">🔥</view>
+        <text class="nav-text">DouDou</text>
+      </view>
+      
+      <view class="nav-item" @click="navigateToKnowledge">
+        <view class="nav-icon">📚</view>
+        <text class="nav-text">知识库</text>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -559,6 +647,7 @@ const scrollTop = ref(0)
 const inputFocus = ref(false)
 const currentRole = ref('doudou') // 当前选择的角色
 const showRoleSelector = ref(false) // 是否显示角色选择器
+const showSidebar = ref(false) // 是否显示侧边栏
 
 // 聊天状态和推荐内容相关
 const isChatStarted = ref(false) // 是否已开始聊天
@@ -1294,22 +1383,7 @@ const onMessageLongPress = (messageId) => {
   }
 }
 
-// 面板控制
-const showHistoryList = () => {
-  showHistoryPanel.value = true
-  showFavoritePanel.value = false
-  showKnowledgePanel.value = false
-  // 重置选择状态
-  clearHistorySelection()
-}
-
-const showFavoriteList = () => {
-  showFavoritePanel.value = true
-  showHistoryPanel.value = false
-  showKnowledgePanel.value = false
-  // 重置选择状态
-  clearFavoriteSelection()
-}
+// 面板控制（方法已移至底部导航部分）
 
 const showKnowledgeList = () => {
   // 跳转到独立的知识库页面
@@ -1401,6 +1475,96 @@ const goBack = () => {
     url: '/pages/map/map'
   })
 }
+
+// 侧边栏控制
+const toggleSidebar = () => {
+  showSidebar.value = !showSidebar.value
+}
+
+const hideSidebar = () => {
+  showSidebar.value = false
+}
+
+// 底部导航方法
+const navigateToMap = () => {
+  // 保存当前聊天记录
+  saveChatHistory()
+  uni.navigateTo({
+    url: '/pages/map/map'
+  })
+}
+
+const navigateToKnowledge = () => {
+  uni.navigateTo({
+    url: '/pages/knowledge/knowledge'
+  })
+}
+
+// 修改原有的showHistoryList和showFavoriteList方法，添加隐藏侧边栏
+const showHistoryList = () => {
+  showHistoryPanel.value = true
+  showFavoritePanel.value = false
+  showKnowledgePanel.value = false
+  hideSidebar() // 隐藏侧边栏
+  // 重置选择状态
+  clearHistorySelection()
+}
+
+const showFavoriteList = () => {
+  showFavoritePanel.value = true
+  showHistoryPanel.value = false
+  showKnowledgePanel.value = false
+  hideSidebar() // 隐藏侧边栏
+  // 重置选择状态
+  clearFavoriteSelection()
+}
+
+// 暴打老板功能
+const handleBossFight = () => {
+  // 添加暴打老板的特殊消息
+  const bossMessages = [
+    '💥 暴打老板模式启动！',
+    '👊 左勾拳！右勾拳！上勾拳！',
+    '🥊 老板被你打得满地找牙！',
+    '😵‍💫 老板：我错了，我错了，别打了！',
+    '🎉 暴打完毕！心情舒畅多了吧~'
+  ]
+  
+  // 随机选择一个消息
+  const randomMessage = bossMessages[Math.floor(Math.random() * bossMessages.length)]
+  
+  // 添加AI消息
+  const aiMessage = {
+    content: randomMessage,
+    isUser: false,
+    timestamp: Date.now(),
+    id: generateMessageId(),
+    type: 'boss_fight'
+  }
+  messages.value.push(aiMessage)
+  
+  // 滚动到底部
+  nextTick(() => {
+    scrollToBottom()
+  })
+  
+  // 震动反馈
+  uni.vibrateShort()
+  
+  // 显示Toast
+  uni.showToast({
+    title: '暴打成功！',
+    icon: 'success'
+  })
+}
+
+// 领取任务功能
+const handleReceiveTask = () => {
+  // 跳转到任务页面
+  uni.navigateTo({
+    url: '/pages/task/task'
+  })
+}
 </script>
 
 <style lang="scss" scoped>
@@ -1433,29 +1597,31 @@ const goBack = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx 30rpx;
+  padding: 5rpx 10rpx;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10rpx);
-  border-bottom: 1rpx solid rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 10;
 }
 
-.toolbar-left {
-  flex: 1;
+/* DouDou标题和图片容器 */
+.app-title-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 20rpx;
+  gap: 5rpx;
+  flex: 1;
+  justify-content: center;
 }
 
-.app-title {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #2D3748;
+.doudou-logo {
+  width: 180rpx;
+  height: 180rpx;
 }
 
-/* 头部按钮组 */
-.header-buttons {
+
+/* 头部右侧按钮组 */
+.header-right {
   display: flex;
   align-items: center;
   gap: 15rpx;
@@ -1463,15 +1629,15 @@ const goBack = () => {
   z-index: 10;
 }
 
-.header-btn {
-  min-width: 120rpx;
+.menu-btn,
+.robot-btn {
+  width: 60rpx;
   height: 60rpx;
   background: rgba(255, 255, 255, 0.9);
-  border-radius: 30rpx;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 20rpx;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   
@@ -1479,34 +1645,19 @@ const goBack = () => {
     transform: scale(0.95);
     background: rgba(255, 255, 255, 1);
   }
-  
-  .btn-icon {
-    font-size: 24rpx;
-  }
+}
+
+.menu-icon {
+  font-size: 35rpx;
+  color: #4A5568;
+}
+
+.robot-icon {
+  width: 40rpx;
+  height: 40rpx;
 }
 
 /* 返回按钮 */
-.back-button {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 30rpx;
-  padding: 10rpx 20rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  
-  &:active {
-    transform: scale(0.95);
-    background: rgba(255, 255, 255, 1);
-  }
-}
-
-.back-text {
-  font-size: 24rpx;
-  color: #4A5568;
-  font-weight: 500;
-}
 
 /* 问候区域 */
 .greeting-section {
@@ -1923,9 +2074,14 @@ const goBack = () => {
 .input-section {
   background: rgba(255, 255, 255, 0.9);
   padding: 20rpx 30rpx;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  padding-bottom: 20rpx;
   border-top: 1rpx solid rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10rpx);
+  position: fixed;
+  bottom: 120rpx; /* 位于底部导航栏上方 */
+  left: 0;
+  right: 0;
+  z-index: 200;
 }
 
 .input-container {
@@ -1962,24 +2118,29 @@ const goBack = () => {
 .input-area {
   flex: 1;
   background: #F7FAFC;
-  border-radius: 50rpx;
+  border-radius: 30rpx;
   padding: 0 30rpx;
   border: 2rpx solid #E2E8F0;
   transition: border-color 0.3s ease;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
   
   &:focus-within {
     border-color: #4A9EFF;
+    background: #FFFFFF;
   }
 }
 
 .message-input {
   width: 100%;
-  height: 80rpx;
+  height: 60rpx;
   font-size: 28rpx;
   color: #2D3748;
   background: transparent;
   border: none;
   outline: none;
+  line-height: 60rpx;
   
   &::placeholder {
     color: #A0AEC0;
@@ -2237,6 +2398,89 @@ const goBack = () => {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+/* 侧边栏样式 */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1500;
+  backdrop-filter: blur(5rpx);
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 500rpx;
+  max-width: 80vw;
+  background: white;
+  box-shadow: 2rpx 0 20rpx rgba(0, 0, 0, 0.3);
+  animation: sidebarSlideIn 0.3s ease-out;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40rpx 30rpx 20rpx;
+  border-bottom: 1rpx solid #E2E8F0;
+  background: #F7FAFC;
+}
+
+.sidebar-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #2D3748;
+}
+
+.sidebar-content {
+  padding: 20rpx 0;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  gap: 20rpx;
+  transition: all 0.3s ease;
+  border-bottom: 1rpx solid #F7FAFC;
+  
+  &:active {
+    background: rgba(74, 158, 255, 0.1);
+  }
+}
+
+.sidebar-icon {
+  width: 60rpx;
+  height: 60rpx;
+  background: rgba(74, 158, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  flex-shrink: 0;
+}
+
+.sidebar-text {
+  font-size: 28rpx;
+  color: #2D3748;
+  font-weight: 500;
+}
+
+@keyframes sidebarSlideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
   }
 }
 
@@ -2614,6 +2858,215 @@ const goBack = () => {
   font-size: 24rpx;
   color: #CBD5E0;
   line-height: 1.5;
+}
+
+/* 快捷操作按钮样式 */
+.quick-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20rpx;
+  padding: 20rpx 30rpx;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10rpx);
+  border-bottom: 1rpx solid rgba(0, 0, 0, 0.05);
+}
+
+.quick-btn {
+  flex: 1;
+  max-width: 200rpx;
+  height: 60rpx;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1rpx solid rgba(74, 158, 255, 0.2);
+  
+  &:active {
+    transform: scale(0.95);
+    background: rgba(74, 158, 255, 0.1);
+    border-color: #4A9EFF;
+  }
+}
+
+.quick-text {
+  font-size: 24rpx;
+  color: #4A5568;
+  font-weight: 500;
+}
+
+/* 浮动操作栏样式 */
+.floating-actions {
+  position: fixed;
+  right: 30rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  animation: floatingSlideIn 0.5s ease-out;
+}
+
+.floating-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100rpx;
+  height: 100rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10rpx);
+  transition: all 0.3s ease;
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  gap: 8rpx;
+  
+  &:active {
+    transform: scale(0.9);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+  }
+  
+  &.active {
+    background: rgba(74, 158, 255, 0.15);
+    border-color: #4A9EFF;
+    box-shadow: 0 8rpx 24rpx rgba(74, 158, 255, 0.3);
+    
+    .floating-text {
+      color: #4A9EFF;
+      font-weight: 600;
+    }
+  }
+  
+  &.boss-fight-item:active {
+    background: rgba(255, 99, 71, 0.15);
+    border-color: #FF6347;
+    transform: scale(0.9) rotate(5deg);
+  }
+  
+  &.task-item:active {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: #22C55E;
+  }
+}
+
+.floating-icon {
+  width: 40rpx;
+  height: 40rpx;
+  font-size: 32rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* 当是图片时 */
+  &[src] {
+    background: rgba(255, 192, 203, 0.2);
+  }
+}
+
+.floating-text {
+  font-size: 20rpx;
+  color: #4A5568;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 80rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes floatingSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(100rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+/* 底部导航栏样式 */
+.bottom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10rpx);
+  border-top: 1rpx solid rgba(0, 0, 0, 0.1);
+  padding: 20rpx 0;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  position: fixed;
+  bottom: 0; /* 位于屏幕最底部 */
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 10rpx 20rpx;
+  border-radius: 20rpx;
+  transition: all 0.3s ease;
+  min-width: 120rpx;
+  
+  &:active {
+    transform: scale(0.95);
+    background: rgba(74, 158, 255, 0.1);
+  }
+  
+  &.active {
+    background: rgba(74, 158, 255, 0.1);
+    
+    .nav-icon {
+      background: #4A9EFF;
+      color: white;
+    }
+    
+    .nav-text {
+      color: #4A9EFF;
+      font-weight: 600;
+    }
+  }
+}
+
+.nav-icon {
+  width: 50rpx;
+  height: 50rpx;
+  border-radius: 50%;
+  background: #F7FAFC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #718096;
+  transition: all 0.3s ease;
+}
+
+.nav-text {
+  font-size: 22rpx;
+  color: #718096;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* 调整聊天容器高度，为底部输入区域和导航栏留出空间 */
+.chat-container {
+  padding-bottom: 240rpx; /* 为底部输入区域和导航栏留出空间 */
+}
+
+/* 调整聊天消息区域高度 */
+.chat-messages {
+  max-height: calc(100vh - 500rpx); /* 减去状态栏、头部、输入框、底部导航的高度 */
+  margin-bottom: 20rpx; /* 与底部输入区域保持间距 */
 }
 
 </style>

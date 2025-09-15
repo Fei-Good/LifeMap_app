@@ -294,7 +294,7 @@ const startJourney = () => {
   
   setTimeout(() => {
     uni.navigateTo({
-      url: '/pages/map/map'
+      url: '/pages/chat/chat'
     })
   }, 2000)
 }

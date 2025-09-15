@@ -99,7 +99,7 @@ export default {
 <style scoped>
 .profile-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f5f5f5 0%, #f1f0f0 100%)
 }
 
 .status-bar {
