@@ -53,7 +53,16 @@
     </view>
 
     <!-- 好友列表 -->
-    <scroll-view class="friends-list" scroll-y="true" :show-scrollbar="false">
+    <scroll-view 
+      class="friends-list" 
+      scroll-y="true" 
+      :show-scrollbar="false"
+      :refresher-enabled="true"
+      :refresher-triggered="isRefreshing"
+      @refresherrefresh="onRefresh"
+      :lower-threshold="80"
+      @scrolltolower="onReachBottom"
+    >
       <view class="friends-grid">
         <!-- 在线好友 -->
         <view v-if="filteredFriends.length > 0" class="section">
@@ -129,6 +138,14 @@
               </view>
             </view>
           </view>
+        </view>
+
+        <!-- 加载更多/无更多 -->
+        <view v-if="isLoadingMore" class="load-more">
+          <text class="load-text">加载中...</text>
+        </view>
+        <view v-else-if="!hasMore && filteredFriends.length > 0" class="no-more">
+          <text class="no-more-text">没有更多了</text>
         </view>
 
         <!-- 空状态 -->
@@ -217,6 +234,13 @@ const selectedFriend = ref(null)
 const newFriendId = ref('')
 const verifyMessage = ref('')
 
+// 刷新与分页状态
+const isRefreshing = ref(false)
+const isLoadingMore = ref(false)
+const page = ref(1)
+const pageSize = ref(20)
+const hasMore = ref(true)
+
 // 好友分类
 const categories = ref([
   { key: 'all', name: '全部' },
@@ -278,6 +302,35 @@ const friends = ref([
     category: 'recent'
   }
 ])
+
+// 模拟异步获取好友数据
+const fetchFriends = async (targetPage = 1, size = pageSize.value) => {
+  // 这里可替换为真实 API 请求
+  await new Promise(resolve => setTimeout(resolve, 500))
+
+  // 模拟生成数据
+  const baseIndex = (targetPage - 1) * size
+  const generated = Array.from({ length: size }).map((_, i) => {
+    const idx = baseIndex + i + 6
+    return {
+      id: `friend${idx}`,
+      name: `好友${idx}`,
+      avatar: '/textures/地图功能/好友（后续可能替换）.png',
+      status: ['online', 'busy', 'away', 'offline'][idx % 4],
+      location: ['北京', '上海', '广州', '深圳'][idx % 4],
+      lastSeen: new Date(Date.now() - 1000 * 60 * (idx * 7)),
+      isOnline: (idx % 4) !== 3,
+      category: idx % 3 === 0 ? 'recent' : 'all'
+    }
+  })
+
+  // 模拟总页数为 3
+  const totalPages = 3
+  return {
+    list: generated,
+    hasMore: targetPage < totalPages
+  }
+}
 
 // 计算属性
 const filteredFriends = computed(() => {
@@ -457,9 +510,40 @@ const removeFriend = (friend) => {
 }
 
 // 生命周期
-onMounted(() => {
+onMounted(async () => {
   console.log('好友列表页面加载完成')
+  // 初始加载（追加到默认静态数据后面，真实环境可改为覆盖）
+  isRefreshing.value = true
+  page.value = 1
+  const res = await fetchFriends(page.value)
+  friends.value = [...friends.value, ...res.list]
+  hasMore.value = res.hasMore
+  isRefreshing.value = false
 })
+
+// 下拉刷新
+const onRefresh = async () => {
+  if (isRefreshing.value) return
+  isRefreshing.value = true
+  page.value = 1
+  const res = await fetchFriends(page.value)
+  // 刷新覆盖列表（这里保留最初的静态种子数据也可按需清空）
+  const seed = friends.value.slice(0, 5)
+  friends.value = [...seed, ...res.list]
+  hasMore.value = res.hasMore
+  isRefreshing.value = false
+}
+
+// 触底加载更多
+const onReachBottom = async () => {
+  if (isLoadingMore.value || !hasMore.value) return
+  isLoadingMore.value = true
+  page.value += 1
+  const res = await fetchFriends(page.value)
+  friends.value = [...friends.value, ...res.list]
+  hasMore.value = res.hasMore
+  isLoadingMore.value = false
+}
 </script>
 
 <style lang="scss" scoped>
