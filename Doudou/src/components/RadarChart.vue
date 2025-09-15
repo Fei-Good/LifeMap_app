@@ -1,9 +1,11 @@
 <template>
-	<canvas :id="canvasId" :width="width" :height="height" class="radar-canvas"></canvas>
+	<view class="radar-placeholder" :style="{ width: width + 'px', height: height + 'px' }">
+		<text class="radar-text">雷达图占位</text>
+	</view>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, nextTick } from 'vue'
 const props = defineProps({
 	data: { type: Object, required: true },
 	width: { type: Number, default: 300 },
@@ -17,22 +19,17 @@ const props = defineProps({
 	labelColor: { type: String, default: '#666' },
 	defaultColor: { type: String, default: '#4CAF50' }
 })
-const canvasId = `radar_${Math.random().toString(36).slice(2)}`
-onMounted(() => {
-	const c = uni.createCanvasContext(canvasId)
-	c.setStrokeStyle(props.gridColor)
-	// 简化：画一个圆形边框
-	c.arc(props.width/2, props.height/2, Math.min(props.width, props.height)/2-10, 0, Math.PI*2)
-	c.stroke()
-	c.draw()
-	if (typeof getCurrentInstance?.()!.vnode.props?.onChartReady === 'function') {
-		getCurrentInstance().vnode.props.onChartReady()
-	}
+const emit = defineEmits(['chart-ready'])
+onMounted(async () => {
+	await nextTick()
+	// 简化占位实现：立即通知就绪，避免 H5 动态导入报错
+	emit('chart-ready')
 })
 </script>
 
 <style scoped>
-.radar-canvas { display: block; }
+.radar-placeholder { display: grid; place-items: center; border: 1rpx dashed #ccc; border-radius: 12rpx; background: #fff; }
+.radar-text { color: #999; font-size: 24rpx; }
 </style>
 
 
