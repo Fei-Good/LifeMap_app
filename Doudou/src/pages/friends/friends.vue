@@ -1180,6 +1180,7 @@ const onReachBottom = async () => {
 
 .input-field, .textarea-field {
   width: 100%;
+  display: block;
   padding: 20rpx;
   border: 2rpx solid #e0e0e0;
   border-radius: 10rpx;
@@ -1195,11 +1196,14 @@ const onReachBottom = async () => {
 
 .search-input-wrapper {
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 64rpx;
 }
 
 .clear-btn {
   position: absolute;
-  right: 16rpx;
+  right: calc(16rpx + env(safe-area-inset-right));
   top: 50%;
   transform: translateY(-50%);
   width: 48rpx;
@@ -1271,6 +1275,18 @@ const onReachBottom = async () => {
 .textarea-field {
   height: 120rpx;
   resize: none;
+}
+
+/* 适配 uni-input 内部结构，确保宽度与右内边距充足（避免被裁剪） */
+:deep(.uni-input-wrapper) {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+:deep(.uni-input-input) {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 64rpx;
 }
 
 .popup-footer {
