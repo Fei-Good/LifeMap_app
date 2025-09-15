@@ -115,6 +115,10 @@ html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFo
 /* 统一演示截图宽度 */
 :root { --demo-img-width: 560px; }
 
+/* 标题下占位图（不超过屏幕，等比缩放） */
+.title-placeholder { width: min(100%, var(--demo-img-width)); margin: 12px auto 0; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,.06); box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+.title-placeholder img { display: block; width: 100%; height: auto; background: #0f1115; }
+
 /* 手机端收紧留白 */
 @media (max-width: 1100px) {
   .gallery { padding: 20px 16px; }
