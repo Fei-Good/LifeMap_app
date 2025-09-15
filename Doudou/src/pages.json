@@ -51,14 +51,7 @@
 			}
 		},
 		{
-			"path": "pages/crit/crit",
-			"style": {
-				"navigationBarTitleText": "疯狂暴击DouDou",
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/hexagon-map/hexagon-map",
+			"path": "pages/map/map",
 			"style": {
 				"navigationBarTitleText": "地图",
 				"navigationStyle": "custom"
@@ -89,6 +82,13 @@
 			"path": "pages/report/report",
 			"style": {
 				"navigationBarTitleText": "成长报告",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/workplace-vent/workplace-vent",
+			"style": {
+				"navigationBarTitleText": "职场吐槽",
 				"navigationStyle": "custom"
 			}
 		}

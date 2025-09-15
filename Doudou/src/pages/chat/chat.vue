@@ -46,7 +46,7 @@
             <view class="sidebar-icon">⭐</view>
             <text class="sidebar-text">收藏对话</text>
           </view>
-        </view>FF
+        </view>
       </view>
     </view>
 
@@ -218,6 +218,21 @@
         </view>
       </view>
     </scroll-view>
+
+    <!-- 常见问题 -->
+    <view v-if="!isChatStarted" class="qq-fixed-container">
+      <text class="qq-title">常见问题</text>
+      <view class="qq-chips-wrapper">
+        <view 
+          v-for="(q, i) in defaultQuestions" 
+          :key="i" 
+          class="qq-chip"
+          @click="selectRecommendation(q)"
+        >
+          <text class="qq-text">{{ q }}</text>
+        </view>
+      </view>
+    </view>
 
     <!-- DouDou 聊天形象（显示在输入区域之上，靠左） -->
     <view class="doudou-chat-banner">
@@ -572,7 +587,7 @@ const currentPage = ref('chat')
 const roleConfig = {
   doudou: {
     name: 'DouDou',
-    avatar: '@/static/QA/火苗.png',
+    avatar: '/static/chat/初始形象.png',
     placeholder: '和DouDou聊一下吧',
     description: '你自己的视角',
     prompt: `你是DouDou，一个温暖、友善、专业的AI助手。你的任务是：
@@ -584,7 +599,7 @@ const roleConfig = {
   },
   boss: {
     name: 'Boss',
-    avatar: '@/static/QA/火苗.png',
+    avatar: '/static/chat/Boss.png',
     placeholder: '从老板的角度分析问题',
     description: '老板的视角',
     prompt: `你是一位经验丰富的老板，从管理者和领导者的角度来分析问题。你的任务是：
@@ -597,7 +612,7 @@ const roleConfig = {
   },
   coworker: {
     name: 'Co-worker',
-    avatar: '@/static/QA/火苗.png',
+    avatar: '/static/chat/Co-worker.png',
     placeholder: '和同事客观讨论',
     description: '同事视角',
     prompt: `你是一位客观理性的同事，能够中性地分析问题。你的任务是：
@@ -682,6 +697,12 @@ onMounted(() => {
     showPersonalityReport()
   }
 })
+
+// 猜你想问（默认常见问题）
+const defaultQuestions = ref([
+  '我该如何跟领导沟通这件事？',
+  '近期工作压力大，怎么缓解？',
+])
 
 // 显示个性化报告
 const showPersonalityReport = async () => {
@@ -1472,13 +1493,6 @@ const showFavoriteList = () => {
 }
 
 
-// 领取任务功能
-const handleReceiveTask = () => {
-  // 跳转到任务页面
-  uni.navigateTo({
-    url: '/pages/task/task'
-  })
-}
 
 // 职场吐槽功能
 const handleWorkplaceVent = () => {
@@ -2204,8 +2218,8 @@ const handleWorkplaceVent = () => {
 }
 
 .role-avatar-img {
-  width: 50rpx;
-  height: 50rpx;
+  width: 80rpx;
+  height: 80rpx;
 }
 
 .role-info {
@@ -2943,6 +2957,62 @@ const handleWorkplaceVent = () => {
   width: 200rpx;
   height: auto;
   opacity: 0.85;
+}
+
+/* 猜你想问 */
+.qq-fixed-container {
+  position: fixed;
+  left: 16rpx;
+  bottom: calc(120rpx + 180px); 
+  z-index: 180; /* 高于 doudou-chat-banner(170)，低于输入区(200) */
+  display: flex;
+  flex-direction: column;
+  gap: 15rpx;
+  max-width: 80vw;
+}
+
+.qq-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.qq-chip {
+  background: #F7FAFC;
+  border: 1rpx solid #E2E8F0;
+  border-radius: 999rpx;
+  padding: 10rpx 16rpx;
+  max-width: 100%;
+  transition: all 0.2s ease;
+  
+  &:active {
+    background: rgba(74, 158, 255, 0.12);
+    border-color: #4A9EFF;
+    transform: scale(0.98);
+  }
+}
+
+/* 兼容旧类名（不再使用绝对定位到单个chip） */
+.qq-fixed { position: static; }
+
+.qq-title {
+  font-size: 24rpx;
+  color: #9CA3AF;
+  //左侧边距16rpx 
+  margin-left: 16rpx;
+  margin-bottom: 10rpx;
+  width: 100%;
+}
+
+.qq-chips-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.qq-text {
+  font-size: 24rpx;
+  color: #2D3748;
 }
 
 </style>

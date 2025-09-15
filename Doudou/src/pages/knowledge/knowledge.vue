@@ -6,9 +6,6 @@
     <!-- 顶部导航栏 -->
     <view class="header-toolbar">
       <view class="toolbar-left">
-        <view class="back-button" @click="goBack">
-          <text class="back-text">返回</text>
-        </view>
         <text class="page-title">复盘知识库</text>
       </view>
       <view class="header-buttons">
@@ -702,7 +699,7 @@ const navigateToChat = () => {
 
 const navigateToMap = () => {
   uni.navigateTo({
-    url: '/pages/hexagon-map/hexagon-map'
+    url: '/pages/map/map'
   })
 }
 
@@ -847,20 +844,6 @@ const aiAnalyzeSingleCard = async (card) => {
   gap: 20rpx;
 }
 
-.back-button {
-  background: #F5F5F5;
-  border-radius: 20rpx;
-  padding: 10rpx 20rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  
-  &:active {
-    transform: scale(0.95);
-    background: #EEEEEE;
-  }
-}
 
 .back-text {
   font-size: 24rpx;
