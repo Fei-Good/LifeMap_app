@@ -1,5 +1,7 @@
 <template>
   <view class="friends-container">
+    <!-- 状态栏占位（刘海屏/安全区） -->
+    <view class="status-bar"></view>
     <!-- 顶部标题栏 -->
     <view class="header">
       <image 
@@ -549,10 +551,21 @@ const onReachBottom = async () => {
 <style lang="scss" scoped>
 .friends-container {
   width: 100vw;
+  /* 兼容不同浏览器的视口单位，确保全屏高度 */
   height: 100vh;
+  height: 100dvh;
+  min-height: 100svh;
   background: #f5f5f5;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* 顶部安全区占位，避免内容被系统状态栏遮挡 */
+.status-bar {
+  height: constant(safe-area-inset-top);
+  height: env(safe-area-inset-top);
+  background: #f5f5f5;
 }
 
 /* 顶部标题栏 */
@@ -720,6 +733,8 @@ const onReachBottom = async () => {
 /* 好友列表 */
 .friends-list {
   flex: 1;
+  /* H5下scroll-view在flex容器内常需显式高度为0配合flex:1以填满 */
+  height: 0;
   padding: 20rpx 30rpx;
 }
 
