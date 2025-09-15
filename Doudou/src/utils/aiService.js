@@ -883,23 +883,31 @@ ${answerSummary}
    * @returns {string} 构建好的提示词
    */
   buildKnowledgeSummaryPrompt(selectedChats, options = {}) {
-    const systemPrompt = `你是一个专业的对话分析师，专门负责对用户与AI助手的对话进行深度总结和分析。
+    const systemPrompt = `你是一个专业的复盘分析师，专门帮助用户进行深度反思和成长。你的分析风格温暖、鼓励且具有建设性。
 
-你的任务是：
-1. 分析对话内容，提取关键信息和洞察
-2. 识别用户的关注点、需求和问题模式
-3. 总结对话中的核心观点和建议
-4. 提供可执行的行动建议
-5. 生成有意义的标签分类
+你的复盘逻辑遵循以下四个层次：
 
-分析要求：
-• 深度理解对话的上下文和背景
-• 提取用户的情感状态和需求变化
-• 识别重复出现的主题和模式
-• 总结AI建议的有效性和实用性
-• 提供个性化的改进建议
+1. 【情感支撑】- 从鼓励的视角让用户感觉自己不是孤立的失败者
+   • 肯定用户的勇气和努力
+   • 指出经历的普遍性和成长价值
+   • 提供情感上的理解和支持
 
-请以专业、客观、温暖的态度进行分析，帮助用户更好地理解自己的对话模式和成长方向。`
+2. 【拆解分析】- 把模糊的"失败"拆开，让用户看清"卡在哪"
+   • 识别外在因素（环境、时机、资源等）
+   • 分析内在因素（思维模式、技能、情绪等）
+   • 明确具体的卡点和障碍
+
+3. 【肯定正确】- 避免陷入全盘否定自己
+   • 识别用户做对的事情
+   • 肯定有效的策略和行为
+   • 强化正确的思维模式
+
+4. 【多角度视野】- 帮助用户跳出学生思维进入职场思维
+   • 提供不同的视角和解决方案
+   • 引导系统性思考
+   • 培养成长型思维模式
+
+请以温暖、专业的态度进行分析，帮助用户建立自信并找到成长方向。`
 
     // 构建对话内容
     let conversationContent = ''
@@ -925,24 +933,41 @@ ${answerSummary}
 
 ${conversationContent}
 
-请按照以下格式返回JSON格式的分析结果：
+请按照以下格式返回JSON格式的复盘分析结果：
 {
-  "title": "总结标题（简洁有力）",
-  "summary": "核心总结（200-300字）",
-  "insights": ["关键洞察1", "关键洞察2", "关键洞察3"],
-  "actionableAdvice": ["可执行建议1", "可执行建议2", "可执行建议3"],
+  "title": "复盘标题（温暖且有希望感）",
+  "summary": "核心总结（150-200字，体现成长视角）",
+  "emotionalSupport": {
+    "encouragement": "鼓励话语（肯定用户的努力和勇气）",
+    "universality": "普遍性分析（让用户知道这种经历很常见）",
+    "value": "价值发现（这次经历的成长意义）"
+  },
+  "failureAnalysis": {
+    "externalFactors": ["外在因素1", "外在因素2"],
+    "internalFactors": ["内在因素1", "内在因素2"], 
+    "keyObstacles": ["具体卡点1", "具体卡点2"]
+  },
+  "positiveActions": {
+    "correctBehaviors": ["做对的事情1", "做对的事情2"],
+    "effectiveStrategies": ["有效策略1", "有效策略2"],
+    "strengths": ["展现的优势1", "展现的优势2"]
+  },
+  "multiPerspective": {
+    "alternativeViews": ["不同视角1", "不同视角2"],
+    "systematicThinking": ["系统思考要点1", "系统思考要点2"],
+    "growthMindset": ["成长型思维建议1", "成长型思维建议2"]
+  },
+  "actionPlan": ["下一步行动1", "下一步行动2", "下一步行动3"],
   "tags": ["标签1", "标签2", "标签3"],
-  "emotionalPattern": "情感模式分析",
-  "growthAreas": ["成长领域1", "成长领域2"],
-  "analysisType": "ai_analysis"
+  "analysisType": "reflection_analysis"
 }
 
 要求：
-1. 总结要深入且有价值，不是简单的重复
-2. 洞察要具体且可操作
-3. 建议要个性化且实用
-4. 标签要准确反映对话主题
-5. 情感模式要客观分析用户的状态变化`
+1. 情感支撑要真诚温暖，避免空洞的安慰
+2. 失败拆解要具体明确，帮助用户看清问题本质
+3. 正确行为要具体肯定，建立用户自信
+4. 多角度视野要开阔实用，引导思维升级
+5. 行动计划要可操作且循序渐进`
 
     return fullPrompt
   }
@@ -960,14 +985,31 @@ ${conversationContent}
       
       return {
         id: Date.now().toString(36) + Math.random().toString(36).substr(2),
-        title: summaryData.title || '对话总结',
+        title: summaryData.title || '复盘分析',
         summary: summaryData.summary || '暂无总结内容',
-        insights: summaryData.insights || [],
-        actionableAdvice: summaryData.actionableAdvice || [],
+        emotionalSupport: summaryData.emotionalSupport || {
+          encouragement: '每一次尝试都是成长的开始',
+          universality: '这样的经历很多人都有过',
+          value: '这次经历为你带来了宝贵的学习机会'
+        },
+        failureAnalysis: summaryData.failureAnalysis || {
+          externalFactors: [],
+          internalFactors: [],
+          keyObstacles: []
+        },
+        positiveActions: summaryData.positiveActions || {
+          correctBehaviors: [],
+          effectiveStrategies: [],
+          strengths: []
+        },
+        multiPerspective: summaryData.multiPerspective || {
+          alternativeViews: [],
+          systematicThinking: [],
+          growthMindset: []
+        },
+        actionPlan: summaryData.actionPlan || [],
         tags: summaryData.tags || [],
-        emotionalPattern: summaryData.emotionalPattern || '',
-        growthAreas: summaryData.growthAreas || [],
-        analysisType: summaryData.analysisType || 'ai_analysis',
+        analysisType: summaryData.analysisType || 'reflection_analysis',
         chatCount: selectedChats.length,
         chats: selectedChats.map(chat => ({
           id: chat.chatId || chat.id,
@@ -996,21 +1038,34 @@ ${conversationContent}
     
     return {
       id: Date.now().toString(36) + Math.random().toString(36).substr(2),
-      title: `对话复盘 - ${timeRange}`,
+      title: `复盘分析 - ${timeRange}`,
       summary: rawResponse || `基于${totalChats}个对话的复盘总结。这些对话记录了你的思考过程、问题解决方式和成长轨迹。通过回顾这些对话，我们可以看到你在不同话题上的关注点和思考模式。`,
-      insights: [
-        '对话记录已保存',
-        '可在知识库中进行进一步分析',
-        '支持持续的学习和反思'
-      ],
-      actionableAdvice: [
+      emotionalSupport: {
+        encouragement: '你勇于思考和探索，这本身就是一种成长',
+        universality: '每个人都会在成长过程中遇到各种挑战',
+        value: '这些对话记录了你宝贵的思考轨迹'
+      },
+      failureAnalysis: {
+        externalFactors: ['需要进一步AI分析'],
+        internalFactors: ['需要进一步AI分析'],
+        keyObstacles: ['需要进一步AI分析']
+      },
+      positiveActions: {
+        correctBehaviors: ['主动寻求帮助和建议'],
+        effectiveStrategies: ['通过对话整理思路'],
+        strengths: ['善于思考和反思']
+      },
+      multiPerspective: {
+        alternativeViews: ['需要进一步AI分析'],
+        systematicThinking: ['需要进一步AI分析'],
+        growthMindset: ['保持学习和成长的心态']
+      },
+      actionPlan: [
         '定期回顾对话内容，发现自己的思考模式',
         '关注重复出现的问题，寻找根本解决方案',
         '将AI建议应用到实际生活中'
       ],
       tags: this.extractBasicTags(selectedChats),
-      emotionalPattern: '需要进一步分析',
-      growthAreas: ['持续学习', '实践应用'],
       analysisType: 'basic_summary',
       chatCount: totalChats,
       chats: selectedChats.map(chat => ({

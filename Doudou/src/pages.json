@@ -77,6 +77,13 @@
 				"navigationBarTitleText": "AI创作",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/workplace-vent/workplace-vent",
+			"style": {
+				"navigationBarTitleText": "职场吐槽",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {

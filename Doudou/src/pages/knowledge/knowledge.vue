@@ -41,18 +41,18 @@
 
     <!-- 统计信息 -->
     <view v-if="knowledgeCards.length > 0" class="stats-section">
-      <view class="stats-card">
-        <view class="stat-item">
-          <text class="stat-number">{{ knowledgeCards.length }}</text>
-          <text class="stat-label">知识卡片</text>
+      <view class="stats-container">
+        <view class="stats-item">
+          <view class="stats-number">{{ knowledgeCards.length }}</view>
+          <view class="stats-label">知识卡片</view>
         </view>
-        <view class="stat-item">
-          <text class="stat-number">{{ totalChats }}</text>
-          <text class="stat-label">总对话数</text>
+        <view class="stats-item">
+          <view class="stats-number">{{ totalChats }}</view>
+          <view class="stats-label">对话数</view>
         </view>
-        <view class="stat-item">
-          <text class="stat-number">{{ totalInsights }}</text>
-          <text class="stat-label">洞察数量</text>
+        <view class="stats-item">
+          <view class="stats-number">{{ totalInsights }}</view>
+          <view class="stats-label">洞察</view>
         </view>
       </view>
     </view>
@@ -113,8 +113,13 @@
         
         <view class="card-content">
           <view class="card-header">
+            <view class="card-date">{{ formatCardDate(card.createdTime) }}</view>
+            <view v-if="!isSelectionMode" class="card-more">⋯</view>
+          </view>
+          
+          <view class="card-title-section">
             <text class="card-title">{{ card.title }}</text>
-            <text class="card-time">{{ formatTime(card.createdTime) }}</text>
+            <text class="card-time">{{ formatCardTime(card.createdTime) }}</text>
           </view>
           
           <view v-if="card.tags && card.tags.length > 0" class="card-tags">
@@ -127,23 +132,9 @@
             </view>
           </view>
           
-          <text class="card-summary">{{ getCardPreview(card.summary) }}</text>
-          
           <view class="card-meta">
-            <text class="chat-count">基于{{ card.chatCount || 0 }}个对话</text>
-            <text class="insight-count">{{ (card.insights && card.insights.length) || 0 }}个洞察</text>
-            <text v-if="card.actionableAdvice && card.actionableAdvice.length" class="advice-count">{{ card.actionableAdvice.length }}个建议</text>
-            <text v-if="card.analysisType === 'ai_analysis'" class="type-badge">AI分析</text>
-            <text v-if="card.needsAIAnalysis" class="pending-badge">待分析</text>
-          </view>
-        </view>
-        
-        <view v-if="!isSelectionMode" class="card-actions">
-          <view class="action-btn share-btn" @click.stop="shareKnowledgeCard(card)">
-            <text class="action-icon">📤</text>
-          </view>
-          <view class="action-btn delete-btn" @click.stop="removeKnowledgeCard(card.id)">
-            <text class="action-icon">🗑️</text>
+            <text class="meta-item">{{ card.chatCount || 0 }}个对话</text>
+            <text class="meta-item">{{ (card.insights && card.insights.length) || 0 }}个洞察</text>
           </view>
         </view>
       </view>
@@ -181,26 +172,8 @@
           <view class="close-btn" @click="hideCardDetail">×</view>
         </view>
         
-        <scroll-view class="detail-content" scroll-y="true">
+        <scroll-view class="detail-content" scroll-y="true" :show-scrollbar="true" :enhanced="true" :bounces="true">
           <view v-if="selectedCard" class="detail-body">
-            <!-- 基本信息 -->
-            <view class="detail-section">
-              <text class="section-title">基本信息</text>
-              <view class="info-grid">
-                <view class="info-item">
-                  <text class="info-label">创建时间</text>
-                  <text class="info-value">{{ formatTime(selectedCard.createdTime) }}</text>
-                </view>
-                <view class="info-item">
-                  <text class="info-label">对话数量</text>
-                  <text class="info-value">{{ selectedCard.chatCount || 0 }}个</text>
-                </view>
-                <view class="info-item">
-                  <text class="info-label">洞察数量</text>
-                  <text class="info-value">{{ (selectedCard.insights && selectedCard.insights.length) || 0 }}个</text>
-                </view>
-              </view>
-            </view>
             
             <!-- 标签 -->
             <view v-if="selectedCard.tags && selectedCard.tags.length > 0" class="detail-section">
@@ -216,24 +189,173 @@
               </view>
             </view>
             
-            <!-- 总结内容 -->
-            <view class="detail-section">
-              <text class="section-title">总结内容</text>
-              <text class="summary-content">{{ selectedCard.summary || '暂无总结内容' }}</text>
-            </view>
-            
-            <!-- 洞察 -->
-            <view v-if="selectedCard.insights && selectedCard.insights.length > 0" class="detail-section">
-              <text class="section-title">关键洞察</text>
-              <view class="insights-list">
-                <view 
-                  v-for="(insight, index) in selectedCard.insights" 
-                  :key="index"
-                  class="insight-item"
-                >
-                  <text class="insight-text">{{ insight }}</text>
+            <!-- 情感支撑 -->
+            <view v-if="selectedCard.emotionalSupport" class="detail-section">
+              <text class="section-title">💝 情感支撑</text>
+              <view class="emotional-support-content">
+                <view class="support-item encouragement">
+                  <view class="support-icon">🌟</view>
+                  <text class="support-text">{{ selectedCard.emotionalSupport.encouragement }}</text>
+                </view>
+                <view class="support-item universality">
+                  <view class="support-icon">🤝</view>
+                  <text class="support-text">{{ selectedCard.emotionalSupport.universality }}</text>
+                </view>
+                <view class="support-item value">
+                  <view class="support-icon">💎</view>
+                  <text class="support-text">{{ selectedCard.emotionalSupport.value }}</text>
                 </view>
               </view>
+            </view>
+            
+            <!-- 失败拆解 -->
+            <view v-if="selectedCard.failureAnalysis" class="detail-section">
+              <text class="section-title">🔍 问题拆解</text>
+              <view class="failure-analysis-content">
+                <view v-if="selectedCard.failureAnalysis.externalFactors && selectedCard.failureAnalysis.externalFactors.length > 0" class="analysis-subsection">
+                  <text class="subsection-title">外在因素</text>
+                  <view class="factor-list">
+                    <view 
+                      v-for="(factor, index) in selectedCard.failureAnalysis.externalFactors" 
+                      :key="'external-' + index"
+                      class="factor-item external"
+                    >
+                      <text class="factor-text">{{ factor }}</text>
+                    </view>
+                  </view>
+                </view>
+                <view v-if="selectedCard.failureAnalysis.internalFactors && selectedCard.failureAnalysis.internalFactors.length > 0" class="analysis-subsection">
+                  <text class="subsection-title">内在因素</text>
+                  <view class="factor-list">
+                    <view 
+                      v-for="(factor, index) in selectedCard.failureAnalysis.internalFactors" 
+                      :key="'internal-' + index"
+                      class="factor-item internal"
+                    >
+                      <text class="factor-text">{{ factor }}</text>
+                    </view>
+                  </view>
+                </view>
+                <view v-if="selectedCard.failureAnalysis.keyObstacles && selectedCard.failureAnalysis.keyObstacles.length > 0" class="analysis-subsection">
+                  <text class="subsection-title">关键卡点</text>
+                  <view class="factor-list">
+                    <view 
+                      v-for="(obstacle, index) in selectedCard.failureAnalysis.keyObstacles" 
+                      :key="'obstacle-' + index"
+                      class="factor-item obstacle"
+                    >
+                      <text class="factor-text">{{ obstacle }}</text>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+            
+            <!-- 肯定正确做法 -->
+            <view v-if="selectedCard.positiveActions" class="detail-section">
+              <text class="section-title">✨ 你做对了什么</text>
+              <view class="positive-actions-content">
+                <view v-if="selectedCard.positiveActions.correctBehaviors && selectedCard.positiveActions.correctBehaviors.length > 0" class="positive-subsection">
+                  <text class="subsection-title">正确行为</text>
+                  <view class="positive-list">
+                    <view 
+                      v-for="(behavior, index) in selectedCard.positiveActions.correctBehaviors" 
+                      :key="'behavior-' + index"
+                      class="positive-item behavior"
+                    >
+                      <text class="positive-text">{{ behavior }}</text>
+                    </view>
+                  </view>
+                </view>
+                <view v-if="selectedCard.positiveActions.effectiveStrategies && selectedCard.positiveActions.effectiveStrategies.length > 0" class="positive-subsection">
+                  <text class="subsection-title">有效策略</text>
+                  <view class="positive-list">
+                    <view 
+                      v-for="(strategy, index) in selectedCard.positiveActions.effectiveStrategies" 
+                      :key="'strategy-' + index"
+                      class="positive-item strategy"
+                    >
+                      <text class="positive-text">{{ strategy }}</text>
+                    </view>
+                  </view>
+                </view>
+                <view v-if="selectedCard.positiveActions.strengths && selectedCard.positiveActions.strengths.length > 0" class="positive-subsection">
+                  <text class="subsection-title">展现优势</text>
+                  <view class="positive-list">
+                    <view 
+                      v-for="(strength, index) in selectedCard.positiveActions.strengths" 
+                      :key="'strength-' + index"
+                      class="positive-item strength"
+                    >
+                      <text class="positive-text">{{ strength }}</text>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+            
+            <!-- 多角度视野 -->
+            <view v-if="selectedCard.multiPerspective" class="detail-section">
+              <text class="section-title">🌈 多角度视野</text>
+              <view class="multi-perspective-content">
+                <view v-if="selectedCard.multiPerspective.alternativeViews && selectedCard.multiPerspective.alternativeViews.length > 0" class="perspective-subsection">
+                  <text class="subsection-title">不同视角</text>
+                  <view class="perspective-list">
+                    <view 
+                      v-for="(view, index) in selectedCard.multiPerspective.alternativeViews" 
+                      :key="'view-' + index"
+                      class="perspective-item alternative"
+                    >
+                      <text class="perspective-text">{{ view }}</text>
+                    </view>
+                  </view>
+                </view>
+                <view v-if="selectedCard.multiPerspective.systematicThinking && selectedCard.multiPerspective.systematicThinking.length > 0" class="perspective-subsection">
+                  <text class="subsection-title">系统思考</text>
+                  <view class="perspective-list">
+                    <view 
+                      v-for="(thinking, index) in selectedCard.multiPerspective.systematicThinking" 
+                      :key="'thinking-' + index"
+                      class="perspective-item systematic"
+                    >
+                      <text class="perspective-text">{{ thinking }}</text>
+                    </view>
+                  </view>
+                </view>
+                <view v-if="selectedCard.multiPerspective.growthMindset && selectedCard.multiPerspective.growthMindset.length > 0" class="perspective-subsection">
+                  <text class="subsection-title">成长思维</text>
+                  <view class="perspective-list">
+                    <view 
+                      v-for="(mindset, index) in selectedCard.multiPerspective.growthMindset" 
+                      :key="'mindset-' + index"
+                      class="perspective-item growth"
+                    >
+                      <text class="perspective-text">{{ mindset }}</text>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+            
+            <!-- 行动计划 -->
+            <view v-if="selectedCard.actionPlan && selectedCard.actionPlan.length > 0" class="detail-section">
+              <text class="section-title">🎯 下一步行动</text>
+              <view class="action-plan-content">
+                <view 
+                  v-for="(action, index) in selectedCard.actionPlan" 
+                  :key="'action-' + index"
+                  class="action-item"
+                >
+                  <view class="action-number">{{ index + 1 }}</view>
+                  <text class="action-text">{{ action }}</text>
+                </view>
+              </view>
+            </view>
+            
+            <!-- 核心总结 -->
+            <view class="detail-section">
+              <text class="section-title">📝 核心总结</text>
+              <text class="summary-content">{{ selectedCard.summary || '暂无总结内容' }}</text>
             </view>
             
             <!-- 相关对话 -->
@@ -266,12 +388,37 @@
         </view>
       </view>
     </view>
+
+    <!-- 底部导航栏 -->
+    <view class="bottom-nav">
+      <view class="nav-item" :class="{ active: currentPage === 'map' }" @click="navigateToMap">
+        <view class="nav-icon">
+          <image src="@/static/chat/Map-draw.svg" class="nav-svg-icon" />
+        </view>
+        <text class="nav-text">地图</text>
+      </view>
+      
+      <view class="nav-item" :class="{ active: currentPage === 'chat' }" @click="navigateToChat">
+        <view class="nav-icon">🔥</view>
+        <text class="nav-text">DouDou</text>
+      </view>
+      
+      <view class="nav-item" :class="{ active: currentPage === 'knowledge' }">
+        <view class="nav-icon">
+          <image src="@/static/chat/Document-folder.svg" class="nav-svg-icon" />
+        </view>
+        <text class="nav-text">知识库</text>
+      </view>
+    </view>
   </view>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import aiService from '@/utils/aiService'
+
+// 当前页面状态
+const currentPage = ref('knowledge')
 
 // 工具函数
 const generateMessageId = () => {
@@ -512,6 +659,27 @@ const getCardPreview = (summary) => {
   return summary.length > 100 ? summary.substring(0, 100) + '...' : summary
 }
 
+const formatCardDate = (timestamp) => {
+  const date = new Date(timestamp)
+  return `${date.getMonth() + 1}月${date.getDate()}日`
+}
+
+const formatCardTime = (timestamp) => {
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diff = now - date
+  
+  if (diff < 60000) { // 1分钟内
+    return '刚刚'
+  } else if (diff < 3600000) { // 1小时内
+    return `${Math.floor(diff / 60000)}分钟前`
+  } else if (diff < 86400000) { // 24小时内
+    return `${Math.floor(diff / 3600000)}小时前`
+  } else {
+    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+  }
+}
+
 // 导航方法
 const goBack = () => {
   uni.navigateBack({
@@ -522,6 +690,19 @@ const goBack = () => {
 const goToChat = () => {
   uni.navigateTo({
     url: '/pages/chat/chat'
+  })
+}
+
+// 导航方法
+const navigateToChat = () => {
+  uni.navigateTo({
+    url: '/pages/chat/chat'
+  })
+}
+
+const navigateToMap = () => {
+  uni.navigateTo({
+    url: '/pages/hexagon-map/hexagon-map'
   })
 }
 
@@ -634,7 +815,7 @@ const aiAnalyzeSingleCard = async (card) => {
 .knowledge-container {
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  background: #f8f9fa;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -653,9 +834,8 @@ const aiAnalyzeSingleCard = async (card) => {
   align-items: center;
   justify-content: space-between;
   padding: 20rpx 30rpx;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10rpx);
-  border-bottom: 1rpx solid rgba(0, 0, 0, 0.1);
+  background: white;
+  border-bottom: 1rpx solid #F0F0F0;
   position: relative;
   z-index: 10;
 }
@@ -668,31 +848,30 @@ const aiAnalyzeSingleCard = async (card) => {
 }
 
 .back-button {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 30rpx;
+  background: #F5F5F5;
+  border-radius: 20rpx;
   padding: 10rpx 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   
   &:active {
     transform: scale(0.95);
-    background: rgba(255, 255, 255, 1);
+    background: #EEEEEE;
   }
 }
 
 .back-text {
   font-size: 24rpx;
-  color: #4A5568;
+  color: #666;
   font-weight: 500;
 }
 
 .page-title {
   font-size: 36rpx;
   font-weight: bold;
-  color: #2D3748;
+  color: #333;
 }
 
 .header-buttons {
@@ -704,41 +883,39 @@ const aiAnalyzeSingleCard = async (card) => {
 .header-btn {
   min-width: 100rpx;
   height: 60rpx;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 30rpx;
+  background: #F5F5F5;
+  border-radius: 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 20rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   
   &:active {
     transform: scale(0.95);
-    background: rgba(255, 255, 255, 1);
+    background: #EEEEEE;
   }
 }
 
 .btn-text {
   font-size: 24rpx;
-  color: #4A5568;
+  color: #666;
   font-weight: 500;
 }
 
 /* 选择模式工具栏 */
 .selection-toolbar {
-  background: rgba(255, 255, 255, 0.95);
+  background: white;
   padding: 20rpx 30rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1rpx solid rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10rpx);
+  border-bottom: 1rpx solid #F0F0F0;
 }
 
 .selection-count {
   font-size: 28rpx;
-  color: #4A5568;
+  color: #666;
   font-weight: 500;
 }
 
@@ -751,18 +928,18 @@ const aiAnalyzeSingleCard = async (card) => {
 .toolbar-btn {
   padding: 12rpx 24rpx;
   border-radius: 20rpx;
-  background: #F7FAFC;
-  border: 1rpx solid #E2E8F0;
+  background: #F5F5F5;
+  border: 1rpx solid #E5E5E5;
   transition: all 0.3s ease;
   
   &:active {
     transform: scale(0.95);
-    background: #EDF2F7;
+    background: #EEEEEE;
   }
   
   &.delete-btn {
-    background: #FED7D7;
-    border-color: #FC8181;
+    background: #FFE6E6;
+    border-color: #FF9999;
     
     .toolbar-btn-text {
       color: #E53E3E;
@@ -770,11 +947,11 @@ const aiAnalyzeSingleCard = async (card) => {
   }
   
   &.ai-summary-btn {
-    background: #E6FFFA;
-    border-color: #38B2AC;
+    background: #FFF5E6;
+    border-color: #FF9900;
     
     .toolbar-btn-text {
-      color: #38B2AC;
+      color: #FF9900;
       font-weight: 600;
     }
   }
@@ -782,41 +959,42 @@ const aiAnalyzeSingleCard = async (card) => {
 
 .toolbar-btn-text {
   font-size: 24rpx;
-  color: #4A5568;
+  color: #666;
   font-weight: 500;
 }
 
 /* 统计信息 */
 .stats-section {
-  padding: 30rpx;
+  padding: 0 30rpx 20rpx;
+  margin-top: 20rpx;
 }
 
-.stats-card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20rpx;
-  padding: 30rpx;
+.stats-container {
+  background: #FFF5E6;
+  border-radius: 16rpx;
+  padding: 30rpx 20rpx;
   display: flex;
   justify-content: space-around;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10rpx);
+  align-items: center;
 }
 
-.stat-item {
+.stats-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8rpx;
 }
 
-.stat-number {
+.stats-number {
   font-size: 48rpx;
   font-weight: bold;
-  color: #667eea;
+  color: #FF9900;
 }
 
-.stat-label {
+.stats-label {
   font-size: 24rpx;
-  color: #718096;
+  color: #666;
+  font-weight: 500;
 }
 
 /* 搜索和筛选 */
@@ -832,21 +1010,21 @@ const aiAnalyzeSingleCard = async (card) => {
 .search-input {
   width: 100%;
   height: 80rpx;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 40rpx;
+  background: white;
+  border-radius: 12rpx;
   padding: 0 60rpx 0 30rpx;
   font-size: 28rpx;
-  color: #2D3748;
-  border: 2rpx solid transparent;
+  color: #333;
+  border: 1rpx solid #E5E5E5;
   transition: all 0.3s ease;
   
   &:focus {
-    border-color: #667eea;
+    border-color: #FF9900;
     background: white;
   }
   
   &::placeholder {
-    color: #A0AEC0;
+    color: #999;
   }
 }
 
@@ -856,29 +1034,30 @@ const aiAnalyzeSingleCard = async (card) => {
   top: 50%;
   transform: translateY(-50%);
   font-size: 28rpx;
-  color: #A0AEC0;
+  color: #999;
 }
 
 .filter-tabs {
   display: flex;
   gap: 12rpx;
   overflow-x: auto;
+  padding-bottom: 5rpx;
 }
 
 .filter-tab {
   flex-shrink: 0;
-  padding: 12rpx 24rpx;
-  background: rgba(255, 255, 255, 0.7);
+  padding: 16rpx 24rpx;
+  background: white;
   border-radius: 20rpx;
-  border: 2rpx solid transparent;
+  border: 1rpx solid #E5E5E5;
   transition: all 0.3s ease;
   
   &.active {
-    background: rgba(102, 126, 234, 0.2);
-    border-color: #667eea;
+    background: #FF9900;
+    border-color: #FF9900;
     
     .tab-text {
-      color: #667eea;
+      color: white;
       font-weight: 600;
     }
   }
@@ -889,8 +1068,8 @@ const aiAnalyzeSingleCard = async (card) => {
 }
 
 .tab-text {
-  font-size: 24rpx;
-  color: #4A5568;
+  font-size: 26rpx;
+  color: #666;
   transition: all 0.3s ease;
 }
 
@@ -903,20 +1082,18 @@ const aiAnalyzeSingleCard = async (card) => {
 }
 
 .knowledge-card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20rpx;
-  margin-bottom: 20rpx;
-  padding: 30rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10rpx);
+  background: white;
+  border-radius: 12rpx;
+  margin-bottom: 16rpx;
+  padding: 24rpx;
+  border: 1rpx solid #F0F0F0;
   transition: all 0.3s ease;
   position: relative;
   display: flex;
   gap: 20rpx;
   
   &:active {
-    transform: scale(0.98);
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+    background: #FAFAFA;
   }
   
   &.selection-mode {
@@ -924,8 +1101,8 @@ const aiAnalyzeSingleCard = async (card) => {
   }
   
   &.selected {
-    background: rgba(102, 126, 234, 0.1);
-    border: 2rpx solid #667eea;
+    background: rgba(255, 153, 0, 0.1);
+    border: 2rpx solid #FF9900;
   }
 }
 
@@ -965,27 +1142,47 @@ const aiAnalyzeSingleCard = async (card) => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .card-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.card-date {
+  font-size: 24rpx;
+  color: #999;
+  font-weight: 500;
+}
+
+.card-more {
+  font-size: 32rpx;
+  color: #CCC;
+  transform: rotate(90deg);
+}
+
+.card-title-section {
+  display: flex;
+  align-items: baseline;
   justify-content: space-between;
   gap: 20rpx;
+  margin-bottom: 8rpx;
 }
 
 .card-title {
   flex: 1;
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #2D3748;
-  line-height: 1.4;
+  color: #333;
+  line-height: 1.3;
 }
 
 .card-time {
   font-size: 22rpx;
-  color: #A0AEC0;
+  color: #999;
   flex-shrink: 0;
 }
 
@@ -993,115 +1190,34 @@ const aiAnalyzeSingleCard = async (card) => {
   display: flex;
   flex-wrap: wrap;
   gap: 8rpx;
+  margin-bottom: 8rpx;
 }
 
 .tag {
-  background: rgba(102, 126, 234, 0.1);
-  border-radius: 12rpx;
-  padding: 6rpx 12rpx;
+  background: #F5F5F5;
+  border-radius: 8rpx;
+  padding: 4rpx 12rpx;
+  border: 1rpx solid #E5E5E5;
 }
 
 .tag-text {
-  font-size: 20rpx;
-  color: #667eea;
-  font-weight: 500;
-}
-
-.card-summary {
-  font-size: 26rpx;
-  color: #4A5568;
-  line-height: 1.5;
+  font-size: 22rpx;
+  color: #666;
+  font-weight: 400;
 }
 
 .card-meta {
   display: flex;
   align-items: center;
   gap: 16rpx;
-  margin-top: 8rpx;
 }
 
-.chat-count {
+.meta-item {
   font-size: 22rpx;
-  color: #805AD5;
-  background: rgba(128, 90, 213, 0.1);
-  padding: 4rpx 12rpx;
-  border-radius: 12rpx;
+  color: #999;
+  font-weight: 400;
 }
 
-.insight-count {
-  font-size: 22rpx;
-  color: #38B2AC;
-  background: rgba(56, 178, 172, 0.1);
-  padding: 4rpx 12rpx;
-  border-radius: 12rpx;
-}
-
-.advice-count {
-  font-size: 22rpx;
-  color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
-  padding: 4rpx 12rpx;
-  border-radius: 12rpx;
-}
-
-.type-badge {
-  font-size: 20rpx;
-  color: #FF6B6B;
-  background: rgba(255, 107, 107, 0.1);
-  padding: 4rpx 10rpx;
-  border-radius: 10rpx;
-  font-weight: 600;
-}
-
-.pending-badge {
-  font-size: 20rpx;
-  color: #FFA500;
-  background: rgba(255, 165, 0, 0.1);
-  padding: 4rpx 10rpx;
-  border-radius: 10rpx;
-  font-weight: 600;
-}
-
-.card-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-  flex-shrink: 0;
-}
-
-.action-btn {
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  
-  &:active {
-    transform: scale(0.9);
-  }
-  
-  &.share-btn {
-    background: rgba(56, 178, 172, 0.1);
-    
-    .action-icon {
-      color: #38B2AC;
-    }
-  }
-  
-  &.delete-btn {
-    background: #FED7D7;
-    
-    .action-icon {
-      color: #E53E3E;
-    }
-  }
-}
-
-.action-icon {
-  font-size: 24rpx;
-}
 
 /* 空状态 */
 .empty-state {
@@ -1120,29 +1236,27 @@ const aiAnalyzeSingleCard = async (card) => {
 
 .empty-title {
   font-size: 32rpx;
-  color: rgba(255, 255, 255, 0.9);
+  color: #666;
   font-weight: 600;
 }
 
 .empty-desc {
   font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.7);
+  color: #999;
   line-height: 1.5;
   max-width: 400rpx;
 }
 
 .empty-action {
-  background: rgba(255, 255, 255, 0.2);
+  background: #FF9900;
   border-radius: 30rpx;
   padding: 16rpx 32rpx;
   margin-top: 20rpx;
-  backdrop-filter: blur(10rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.3);
   transition: all 0.3s ease;
   
   &:active {
     transform: scale(0.95);
-    background: rgba(255, 255, 255, 0.3);
+    background: #E68900;
   }
 }
 
@@ -1150,6 +1264,271 @@ const aiAnalyzeSingleCard = async (card) => {
   font-size: 28rpx;
   color: white;
   font-weight: 500;
+}
+
+/* 情感支撑样式 */
+.emotional-support-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.support-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  padding: 20rpx;
+  border-radius: 16rpx;
+  
+  &.encouragement {
+    background: linear-gradient(135deg, #FFF5E6 0%, #FFEBCC 100%);
+    border-left: 4rpx solid #FF9900;
+  }
+  
+  &.universality {
+    background: linear-gradient(135deg, #E6F7FF 0%, #CCE7FF 100%);
+    border-left: 4rpx solid #1890FF;
+  }
+  
+  &.value {
+    background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+    border-left: 4rpx solid #0EA5E9;
+  }
+}
+
+.support-icon {
+  font-size: 32rpx;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.support-text {
+  flex: 1;
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #2D3748;
+  font-weight: 500;
+}
+
+/* 失败分析样式 */
+.failure-analysis-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.analysis-subsection, .positive-subsection, .perspective-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.subsection-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #4A5568;
+  margin-bottom: 8rpx;
+}
+
+.factor-list, .positive-list, .perspective-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.factor-item {
+  padding: 16rpx 20rpx;
+  border-radius: 12rpx;
+  border-left: 4rpx solid;
+  
+  &.external {
+    background: rgba(239, 68, 68, 0.1);
+    border-left-color: #EF4444;
+  }
+  
+  &.internal {
+    background: rgba(249, 115, 22, 0.1);
+    border-left-color: #F97316;
+  }
+  
+  &.obstacle {
+    background: rgba(156, 163, 175, 0.15);
+    border-left-color: #9CA3AF;
+  }
+}
+
+.factor-text {
+  font-size: 26rpx;
+  color: #374151;
+  line-height: 1.5;
+}
+
+/* 正面行动样式 */
+.positive-actions-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.positive-item {
+  padding: 16rpx 20rpx;
+  border-radius: 12rpx;
+  border-left: 4rpx solid;
+  position: relative;
+  
+  &.behavior {
+    background: rgba(34, 197, 94, 0.1);
+    border-left-color: #22C55E;
+  }
+  
+  &.strategy {
+    background: rgba(59, 130, 246, 0.1);
+    border-left-color: #3B82F6;
+  }
+  
+  &.strength {
+    background: rgba(168, 85, 247, 0.1);
+    border-left-color: #A855F7;
+  }
+  
+  &::before {
+    content: '✓';
+    position: absolute;
+    left: -8rpx;
+    top: 12rpx;
+    width: 24rpx;
+    height: 24rpx;
+    background: #22C55E;
+    color: white;
+    border-radius: 50%;
+    font-size: 16rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+}
+
+.positive-text {
+  font-size: 26rpx;
+  color: #374151;
+  line-height: 1.5;
+  margin-left: 8rpx;
+}
+
+/* 多角度视野样式 */
+.multi-perspective-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.perspective-item {
+  padding: 16rpx 20rpx;
+  border-radius: 12rpx;
+  border-left: 4rpx solid;
+  position: relative;
+  
+  &.alternative {
+    background: rgba(236, 72, 153, 0.1);
+    border-left-color: #EC4899;
+  }
+  
+  &.systematic {
+    background: rgba(139, 69, 193, 0.1);
+    border-left-color: #8B45C1;
+  }
+  
+  &.growth {
+    background: rgba(16, 185, 129, 0.1);
+    border-left-color: #10B981;
+  }
+  
+  &::before {
+    content: '🔄';
+    position: absolute;
+    left: -8rpx;
+    top: 12rpx;
+    width: 24rpx;
+    height: 24rpx;
+    background: white;
+    border: 2rpx solid #EC4899;
+    border-radius: 50%;
+    font-size: 12rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  &.systematic::before {
+    content: '🧩';
+    border-color: #8B45C1;
+  }
+  
+  &.growth::before {
+    content: '🌱';
+    border-color: #10B981;
+  }
+}
+
+.perspective-text {
+  font-size: 26rpx;
+  color: #374151;
+  line-height: 1.5;
+  margin-left: 8rpx;
+}
+
+/* 行动计划样式 */
+.action-plan-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.action-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  padding: 20rpx;
+  background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+  border-radius: 16rpx;
+  border: 2rpx solid #BBF7D0;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6rpx;
+    background: linear-gradient(180deg, #22C55E 0%, #16A34A 100%);
+    border-radius: 3rpx 0 0 3rpx;
+  }
+}
+
+.action-number {
+  width: 48rpx;
+  height: 48rpx;
+  background: #22C55E;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: bold;
+  flex-shrink: 0;
+  box-shadow: 0 4rpx 12rpx rgba(34, 197, 94, 0.3);
+}
+
+.action-text {
+  flex: 1;
+  font-size: 28rpx;
+  color: #166534;
+  line-height: 1.6;
+  font-weight: 500;
+  margin-top: 8rpx;
 }
 
 /* 卡片详情弹窗 */
@@ -1172,7 +1551,7 @@ const aiAnalyzeSingleCard = async (card) => {
   border-radius: 24rpx;
   width: 700rpx;
   max-width: 90vw;
-  max-height: 80vh;
+  max-height: 85vh; /* 增加最大高度 */
   overflow: hidden;
   box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.3);
   animation: popupSlideIn 0.3s ease-out;
@@ -1220,10 +1599,12 @@ const aiAnalyzeSingleCard = async (card) => {
 .detail-content {
   flex: 1;
   min-height: 0;
+  height: 60vh; /* 设置固定高度，确保内容可滚动 */
+  max-height: 60vh; /* 最大高度限制 */
 }
 
 .detail-body {
-  padding: 20rpx 40rpx;
+  padding: 20rpx 40rpx 60rpx; /* 增加底部内边距，确保内容完全可见 */
 }
 
 .detail-section {
@@ -1445,5 +1826,84 @@ const aiAnalyzeSingleCard = async (card) => {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* 底部导航栏 */
+.bottom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: white;
+  border-top: 1rpx solid #F0F0F0;
+  padding: 20rpx 0;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 10rpx 20rpx;
+  border-radius: 20rpx;
+  transition: all 0.3s ease;
+  min-width: 120rpx;
+  
+  &:active {
+    transform: scale(0.95);
+    background: rgba(255, 153, 0, 0.12);
+  }
+  
+  &.active {
+    background: rgba(255, 153, 0, 0.12);
+    
+    .nav-icon {
+      background: #FFC58F;
+      color: white;
+    }
+    
+    .nav-text {
+      color: #FF9900;
+      font-weight: 600;
+    }
+  }
+}
+
+.nav-icon {
+  width: 50rpx;
+  height: 50rpx;
+  border-radius: 50%;
+  background: #F5F5F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #999;
+  transition: all 0.3s ease;
+}
+
+.nav-svg-icon {
+  width: 24rpx;
+  height: 24rpx;
+  filter: grayscale(1);
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.nav-item.active .nav-svg-icon {
+  filter: none;
+  opacity: 1;
+}
+
+.nav-text {
+  font-size: 22rpx;
+  color: #999;
+  font-weight: 500;
+  text-align: center;
 }
 </style>

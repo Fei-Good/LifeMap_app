@@ -14,11 +14,6 @@
       <view class="app-title-container">
         <image class="doudou-logo" src="@/static/chat/DouDou文字.png" mode="aspectFit"></image>
       </view>
-      
-      <!-- AI创作机器人icon -->
-      <view class="robot-btn" @click="toggleChatFavorite">
-        <image class="robot-icon" src="@/static/chat/AI创作.svg" mode="aspectFit"></image>
-      </view>
     </view>
 
     <!-- 侧边栏 -->
@@ -51,52 +46,52 @@
             <view class="sidebar-icon">⭐</view>
             <text class="sidebar-text">收藏对话</text>
           </view>
-        </view>
+        </view>FF
       </view>
     </view>
 
-    <!-- 聊天区域快捷操作 -->
-    <view v-if="isChatStarted" class="quick-actions">
-      <view class="quick-btn" @click="handleFunction('efficiency')">
-        <text class="quick-text">🫣 情绪疏导</text>
-      </view>
-      <view class="quick-btn" @click="handleFunction('chat')">
-        <text class="quick-text">💬 常见问题</text>
-      </view>
-    </view>
 
     <!-- 浮动操作栏 -->
-    <view v-if="isChatStarted" class="floating-actions">
+    <view v-if="!isChatStarted" class="floating-actions">
       <!-- 角色选择 -->
       <view 
         class="floating-item role-selector-item"
         :class="{ 'active': currentRole !== 'doudou' }"
         @click="toggleRoleSelector"
       >
-        <image 
-          class="floating-icon"
-          :src="roleConfig[currentRole].avatar"
-          mode="aspectFit"
-        />
-        <text class="floating-text">{{ roleConfig[currentRole].name }}</text>
+        <view class="floating-item-top">
+          <image 
+            class="floating-icon"
+            :src="roleConfig[currentRole].avatar"
+            mode="aspectFit"
+          />
+          <text class="floating-function">{{ roleConfig[currentRole].name }}</text>
+        </view>
+        <text class="floating-desc">切换视角看问题</text>
       </view>
       
-      <!-- 暴打老板 -->
-      <view 
-        class="floating-item boss-fight-item"
-        @click="handleBossFight"
-      >
-        <text class="floating-icon">👊</text>
-        <text class="floating-text">暴打老板</text>
-      </view>
-      
-      <!-- 领取任务 -->
+      <!-- AI创作 -->
       <view 
         class="floating-item task-item"
-        @click="handleReceiveTask"
+        @click="toggleChatFavorite"
       >
-        <text class="floating-icon">📋</text>
-        <text class="floating-text">领取任务</text>
+        <view class="floating-item-top">
+          <image class="floating-icon" src="@/static/chat/AI创作.svg" mode="aspectFit"></image>
+          <text class="floating-function">AI创作</text>
+        </view>
+        <text class="floating-desc">AI智能创作</text>
+      </view>
+      
+      <!-- 职场吐槽 -->
+      <view 
+        class="floating-item workplace-vent-item"
+        @click="handleWorkplaceVent"
+      >
+        <view class="floating-item-top">
+          <text class="floating-icon">💭</text>
+          <text class="floating-function">吐槽消消乐</text>
+        </view>
+        <text class="floating-desc">来戳戳泡泡泄气</text>
       </view>
     </view>
 
@@ -104,22 +99,6 @@
     <view v-if="!isChatStarted" class="greeting-section">
       <text class="greeting-title">Hi 我是DouDou</text>
       <text class="greeting-desc">我可以为你解决在线的咨询，聊聊咨询，帮你提高效率</text>
-      
-      <!-- 功能按钮 -->
-      <view class="function-buttons">
-        <view class="function-btn" @click="handleFunction('task')">
-          <view class="btn-icon">📋</view>
-          <text class="btn-text">技能提升</text>
-        </view>
-        <view class="function-btn" @click="handleFunction('chat')">
-          <view class="btn-icon">💬</view>
-          <text class="btn-text">常见问题</text>
-        </view>
-        <view class="function-btn" @click="handleFunction('efficiency')">
-          <view class="btn-icon">🫣</view>
-          <text class="btn-text">情绪疏导</text>
-        </view>
-      </view>
       
       <!-- 推荐内容区域 -->
       <view v-if="showRecommendations" class="recommendations-section">
@@ -240,16 +219,14 @@
       </view>
     </scroll-view>
 
+    <!-- DouDou 聊天形象（显示在输入区域之上，靠左） -->
+    <view class="doudou-chat-banner">
+      <image class="doudou-chat-svg" src="@/static/chat/DouDou_chat.svg" mode="widthFix" />
+    </view>
+
     <!-- 底部输入区域 -->
     <view class="input-section">
       <view class="input-container">
-        <view class="input-avatar" @click="toggleRoleSelector">
-          <image 
-            class="doudou-avatar"
-            :src="roleConfig[currentRole].avatar"
-            mode="aspectFit"
-          />
-        </view>
         <view class="input-area">
           <input 
             class="message-input"
@@ -259,13 +236,16 @@
             confirm-type="send"
             :focus="inputFocus"
           />
-        </view>
-        <view 
-          class="send-btn"
-          :class="{ 'can-send': inputMessage.trim() }"
-          @click="sendMessage"
-        >
-          <view class="send-icon">⬇</view>
+          <view class="input-actions">
+            <view 
+              class="icon-btn send-btn"
+              :class="{ 'can-send': inputMessage.trim() }"
+              @click="sendMessage"
+              aria-label="send"
+            >
+              ➤
+            </view>
+          </view>
         </view>
       </view>
     </view>
@@ -558,18 +538,22 @@
 
     <!-- 底部导航栏 -->
     <view class="bottom-nav">
-      <view class="nav-item" @click="navigateToMap">
-        <view class="nav-icon">🗺️</view>
+      <view class="nav-item" :class="{ active: currentPage === 'map' }" @click="navigateToMap">
+        <view class="nav-icon">
+          <image src="@/static/chat/Map-draw.svg" class="nav-svg-icon" />
+        </view>
         <text class="nav-text">地图</text>
       </view>
       
-      <view class="nav-item active">
+      <view class="nav-item" :class="{ active: currentPage === 'chat' }">
         <view class="nav-icon">🔥</view>
         <text class="nav-text">DouDou</text>
       </view>
       
-      <view class="nav-item" @click="navigateToKnowledge">
-        <view class="nav-icon">📚</view>
+      <view class="nav-item" :class="{ active: currentPage === 'knowledge' }" @click="navigateToKnowledge">
+        <view class="nav-icon">
+          <image src="@/static/chat/Document-folder.svg" class="nav-svg-icon" />
+        </view>
         <text class="nav-text">知识库</text>
       </view>
     </view>
@@ -580,6 +564,9 @@
 import { ref, onMounted, nextTick } from 'vue'
 import aiService from '@/utils/aiService'
 import apiService from '@/utils/apiService'
+
+// 当前页面状态
+const currentPage = ref('chat')
 
 // 角色配置
 const roleConfig = {
@@ -655,31 +642,6 @@ const showRecommendations = ref(false) // 是否显示推荐内容
 const currentRecommendationTitle = ref('') // 当前推荐内容标题
 const currentRecommendations = ref([]) // 当前推荐内容列表
 
-// 推荐内容配置
-const recommendationConfig = {
-  task: {
-    title: '技能提升推荐',
-    items: [
-      '📊 如何书写有效的提示词，有没有框架？🤔',
-      '⏰ 每天忙到飞起却没成果，时间咋管理？💨',
-      '🔄 跨部门沟通总卡壳，怎么破？😫'
-    ]
-  },
-  chat: {
-    title: '常见问题',
-    items: [
-      '⚖️ 平衡不了工作和生活，快抑郁了咋整？🥹',
-      '🎨 PPT做得丑还费时间，有速成方法吗？😅',
-      '🙅‍♀️ 被老员工使唤做杂事，该不该拒绝？😤'
-    ]
-  },
-  efficiency: {
-    title: '情绪释放',
-    items: [
-      '暴打XXXXX？'
-    ]
-  }
-}
 
 // 聊天记录和收藏相关状态
 const currentChatId = ref(null) // 当前聊天会话ID
@@ -1068,16 +1030,6 @@ const buildChatPrompt = (history) => {
   return buildRolePrompt('', history)
 }
 
-// 功能按钮点击处理
-const handleFunction = (type) => {
-  // 显示对应的推荐内容
-  const config = recommendationConfig[type]
-  if (config) {
-    currentRecommendationTitle.value = config.title
-    currentRecommendations.value = config.items
-    showRecommendations.value = true
-  }
-}
 
 // 选择推荐问题
 const selectRecommendation = (question) => {
@@ -1519,44 +1471,6 @@ const showFavoriteList = () => {
   clearFavoriteSelection()
 }
 
-// 暴打老板功能
-const handleBossFight = () => {
-  // 添加暴打老板的特殊消息
-  const bossMessages = [
-    '💥 暴打老板模式启动！',
-    '👊 左勾拳！右勾拳！上勾拳！',
-    '🥊 老板被你打得满地找牙！',
-    '😵‍💫 老板：我错了，我错了，别打了！',
-    '🎉 暴打完毕！心情舒畅多了吧~'
-  ]
-  
-  // 随机选择一个消息
-  const randomMessage = bossMessages[Math.floor(Math.random() * bossMessages.length)]
-  
-  // 添加AI消息
-  const aiMessage = {
-    content: randomMessage,
-    isUser: false,
-    timestamp: Date.now(),
-    id: generateMessageId(),
-    type: 'boss_fight'
-  }
-  messages.value.push(aiMessage)
-  
-  // 滚动到底部
-  nextTick(() => {
-    scrollToBottom()
-  })
-  
-  // 震动反馈
-  uni.vibrateShort()
-  
-  // 显示Toast
-  uni.showToast({
-    title: '暴打成功！',
-    icon: 'success'
-  })
-}
 
 // 领取任务功能
 const handleReceiveTask = () => {
@@ -1565,13 +1479,21 @@ const handleReceiveTask = () => {
     url: '/pages/task/task'
   })
 }
+
+// 职场吐槽功能
+const handleWorkplaceVent = () => {
+  // 跳转到职场吐槽页面
+  uni.navigateTo({
+    url: '/pages/workplace-vent/workplace-vent'
+  })
+}
 </script>
 
 <style lang="scss" scoped>
 .chat-container {
   width: 100vw;
   height: 100vh;
-  background-image: url('@/static/chat.png');
+  background-image: url('@/static/chat/chat_background.png');
   background-size: contain;
   background-position: center bottom;
   background-repeat: no-repeat;
@@ -1629,8 +1551,7 @@ const handleReceiveTask = () => {
   z-index: 10;
 }
 
-.menu-btn,
-.robot-btn {
+.menu-btn {
   width: 60rpx;
   height: 60rpx;
   background: rgba(255, 255, 255, 0.9);
@@ -1652,10 +1573,6 @@ const handleReceiveTask = () => {
   color: #4A5568;
 }
 
-.robot-icon {
-  width: 40rpx;
-  height: 40rpx;
-}
 
 /* 返回按钮 */
 
@@ -1681,31 +1598,6 @@ const handleReceiveTask = () => {
   margin-bottom: 40rpx;
 }
 
-/* 功能按钮 */
-.function-buttons {
-  display: flex;
-  justify-content: space-around;
-  gap: 20rpx;
-  margin-bottom: 30rpx;
-}
-
-.function-btn {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 20rpx;
-  padding: 30rpx 20rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  
-  &:active {
-    transform: scale(0.95);
-    background: rgba(255, 255, 255, 1);
-  }
-}
 
 /* 推荐内容区域 */
 .recommendations-section {
@@ -1750,15 +1642,6 @@ const handleReceiveTask = () => {
   font-weight: 500;
 }
 
-.btn-icon {
-  font-size: 32rpx;
-}
-
-.btn-text {
-  font-size: 24rpx;
-  color: #4A5568;
-  font-weight: 500;
-}
 
 /* 选择模式工具栏 */
 .selection-toolbar {
@@ -2078,7 +1961,7 @@ const handleReceiveTask = () => {
   border-top: 1rpx solid rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10rpx);
   position: fixed;
-  bottom: 120rpx; /* 位于底部导航栏上方 */
+  bottom: 140rpx; /* 与底部tab栏保持小间隔 */
   left: 0;
   right: 0;
   z-index: 200;
@@ -2090,41 +1973,20 @@ const handleReceiveTask = () => {
   gap: 20rpx;
 }
 
-.input-avatar {
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 50%;
-  background: rgba(255, 192, 203, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  position: relative;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  
-  &:active {
-    transform: scale(0.95);
-    background: rgba(255, 192, 203, 0.3);
-  }
-}
-
-.doudou-avatar {
-  width: 40rpx;
-  height: 40rpx;
-}
+/* 已移除 input-avatar 与 doudou-avatar 相关样式 */
 
 
 .input-area {
   flex: 1;
   background: #F7FAFC;
-  border-radius: 30rpx;
-  padding: 0 30rpx;
+  border-radius: 999rpx; /* 圆角输入框 */
+  padding: 0 120rpx 0 30rpx; /* 右侧为内置图标预留空间 */
   border: 2rpx solid #E2E8F0;
   transition: border-color 0.3s ease;
   height: 60rpx;
   display: flex;
   align-items: center;
+  position: relative;
   
   &:focus-within {
     border-color: #4A9EFF;
@@ -2147,31 +2009,32 @@ const handleReceiveTask = () => {
   }
 }
 
-.send-btn {
-  width: 60rpx;
-  height: 60rpx;
+/* 输入框内的右侧操作区 */
+.input-actions {
+  position: absolute;
+  right: 10rpx;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.icon-btn {
+  width: 48rpx;
+  height: 48rpx;
   border-radius: 50%;
-  background: #E2E8F0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-  
-  &.can-send {
-    background: linear-gradient(135deg, #4A9EFF 0%, #1E88E5 100%);
-    transform: rotate(45deg);
-  }
+  background: #EDF2F7;
+  color: #4A5568;
+  font-size: 26rpx;
 }
 
-.send-icon {
-  font-size: 28rpx;
-  color: #718096;
-  transition: color 0.3s ease;
-  
-  .can-send & {
-    color: white;
-  }
+.send-btn.can-send {
+  background: linear-gradient(135deg, #4A9EFF 0%, #1E88E5 100%);
+  color: #FFFFFF;
 }
 
 /* 动画 */
@@ -2860,134 +2723,120 @@ const handleReceiveTask = () => {
   line-height: 1.5;
 }
 
-/* 快捷操作按钮样式 */
-.quick-actions {
-  display: flex;
-  justify-content: center;
-  gap: 20rpx;
-  padding: 20rpx 30rpx;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10rpx);
-  border-bottom: 1rpx solid rgba(0, 0, 0, 0.05);
-}
-
-.quick-btn {
-  flex: 1;
-  max-width: 200rpx;
-  height: 60rpx;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 30rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  border: 1rpx solid rgba(74, 158, 255, 0.2);
-  
-  &:active {
-    transform: scale(0.95);
-    background: rgba(74, 158, 255, 0.1);
-    border-color: #4A9EFF;
-  }
-}
-
-.quick-text {
-  font-size: 24rpx;
-  color: #4A5568;
-  font-weight: 500;
-}
 
 /* 浮动操作栏样式 */
 .floating-actions {
   position: fixed;
-  right: 30rpx;
-  top: 50%;
-  transform: translateY(-50%);
+  right: 5rpx; /* 靠右侧 */
+  bottom: 280rpx; /* 位于输入区域(120rpx)之上 */
+  top: auto;
+  transform: none;
   z-index: 150;
   display: flex;
-  flex-direction: column;
-  gap: 20rpx;
+  flex-direction: row; /* 横向排列 */
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12rpx;
   animation: floatingSlideIn 0.5s ease-out;
 }
 
 .floating-item {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100rpx;
-  height: 100rpx;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 130rpx; /* 缩小长方形宽度 */
+  height: 70rpx; /* 缩小长方形高度 */
+  background: rgba(255, 255, 255, 0.95); /* 白色底 */
+  border-radius: 14rpx; /* 圆角长方形 */
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10rpx);
   transition: all 0.3s ease;
-  border: 2rpx solid rgba(255, 255, 255, 0.3);
-  gap: 8rpx;
+  border: 1rpx solid rgba(0, 0, 0, 0.08);
+  padding: 8rpx 12rpx; /* 减小内边距 */
   
   &:active {
-    transform: scale(0.9);
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+    transform: scale(0.95);
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 1);
   }
   
   &.active {
-    background: rgba(74, 158, 255, 0.15);
+    background: rgba(74, 158, 255, 0.1);
     border-color: #4A9EFF;
-    box-shadow: 0 8rpx 24rpx rgba(74, 158, 255, 0.3);
+    box-shadow: 0 8rpx 24rpx rgba(74, 158, 255, 0.2);
     
-    .floating-text {
+    .floating-function {
       color: #4A9EFF;
       font-weight: 600;
     }
   }
   
-  &.boss-fight-item:active {
-    background: rgba(255, 99, 71, 0.15);
-    border-color: #FF6347;
-    transform: scale(0.9) rotate(5deg);
+  &.task-item:active {
+    background: rgba(255, 171, 64, 0.1);
+    border-color: #FFAB40;
   }
   
-  &.task-item:active {
-    background: rgba(34, 197, 94, 0.15);
-    border-color: #22C55E;
+  &.workplace-vent-item:active {
+    background: rgba(156, 39, 176, 0.1);
+    border-color: #9C27B0;
   }
+}
+
+.floating-item-top {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  width: 100%;
 }
 
 .floating-icon {
-  width: 40rpx;
-  height: 40rpx;
-  font-size: 32rpx;
-  border-radius: 50%;
+  width: 20rpx;
+  height: 20rpx;
+  font-size: 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   
   /* 当是图片时 */
   &[src] {
-    background: rgba(255, 192, 203, 0.2);
+    border-radius: 50%;
   }
 }
 
-.floating-text {
+.floating-function {
   font-size: 20rpx;
-  color: #4A5568;
-  font-weight: 500;
-  text-align: center;
+  color: #2D3748; /* 深色功能名 */
+  font-weight: 600;
   line-height: 1.2;
-  max-width: 80rpx;
+  flex: 1;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.floating-desc {
+  font-size: 16rpx;
+  color: #718096; /* 灰色描述文字 */
+  font-weight: 400;
+  line-height: 1.2;
+  margin-top: 2rpx;
+  width: 100%;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
 }
 
 @keyframes floatingSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-50%) translateX(100rpx);
+    transform: translateY(50rpx);
   }
   to {
     opacity: 1;
-    transform: translateY(-50%) translateX(0);
+    transform: translateY(0);
   }
 }
 
@@ -3020,19 +2869,19 @@ const handleReceiveTask = () => {
   
   &:active {
     transform: scale(0.95);
-    background: rgba(74, 158, 255, 0.1);
+    background: rgba(255, 153, 0, 0.12);
   }
   
   &.active {
-    background: rgba(74, 158, 255, 0.1);
+    background: rgba(255, 153, 0, 0.12);
     
     .nav-icon {
-      background: #4A9EFF;
+      background: #FFC58F;
       color: white;
     }
     
     .nav-text {
-      color: #4A9EFF;
+      color: #FF9900;
       font-weight: 600;
     }
   }
@@ -3049,6 +2898,19 @@ const handleReceiveTask = () => {
   font-size: 24rpx;
   color: #718096;
   transition: all 0.3s ease;
+}
+
+.nav-svg-icon {
+  width: 30rpx;
+  height: 30rpx;
+  filter: grayscale(1);
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.nav-item.active .nav-svg-icon {
+  filter: none;
+  opacity: 1;
 }
 
 .nav-text {
@@ -3069,5 +2931,20 @@ const handleReceiveTask = () => {
   margin-bottom: 20rpx; /* 与底部输入区域保持间距 */
 }
 
+/* DouDou 聊天形象（输入框上方，靠左） */
+.doudou-chat-banner {
+  position: fixed;
+  left: 1rpx;
+  bottom: calc(120rpx + 120rpx); /* 位于输入区域上方 */
+  z-index: 170; /* 低于输入区域(200)，高于内容 */
+}
+
+.doudou-chat-svg {
+  width: 260rpx;
+  height: auto;
+  opacity: 0.85;
+}
+
 </style>
+
 
