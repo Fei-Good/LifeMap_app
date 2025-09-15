@@ -1275,6 +1275,9 @@ const onReachBottom = async () => {
 .textarea-field {
   height: 120rpx;
   resize: none;
+  display: block;
+  /* 预留右侧空间，避免被遮挡 */
+  padding-right: 64rpx;
 }
 
 /* 适配 uni-input 内部结构，确保宽度与右内边距充足（避免被裁剪） */
@@ -1284,6 +1287,18 @@ const onReachBottom = async () => {
 }
 
 :deep(.uni-input-input) {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 64rpx;
+}
+
+/* 适配 uni-textarea 内部结构，避免右侧被遮挡 */
+:deep(.uni-textarea-wrapper) {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+:deep(.uni-textarea-textarea) {
   width: 100%;
   box-sizing: border-box;
   padding-right: 64rpx;
