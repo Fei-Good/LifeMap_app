@@ -176,6 +176,7 @@
           <view class="input-group">
             <text class="input-label">好友ID或昵称</text>
             <view class="search-input-wrapper">
+              <view class="search-left-icon">🔍</view>
               <input 
                 class="input-field" 
                 placeholder="请输入好友ID或昵称"
@@ -1112,7 +1113,8 @@ const onReachBottom = async () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1120,32 +1122,36 @@ const onReachBottom = async () => {
 }
 
 .popup-content {
-  width: 80%;
-  max-width: 600rpx;
-  background: white;
-  border-radius: 20rpx;
+  width: 86%;
+  max-width: 640rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
   overflow: hidden;
+  box-shadow: 0 20rpx 60rpx rgba(0,0,0,0.12);
+  transform: translateY(10rpx);
+  animation: popup-fade-in 220ms ease-out;
 }
 
 .popup-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 30rpx;
-  border-bottom: 1rpx solid #eee;
+  padding: 28rpx 30rpx;
+  background: linear-gradient(135deg, #f6fff6 0%, #ffffff 60%);
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .popup-title {
   font-size: 36rpx;
-  font-weight: 600;
-  color: #333;
+  font-weight: 700;
+  color: #2f2f2f;
 }
 
 .close-btn {
   width: 50rpx;
   height: 50rpx;
   border-radius: 50%;
-  background: #f5f5f5;
+  background: #f5f7f5;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1153,7 +1159,7 @@ const onReachBottom = async () => {
   transition: all 0.2s ease;
   
   &:active {
-    background: #e0e0e0;
+    background: #e7eee7;
   }
 }
 
@@ -1163,7 +1169,7 @@ const onReachBottom = async () => {
 }
 
 .popup-body {
-  padding: 30rpx;
+  padding: 28rpx 30rpx 24rpx;
 }
 
 .input-group {
@@ -1181,7 +1187,7 @@ const onReachBottom = async () => {
 .input-field, .textarea-field {
   width: 100%;
   display: block;
-  padding: 20rpx;
+  padding: 22rpx 20rpx;
   border: 2rpx solid #e0e0e0;
   border-radius: 10rpx;
   font-size: 28rpx;
@@ -1190,7 +1196,8 @@ const onReachBottom = async () => {
   
   &:focus {
     border-color: #4CAF50;
-    background: white;
+    background: #ffffff;
+    box-shadow: 0 0 0 6rpx rgba(76, 175, 80, 0.08);
   }
 }
 
@@ -1199,6 +1206,15 @@ const onReachBottom = async () => {
   width: 100%;
   box-sizing: border-box;
   padding-right: 64rpx;
+  padding-left: 48rpx;
+}
+.search-left-icon {
+  position: absolute;
+  left: 16rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 28rpx;
+  color: #888;
 }
 
 .clear-btn {
@@ -1215,14 +1231,20 @@ const onReachBottom = async () => {
   justify-content: center;
   color: #666;
   font-size: 24rpx;
+  transition: background 0.15s ease;
+  
+  &:active {
+    background: #e5e5e5;
+  }
 }
 
 .suggestions {
   margin-top: 16rpx;
   background: #fff;
   border: 2rpx solid #eee;
-  border-radius: 12rpx;
+  border-radius: 14rpx;
   overflow: hidden;
+  box-shadow: 0 12rpx 30rpx rgba(0,0,0,0.06);
 }
 
 .suggestion-loading,
@@ -1240,6 +1262,7 @@ const onReachBottom = async () => {
   padding: 20rpx 24rpx;
   border-bottom: 1rpx solid #f5f5f5;
   cursor: pointer;
+  transition: background 0.15s ease;
   
   &:last-child {
     border-bottom: none;
@@ -1247,6 +1270,10 @@ const onReachBottom = async () => {
   
   &.selected {
     background: #f6fff6;
+  }
+  
+  &:active {
+    background: #f2fdf2;
   }
 }
 
@@ -1331,7 +1358,7 @@ const onReachBottom = async () => {
   }
   
   &.confirm-btn {
-    background: #4CAF50;
+    background: linear-gradient(135deg, #5bcf5d 0%, #4CAF50 100%);
     
     &:active {
       background: #45a049;
@@ -1352,6 +1379,17 @@ const onReachBottom = async () => {
   
   .confirm-btn & {
     color: white;
+  }
+}
+
+@keyframes popup-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
