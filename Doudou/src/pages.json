@@ -79,9 +79,16 @@
 			}
 		},
 		{
-			"path": "pages/workplace-vent/workplace-vent",
+			"path": "pages/friends/friends",
 			"style": {
-				"navigationBarTitleText": "职场吐槽",
+				"navigationBarTitleText": "好友列表",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/report/report",
+			"style": {
+				"navigationBarTitleText": "成长报告",
 				"navigationStyle": "custom"
 			}
 		}

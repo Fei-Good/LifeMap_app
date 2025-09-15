@@ -3,54 +3,264 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>LifeMap 演示发布页</title>
+  <title>AI职场搭子DouDou 演示发布页</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <header class="hero">
+  <nav class="topnav" role="navigation" aria-label="主菜单">
+    <button class="hamburger" id="navToggle" aria-label="打开菜单" aria-controls="mobileDrawer" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topnav-links">
+      <a href="#s-life">人生地图</a>
+      <a href="#s-friends">好友</a>
+      <a href="#s-knowledge">知识库</a>
+      <a href="#s-task">任务</a>
+      <a href="#s-report">报告</a>
+      <a href="#s-ai">AI创作</a>
+    </div>
+  </nav>
+  <div class="drawer" id="mobileDrawer" aria-hidden="true">
+    <a href="#s-life" class="drawer-link">人生地图</a>
+    <a href="#s-friends" class="drawer-link">好友</a>
+    <a href="#s-knowledge" class="drawer-link">知识库</a>
+    <a href="#s-task" class="drawer-link">任务</a>
+    <a href="#s-report" class="drawer-link">报告</a>
+    <a href="#s-ai" class="drawer-link">AI创作</a>
+  </div>
+  <div class="overlay" id="drawerOverlay" hidden></div>
+  <div class="progress"><span class="bar" id="progressBar"></span></div>
+
+  <header class="hero hero--compact">
     <div class="hero-content">
-      <h1>LifeMap 演示</h1>
-      <p>上下滚动，像发布会一样，完整介绍我们的小程序。</p>
+      <h1>AI职场搭子DouDou</h1>
+      <p>以小程序截图为主，网页仅做“说明与衬托”。</p>
+      <div class="scroll-cue">下滑开始 ⌄</div>
     </div>
   </header>
 
   <main>
-    <!-- Section 1 -->
-    <section class="section">
-      <div class="side left reveal"><h2>人生地图</h2><p>3x3 六边形布局，阶段化成长路径。</p></div>
-      <div class="phone">
-        <div class="device">
-          <iframe src="http://localhost:5174/#/pages/life-journey/life-journey" title="life-journey"></iframe>
-        </div>
-      </div>
-      <div class="side right reveal"><h2>交互体验</h2><p>点击阶段，查看任务与目标。</p></div>
+    
+    <!-- 0) 一段话总结（来自PPT） -->
+    <section class="content-section" id="summary">
+      <h2>一段话总结</h2>
+      <p>
+        AI职场搭子DouDou聚焦<strong>Z世代职场人</strong>核心痛点（71%职业健康评分“不健康”、84%存在精神压力、76%依赖AI解决职场问题），以“陪伴+成长赋能”为核心，通过<strong>动态交互释压装置</strong>（即时情绪缓解）、<strong>启发式提问系统</strong>（问题拆解与认知引导）、<strong>角色反转复盘</strong>（客观视角+知识沉淀）、<strong>职场地图可视化</strong>（目标拆解与路径规划）四大核心功能，结合Vue3+Uni App、MongoDB、大模型微调等技术栈构建产品，基于PMF逻辑完成MVP验证；其市场规模测算显示保守情况下<strong>可获市场（SOM）约4.38亿元</strong>，并通过“内环数据沉淀+外环商业营收”双循环模式（C端订阅/内容共创、B端招聘/企业培训）实现商业化，最终从用户、企业、社会三层提供价值，助力职场人完成从情绪疏解到个人优势构建的跃迁。
+      </p>
+      <div class="title-placeholder"><img src="assets/placeholder.svg" alt="一段话总结（占位）" /></div>
     </section>
 
-    <!-- Section 2 -->
-    <section class="section alt">
-      <div class="side left reveal"><h2>好友系统</h2><p>查看好友与共享技能库。</p></div>
-      <div class="phone">
-        <div class="device">
-          <iframe src="http://localhost:5174/#/pages/friends/friends" title="friends"></iframe>
-        </div>
+    <!-- 1) 项目背景与市场洞察（图文对齐） -->
+    <section class="info-block" id="bg-insight">
+      <div class="info-media"><img class="media-img" src="assets/placeholder.svg" alt="项目背景与市场洞察（占位）" /></div>
+      <div class="info-copy">
+        <h2>一、项目背景与市场洞察</h2>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="项目背景与市场洞察（占位）" /></div>
+        <ul>
+          <li>核心人群：Z世代职场人（18–29岁）；普遍“学生→职场”思维转化难。</li>
+          <li>痛点数据：71%职业健康不佳、84%有精神压力、76%使用AI、94%用于职场问题。</li>
+          <li>痛点层次：短期情绪崩溃 | 中期思维转变 | 长期优势定位。</li>
+          <li>趋势：线上心理/AI陪伴同比增长85%，付费意愿增强。</li>
+        </ul>
       </div>
-      <div class="side right reveal"><h2>资料卡</h2><p>头像、MBTI、状态与统计一览。</p></div>
     </section>
 
-    <!-- Section 3 -->
-    <section class="section">
-      <div class="side left reveal"><h2>知识库</h2><p>沉淀与共享学习资源。</p></div>
-      <div class="phone">
-        <div class="device">
-          <iframe src="http://localhost:5174/#/pages/knowledge/knowledge" title="knowledge"></iframe>
-        </div>
+    <!-- 2) 产品核心功能（图文对齐） -->
+    <section class="info-block alt" id="core-features">
+      <div class="info-copy">
+        <h2>二、产品核心功能</h2>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="产品核心功能（占位）" /></div>
+        <ul>
+          <li>动态交互释压：点击火苗即时情绪缓解。</li>
+          <li>启发式提问系统：5题框架+分支逻辑，生成成长报告。</li>
+          <li>角色反转复盘：老板/同事视角，沉淀动态复盘卡。</li>
+          <li>职场地图可视化：目标拆解与路径规划，降低行动门槛。</li>
+        </ul>
       </div>
-      <div class="side right reveal"><h2>AI 助手</h2><p>对话、创作、建议，随时响应。</p></div>
+      <div class="info-media"><img class="media-img" src="assets/placeholder.svg" alt="产品核心功能（占位）" /></div>
+    </section>
+
+    <!-- 3) 技术方案（图文对齐） -->
+    <section class="info-block" id="tech">
+      <div class="info-media"><img class="media-img" src="assets/placeholder.svg" alt="技术方案（占位）" /></div>
+      <div class="info-copy">
+        <h2>三、技术方案</h2>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="技术方案（占位）" /></div>
+        <ul>
+          <li>前端：Vue3 + Uni App；后端：Node.js + MongoDB。</li>
+          <li>AI：大模型微调 + RAG检索 + Agent智能体 + MCP工具。</li>
+          <li>部署：Sea LOS（容器化）、火山引擎（算力）。</li>
+          <li>架构：数据/AI/应用/前端四层清晰解耦。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 4) 商业模式与运营（图文对齐） -->
+    <section class="info-block alt" id="biz">
+      <div class="info-copy">
+        <h2>四、商业模式与运营</h2>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="商业模式与运营（占位）" /></div>
+        <ul>
+          <li>双循环：内环数据沉淀→模型优化；外环C端订阅/共创 + B端招聘/培训。</li>
+          <li>获客：抖音内容合作、社群运营、机构资源互换。</li>
+          <li>用户分层：预备军→种子→活跃/付费→忠诚。</li>
+        </ul>
+      </div>
+      <div class="info-media"><img class="media-img" src="assets/placeholder.svg" alt="商业模式与运营（占位）" /></div>
+    </section>
+
+    <!-- 5) MVP验证与市场规模（图文对齐） -->
+    <section class="info-block" id="mvp">
+      <div class="info-media"><img class="media-img" src="assets/placeholder.svg" alt="MVP验证与市场规模（占位）" /></div>
+      <div class="info-copy">
+        <h2>五、MVP验证与市场规模</h2>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="MVP验证与市场规模（占位）" /></div>
+        <ul>
+          <li>验证：需求高频（80%新人日遇至少1题）、澄清率70%、释压反馈65%、发布率30%。</li>
+          <li>规模：SOM=4.38亿元（保守假设），数据来源权威且对标合理。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 6) 应用价值（图文对齐） -->
+    <section class="info-block alt" id="value">
+      <div class="info-copy">
+        <h2>六、应用价值</h2>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="应用价值（占位）" /></div>
+        <ul>
+          <li>用户层：情绪出口 + 能力内化 + 职业规划。</li>
+          <li>企业层：降低培训成本与流动率，沉淀团队经验。</li>
+          <li>社会层：提升心理健康与人才结构竞争力。</li>
+        </ul>
+      </div>
+      <div class="info-media"><img class="media-img" src="assets/placeholder.svg" alt="应用价值（占位）" /></div>
+    </section>
+    <!-- 1) 演示图总览（优先：确保“全部图片”正确显示） -->
+    <section class="gallery" id="gallery">
+      <h2>演示图总览</h2>
+      <div class="title-placeholder"><img src="assets/placeholder.svg" alt="演示图总览（占位）" /></div>
+      <p class="gallery-desc">以下为当前所有演示截图的原图展示（自适应缩放、无裁剪）。</p>
+      <div class="grid">
+        <figure class="card">
+          <img class="screenshot" src="assets/placeholder.svg" alt="人生地图（占位）" />
+          <figcaption>人生地图（screen-1.jpg）</figcaption>
+        </figure>
+        <figure class="card">
+          <img class="screenshot" src="assets/placeholder.svg" alt="成长地图（网格）（占位）" />
+          <figcaption>成长地图（screen-hex.jpg）</figcaption>
+        </figure>
+        <figure class="card">
+          <img class="screenshot" src="assets/placeholder.svg" alt="好友与共享技能库（占位）" />
+          <figcaption>好友与共享技能库（screen-2.jpg）</figcaption>
+        </figure>
+        <figure class="card">
+          <img class="screenshot" src="assets/placeholder.svg" alt="知识库（占位）" />
+          <figcaption>知识库（screen-3.jpg）</figcaption>
+        </figure>
+        <figure class="card">
+          <img class="screenshot" src="assets/placeholder.svg" alt="AI 引导/对话（占位）" />
+          <figcaption>AI 引导/对话（screen-4.jpg）</figcaption>
+        </figure>
+        <figure class="card">
+          <img class="screenshot" src="assets/placeholder.svg" alt="任务与目标（示意）（占位）" />
+          <figcaption>任务与目标（feature-1.jpg）</figcaption>
+        </figure>
+        <figure class="card">
+          <img class="screenshot" src="assets/placeholder.svg" alt="数据与报告（示意）（占位）" />
+          <figcaption>数据与报告（feature-2.jpg）</figcaption>
+        </figure>
+        <figure class="card">
+          <img class="screenshot" src="assets/placeholder.svg" alt="任务系统（占位）" />
+          <figcaption>任务系统（feature-task.jpg）</figcaption>
+        </figure>
+        <figure class="card">
+          <img class="screenshot" src="assets/placeholder.svg" alt="成长报告（占位）" />
+          <figcaption>成长报告（feature-report.jpg）</figcaption>
+        </figure>
+        <figure class="card">
+          <img class="screenshot" src="assets/placeholder.svg" alt="AI 创作/聊天（占位）" />
+          <figcaption>AI 创作/聊天（feature-3.jpg）</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 2) 功能分屏（次要：为每张图留出功能介绍区域） -->
+    <section class="shot" id="s-life" data-dot="life">
+      <div class="shot-media"><img class="media-img" src="assets/placeholder.svg" alt="人生地图（占位）" /></div>
+      <div class="shot-caption">
+        <h2>人生地图</h2>
+        <p>3×3 六边形阶段地图，清晰呈现成长路径与当前所处位置。</p>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="人生地图（占位）" /></div>
+      </div>
+    </section>
+
+    <section class="shot" data-dot="hex">
+      <div class="shot-media"><img class="media-img" src="assets/placeholder.svg" alt="成长地图（网格）（占位）" /></div>
+      <div class="shot-caption">
+        <h2>成长地图（网格）</h2>
+        <p>简洁网格强化“下一步行动”，聚焦关键阶段与目标。</p>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="成长地图（网格）（占位）" /></div>
+      </div>
+    </section>
+
+    <section class="shot" id="s-friends" data-dot="friends">
+      <div class="shot-media"><img class="media-img" src="assets/placeholder.svg" alt="好友与共享技能库（占位）" /></div>
+      <div class="shot-caption">
+        <h2>好友与共享技能库</h2>
+        <p>资料卡、MBTI、共享学习资源，一起协作成长。</p>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="好友与共享技能库（占位）" /></div>
+      </div>
+    </section>
+
+    <section class="shot" id="s-knowledge" data-dot="knowledge">
+      <div class="shot-media"><img class="media-img" src="assets/placeholder.svg" alt="知识库（占位）" /></div>
+      <div class="shot-caption">
+        <h2>知识库</h2>
+        <p>沉淀与分享资料，构建可复用的长期记忆系统。</p>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="知识库（占位）" /></div>
+      </div>
+    </section>
+
+    <section class="shot" id="s-task" data-dot="task">
+      <div class="shot-media"><img class="media-img" src="assets/placeholder.svg" alt="任务系统（占位）" /></div>
+      <div class="shot-caption">
+        <h2>任务系统</h2>
+        <p>每日/每周任务，一目了然的完成状态与反馈闭环。</p>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="任务系统（占位）" /></div>
+      </div>
+    </section>
+
+    <section class="shot" id="s-report" data-dot="report">
+      <div class="shot-media"><img class="media-img" src="assets/placeholder.svg" alt="成长报告（占位）" /></div>
+      <div class="shot-caption">
+        <h2>成长报告</h2>
+        <p>基于行为与问卷生成个性化报告，洞察趋势与亮点。</p>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="成长报告（占位）" /></div>
+      </div>
+    </section>
+
+    <section class="shot" id="s-ai" data-dot="ai">
+      <div class="shot-media"><img class="media-img" src="assets/placeholder.svg" alt="AI 创作与聊天（占位）" /></div>
+      <div class="shot-caption">
+        <h2>AI 创作与聊天</h2>
+        <p>结合上下文与知识库，快速生成创作或对话建议。</p>
+        <div class="title-placeholder"><img src="assets/placeholder.svg" alt="AI 创作与聊天（占位）" /></div>
+      </div>
     </section>
   </main>
 
+  <!-- 右侧圆点导航（同步当前屏） -->
+  <nav class="dots" aria-label="章节导航">
+    <a href="#s-life" data-dot="life"></a>
+    <a href="#s-friends" data-dot="friends"></a>
+    <a href="#s-knowledge" data-dot="knowledge"></a>
+    <a href="#s-task" data-dot="task"></a>
+    <a href="#s-report" data-dot="report"></a>
+    <a href="#s-ai" data-dot="ai"></a>
+  </nav>
+
   <footer class="footer">
-    <p>© 2025 LifeMap</p>
+    <p>© 2025 AI职场搭子DouDou</p>
   </footer>
 
   <script src="./main.js"></script>
