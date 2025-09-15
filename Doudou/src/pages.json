@@ -133,6 +133,13 @@
 				"navigationBarTitleText": "好友列表",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/friend-profile/friend-profile",
+			"style": {
+				"navigationBarTitleText": "好友资料",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {

@@ -471,8 +471,13 @@ const getLastSeenText = (lastSeen) => {
 }
 
 const openFriendProfile = (friend) => {
+  const url = `/pages/friend-profile/friend-profile?friendId=${friend.id || ''}`
   uni.navigateTo({
-    url: `/pages/profile/profile?friendId=${friend.id}`
+    url,
+    success: (res) => {
+      // 通过 eventChannel 传递完整对象，避免资料页再拉取
+      res.eventChannel?.emit?.('friendData', friend)
+    }
   })
 }
 
