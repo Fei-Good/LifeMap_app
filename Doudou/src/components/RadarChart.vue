@@ -23,7 +23,17 @@
 
       <!-- 标签 -->
       <g class="radar-labels">
-        <text v-for="(ax, i) in labels" :key="`lb-${i}`" :x="ax.tx" :y="ax.ty" :fill="labelColor" font-size="12" text-anchor="middle" alignment-baseline="middle">
+        <text 
+          v-for="(ax, i) in labels" 
+          :key="`lb-${i}`" 
+          :x="ax.tx" 
+          :y="ax.ty" 
+          :fill="labelColor" 
+          font-size="13" 
+          font-weight="600"
+          text-anchor="middle" 
+          alignment-baseline="middle"
+          stroke="#ffffff" stroke-width="3" stroke-opacity="0.85" style="paint-order: stroke fill">
           {{ ax.name }}
         </text>
       </g>
@@ -52,7 +62,8 @@ const emit = defineEmits(['chart-ready'])
 
 const cx = computed(() => props.width / 2)
 const cy = computed(() => props.height / 2)
-const radius = computed(() => Math.min(props.width, props.height) / 2 - 16)
+// 适当缩小半径，为外圈标签预留空间
+const radius = computed(() => Math.min(props.width, props.height) / 2 - 28)
 
 const indicators = computed(() => Array.isArray(props.data?.indicator) ? props.data.indicator : [])
 const series = computed(() => Array.isArray(props.data?.series) ? props.data.series[0] : null)
@@ -71,8 +82,8 @@ const axes = computed(() => {
 const labels = computed(() => {
   return indicators.value.map((ind, i) => {
     const ang = -Math.PI / 2 + i * angleStep.value
-    const tx = cx.value + Math.cos(ang) * (radius.value + 14)
-    const ty = cy.value + Math.sin(ang) * (radius.value + 14)
+    const tx = cx.value + Math.cos(ang) * (radius.value + 18)
+    const ty = cy.value + Math.sin(ang) * (radius.value + 18)
     return { name: ind.name || `I${i + 1}` , tx, ty }
   })
 })
@@ -109,6 +120,7 @@ onMounted(async () => {
 <style scoped>
 .radar-wrap { background: rgba(255,255,255,0.95); border-radius: 12rpx; }
 .radar-svg { display: block; }
+.radar-labels text { filter: drop-shadow(0 1px 0 rgba(255,255,255,0.9)); }
 </style>
 
 
