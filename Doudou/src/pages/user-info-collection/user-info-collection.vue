@@ -5,7 +5,7 @@
       <view class="doudou-avatar">
         <image 
           class="avatar-image"
-          src="@/static/QA/火苗.png"
+          src="@static/QA/火苗.png"
           mode="aspectFit"
         />
       </view>
@@ -201,44 +201,99 @@ const selectOption = (optionIndex) => {
 }
 
 const nextQuestion = () => {
-  // 检查是否有答案
-  if (currentQuestion.value.type === 'subjective') {
-    if (subjectiveAnswer.value.trim() === '') return
-  } else {
-    if (selectedOption.value === -1) return
-  }
-  
-  // 保存当前答案
-  let answer
-  if (currentQuestion.value.type === 'subjective') {
-    // 主观题答案
-    answer = {
-      questionId: currentQuestion.value.id,
-      question: currentQuestion.value.question,
-      type: 'subjective',
-      answer: subjectiveAnswer.value.trim(),
-      timestamp: new Date().toISOString()
+  try {
+    // 检查当前问题是否有效
+    if (!currentQuestion.value || typeof currentQuestion.value !== 'object') {
+      console.error('当前问题对象无效:', currentQuestion.value)
+      uni.showToast({
+        title: '题目数据异常，请刷新页面重试',
+        icon: 'none'
+      })
+      return
     }
-  } else {
-    // 客观题答案
-    answer = {
-      questionId: currentQuestion.value.id,
-      question: currentQuestion.value.question,
-      type: 'objective',
-      selectedOption: selectedOption.value,
-      selectedValue: currentQuestion.value.options[selectedOption.value].value,
-      selectedLabel: currentQuestion.value.options[selectedOption.value].label,
-      timestamp: new Date().toISOString()
+
+    // 检查是否有答案
+    if (currentQuestion.value.type === 'subjective') {
+      if (subjectiveAnswer.value.trim() === '') return
+    } else {
+      if (selectedOption.value === -1) return
     }
-  }
-  
-  // 验证答案对象的完整性
-  if (answer && typeof answer === 'object' && answer.questionId && answer.question && answer.type) {
+    
+    // 保存当前答案
+    let answer
+    
+    if (currentQuestion.value.type === 'subjective') {
+      // 主观题答案
+      answer = {
+        questionId: currentQuestion.value.id,
+        question: currentQuestion.value.question,
+        type: 'subjective',
+        answer: subjectiveAnswer.value.trim(),
+        timestamp: new Date().toISOString()
+      }
+    } else {
+      // 客观题答案 - 增加安全检查
+      const selectedOptionData = currentQuestion.value.options?.[selectedOption.value]
+      
+      if (!selectedOptionData) {
+        console.error('选择的选项数据无效:', {
+          selectedOption: selectedOption.value,
+          options: currentQuestion.value.options,
+          currentQuestion: currentQuestion.value
+        })
+        uni.showToast({
+          title: '选项数据异常，请重新选择',
+          icon: 'none'
+        })
+        return
+      }
+      
+      answer = {
+        questionId: currentQuestion.value.id,
+        question: currentQuestion.value.question,
+        type: 'objective',
+        selectedOption: selectedOption.value,
+        selectedValue: selectedOptionData.value,
+        selectedLabel: selectedOptionData.label,
+        timestamp: new Date().toISOString()
+      }
+    }
+    
+    // 增强的答案对象验证
+    if (!answer || typeof answer !== 'object') {
+      console.error('答案对象构建失败:', answer)
+      uni.showToast({
+        title: '数据处理异常，请重试',
+        icon: 'none'
+      })
+      return
+    }
+    
+    if (!answer.questionId || !answer.question || !answer.type) {
+      console.error('答案对象缺少必要属性:', {
+        answer,
+        missingFields: {
+          questionId: !answer.questionId,
+          question: !answer.question,
+          type: !answer.type
+        },
+        currentQuestion: currentQuestion.value
+      })
+      uni.showToast({
+        title: '答案数据不完整，请重试',
+        icon: 'none'
+      })
+      return
+    }
+    
+    // 验证通过，保存答案
     userAnswers.value.push(answer)
-  } else {
-    console.error('无效的答案对象:', answer)
+    console.log('答案保存成功:', answer)
+    
+  } catch (error) {
+    console.error('处理答案时发生错误:', error)
     uni.showToast({
-      title: '答案保存失败，请重试',
+      title: '系统异常，请重试',
       icon: 'none'
     })
     return
@@ -299,6 +354,20 @@ const completeQuestionnaire = async () => {
     
     console.error('提交问卷失败:', error)
     
+    // 显示具体的错误信息
+    let errorMessage = '提交失败，请重试'
+    if (error && error.message) {
+      if (error.message.includes('网络')) {
+        errorMessage = '网络连接失败，请检查网络后重试'
+      } else if (error.message.includes('超时')) {
+        errorMessage = '请求超时，请重试'
+      } else if (error.message.includes('认证') || error.message.includes('登录')) {
+        errorMessage = '登录状态已过期，请重新登录'
+      } else {
+        errorMessage = `提交失败：${error.message}`
+      }
+    }
+    
     // 如果出现错误，仍然保存答案并跳转
     try {
       // 过滤有效答案后再保存
@@ -313,10 +382,14 @@ const completeQuestionnaire = async () => {
       
       console.log('错误处理中保存的答案数据:', validAnswers)
       uni.setStorageSync('questionnaire_answers', validAnswers)
-      await userService.markUserInfoCompleted()
+      
+      // 如果是认证错误，不再尝试调用需要认证的接口
+      if (!error.message?.includes('认证') && !error.message?.includes('登录')) {
+        await userService.markUserInfoCompleted()
+      }
       
       uni.showToast({
-        title: '问卷已保存，正在生成报告...',
+        title: '问卷已保存到本地，正在生成报告...',
         icon: 'none',
         duration: 2000
       })
@@ -331,10 +404,28 @@ const completeQuestionnaire = async () => {
     } catch (updateError) {
       console.error('更新用户状态失败:', updateError)
       
+      // 显示更具体的错误信息
+      let updateErrorMessage = '保存失败，请重试'
+      if (updateError && updateError.message) {
+        if (updateError.message.includes('认证') || updateError.message.includes('登录')) {
+          updateErrorMessage = '登录状态已过期，问卷已保存到本地'
+        } else {
+          updateErrorMessage = `保存失败：${updateError.message}`
+        }
+      }
+      
       uni.showToast({
-        title: '保存失败，请重试',
-        icon: 'none'
+        title: updateErrorMessage,
+        icon: 'none',
+        duration: 3000
       })
+      
+      // 即使保存失败，也跳转到结果页面（使用本地数据）
+      setTimeout(() => {
+        uni.redirectTo({
+          url: '/pages/questionnaire-result/questionnaire-result'
+        })
+      }, 3000)
     }
   }
 }

@@ -12,7 +12,7 @@
       
       <!-- DouDou标题和图片 -->
       <view class="app-title-container">
-        <image class="doudou-logo" src="@/static/chat/DouDou文字.png" mode="aspectFit"></image>
+        <image class="doudou-logo" src="@static/chat/DouDou文字.png" mode="aspectFit"></image>
       </view>
     </view>
 
@@ -60,7 +60,7 @@
         @click="toggleRoleSelector"
       >
         <view class="floating-item-top">
-          <image class="floating-icon" src="@/static/chat/切换人物.svg" mode="aspectFit"></image>
+          <image class="floating-icon" src="@static/chat/切换人物.svg" mode="aspectFit"></image>
           <text class="floating-function">切换身份</text>
         </view>
         <text class="floating-desc">切换视角看问题</text>
@@ -72,7 +72,7 @@
         @click="toggleChatFavorite"
       >
         <view class="floating-item-top">
-          <image class="floating-icon" src="@/static/chat/AI创作.svg" mode="aspectFit"></image>
+          <image class="floating-icon" src="@static/chat/AI创作.svg" mode="aspectFit"></image>
           <text class="floating-function">总结嘴替</text>
         </view>
         <text class="floating-desc">AI生成职场视频</text>
@@ -173,7 +173,7 @@
           <view class="message-avatar">
             <image 
               class="avatar-small"
-              src="@/static/QA/火苗.png"
+              src="@static/QA/火苗.png"
               mode="aspectFit"
             />
           </view>
@@ -201,7 +201,7 @@
         <view class="message-avatar">
           <image 
             class="avatar-small"
-            src="@/static/QA/火苗.png"
+            src="@static/QA/火苗.png"
             mode="aspectFit"
           />
         </view>
@@ -232,7 +232,7 @@
 
     <!-- DouDou 聊天形象（显示在输入区域之上，靠左） -->
     <view class="doudou-chat-banner">
-      <image class="doudou-chat-svg" src="@/static/chat/DouDou_chat.svg" mode="widthFix" />
+      <image class="doudou-chat-svg" src="@static/chat/DouDou_chat.svg" mode="widthFix" />
     </view>
 
     <!-- 底部输入区域 -->
@@ -551,7 +551,7 @@
     <view class="bottom-nav">
       <view class="nav-item" :class="{ active: currentPage === 'map' }" @click="navigateToMap">
         <view class="nav-icon">
-          <image src="@/static/chat/Map-draw.svg" class="nav-svg-icon" />
+          <image src="@static/chat/Map-draw.svg" class="nav-svg-icon" />
         </view>
         <text class="nav-text">地图</text>
       </view>
@@ -563,7 +563,7 @@
       
       <view class="nav-item" :class="{ active: currentPage === 'knowledge' }" @click="navigateToKnowledge">
         <view class="nav-icon">
-          <image src="@/static/chat/Document-folder.svg" class="nav-svg-icon" />
+          <image src="@static/chat/Document-folder.svg" class="nav-svg-icon" />
         </view>
         <text class="nav-text">知识库</text>
       </view>
@@ -1578,7 +1578,7 @@ const handleWorkplaceVent = () => {
 .chat-container {
   width: 100vw;
   height: 100vh;
-  background-image: url('@/static/chat/chat_background.png');
+  background-image: url('/static/chat/chat_background.png');
   background-size: contain;
   background-position: center bottom;
   background-repeat: no-repeat;

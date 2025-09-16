@@ -103,7 +103,6 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import soundService from '@/utils/soundService.js'
 
 // 响应式数据
 const inputText = ref('')
@@ -169,8 +168,6 @@ const addVentText = () => {
   createBubble(inputText.value.trim(), true) // 标记为用户输入
   inputText.value = ''
   
-  // 播放添加音效
-  playSound('add')
 }
 
 
@@ -215,13 +212,6 @@ const popBubble = (bubble) => {
   // 增加计数
   poppedCount.value++
   
-  // 播放爆炸音效
-  playSound('pop')
-  
-  // 延迟播放治愈音效
-  setTimeout(() => {
-    playSound('healing')
-  }, 300)
   
   // 震动反馈
   uni.vibrateShort()
@@ -266,10 +256,6 @@ const showHealingText = (x, y) => {
   }, 2000)
 }
 
-// 播放音效
-const playSound = (type) => {
-  soundService.play(type)
-}
 
 
 // 返回至chat界面

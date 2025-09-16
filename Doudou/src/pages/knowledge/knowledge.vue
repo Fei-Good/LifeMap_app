@@ -386,7 +386,7 @@
     <view class="bottom-nav">
       <view class="nav-item" :class="{ active: currentPage === 'map' }" @click="navigateToMap">
         <view class="nav-icon">
-          <image src="@/static/chat/Map-draw.svg" class="nav-svg-icon" />
+          <image src="@static/chat/Map-draw.svg" class="nav-svg-icon" />
         </view>
         <text class="nav-text">地图</text>
       </view>
@@ -398,7 +398,7 @@
       
       <view class="nav-item" :class="{ active: currentPage === 'knowledge' }">
         <view class="nav-icon">
-          <image src="@/static/chat/Document-folder.svg" class="nav-svg-icon" />
+          <image src="@static/chat/Document-folder.svg" class="nav-svg-icon" />
         </view>
         <text class="nav-text">知识库</text>
       </view>

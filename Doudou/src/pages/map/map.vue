@@ -7,22 +7,37 @@
     <view class="goal-card">
       <view class="goal-left">
         <view class="goal-title-row">
-          <text class="goal-badge">目标</text>
+          <text class="goal-badge">职场成长目标</text>
         </view>
-        <text class="goal-name">成功跑路上岸</text>
+        <text class="goal-name">完成当下第一个任务</text>
       </view>
       <view class="goal-right">
-        <text class="persistence-label">已坚持天数</text>
-        <text class="persistence-days">1天</text>
+        <view class="persistence-info">
+          <text class="persistence-label">已坚持天数</text>
+          <text class="persistence-days">1天</text>
+        </view>
+        <view class="detail-link" @click="navigateToReport">
+          <text class="detail-text">查看详情 ></text>
+        </view>
         <view class="flame">
-          <image src="@/static/QA/火苗.png" class="flame-icon" mode="aspectFit" />
+          <image src="@static/QA/火苗.png" class="flame-icon" mode="aspectFit" />
         </view>
       </view>
       
       <!-- 动态todolist图标 -->
       <view class="todo-indicator">
-        <image :src="todoIndicatorIcon" class="todo-icon" mode="aspectFit" />
+        <image src="@static/map/未完成todolist.png" class="todo-icon" mode="aspectFit" />
       </view>
+    </view>
+
+    <!-- 功能图标栏 -->
+    <view class="function-icons">
+      <!-- 好友列表图标 -->
+      <view class="function-icon left" @click="navigateToFriends">
+        <image src="@static/map/我的好友.png" class="icon-image" mode="aspectFit" />
+        <text class="icon-label">好友列表</text>
+      </view>
+      
     </view>
 
 
@@ -51,7 +66,7 @@
             @click="toggleTask(task.id)"
           >
             <image 
-              :src="task.isCompleted ? '/static/chat/完成.svg' : '/static/chat/刷新.svg'" 
+              :src="task.isCompleted ? '@static/map/任务完成.png' : '@static/map/任务未完成 .png'" 
               class="action-icon" 
               mode="aspectFit" 
             />
@@ -65,7 +80,7 @@
     <view class="bottom-nav">
       <view class="nav-item" :class="{ active: currentPage === 'map' }" @click="navigateToMap">
         <view class="nav-icon">
-          <image src="@/static/chat/Map-draw.svg" class="nav-svg-icon" />
+          <image src="@static/chat/Map-draw.svg" class="nav-svg-icon" />
         </view>
         <text class="nav-text">地图</text>
       </view>
@@ -77,7 +92,7 @@
       
       <view class="nav-item" :class="{ active: currentPage === 'knowledge' }" @click="navigateToKnowledge">
         <view class="nav-icon">
-          <image src="@/static/chat/Document-folder.svg" class="nav-svg-icon" />
+          <image src="@static/chat/Document-folder.svg" class="nav-svg-icon" />
         </view>
         <text class="nav-text">知识库</text>
       </view>
@@ -86,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const currentPage = ref('map')
 const showDebugPanel = ref(false)
@@ -208,6 +223,9 @@ const toggleTask = (taskId) => {
       if (taskProgress.value[taskType] >= todos.length) {
         task.isCompleted = true
         task.description = '所有任务已完成！'
+        
+        // 跳转到下一个未完成的任务
+        jumpToNextTask(taskId)
       } else {
         // 更新任务描述为下一个任务
         task.description = getCurrentTaskDescription(taskType)
@@ -219,6 +237,33 @@ const toggleTask = (taskId) => {
       // 保存进度到本地存储
       saveTaskProgress()
     }
+  }
+}
+
+// 跳转到下一个未完成的任务
+const jumpToNextTask = (completedTaskId) => {
+  const currentIndex = taskList.value.findIndex(t => t.id === completedTaskId)
+  if (currentIndex !== -1) {
+    // 寻找下一个未完成的任务
+    for (let i = currentIndex + 1; i < taskList.value.length; i++) {
+      if (!taskList.value[i].isCompleted) {
+        // 可以在这里添加滚动到下一个任务的逻辑
+        // 或者显示提示信息
+        uni.showToast({
+          title: `已完成！请继续${taskList.value[i].statusText}`,
+          icon: 'success',
+          duration: 2000
+        })
+        return
+      }
+    }
+    
+    // 如果所有任务都完成了
+    uni.showToast({
+      title: '恭喜！所有任务都已完成！',
+      icon: 'success',
+      duration: 3000
+    })
   }
 }
 
@@ -285,25 +330,6 @@ const initializeTasks = () => {
   })
 }
 
-// 计算属性：动态获取todo-indicator图标路径
-const todoIndicatorIcon = computed(() => {
-  // 检查各个任务的完成状态
-  const hardSkillsCompleted = taskList.value.find(t => t.id === 'hard-skills')?.isCompleted || false
-  const emotionsCompleted = taskList.value.find(t => t.id === 'emotions')?.isCompleted || false
-  const softSkillsCompleted = taskList.value.find(t => t.id === 'soft-skills')?.isCompleted || false
-  
-  // 根据完成的任务类型返回对应的图标
-  // 如果多个任务完成，优先显示硬技能 > 软技能 > 情绪管理
-  if (hardSkillsCompleted) {
-    return '/static/map/硬技能完成.png'
-  } else if (softSkillsCompleted) {
-    return '/static/map/软技能完成.png'
-  } else if (emotionsCompleted) {
-    return '/static/map/情绪管理完成.png'
-  } else {
-    return '/static/map/未完成todolist.png'
-  }
-})
 
 // 重置所有任务进度（调试用）
 const resetAllTasks = () => {
@@ -348,6 +374,18 @@ const navigateToKnowledge = () => {
   })
 }
 
+const navigateToFriends = () => {
+  uni.navigateTo({
+    url: '/pages/friends/friends'
+  })
+}
+
+const navigateToReport = () => {
+  uni.navigateTo({
+    url: '/pages/report/report'
+  })
+}
+
 
 onMounted(() => {
   currentPage.value = 'map'
@@ -359,7 +397,7 @@ onMounted(() => {
 .map-container {
   width: 100vw;
   height: 100vh;
-  background-image: url('@/static/chat/chat_background.png');
+  background-image: url('@static/chat/chat_background.png');
   background-size: contain;
   background-position: center bottom;
   background-repeat: no-repeat;
@@ -405,6 +443,13 @@ onMounted(() => {
 
 .goal-right {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.persistence-info {
+  display: flex;
   align-items: center;
   gap: 16rpx;
 }
@@ -423,6 +468,23 @@ onMounted(() => {
 .flame-icon {
   width: 64rpx;
   height: 64rpx;
+}
+
+.detail-link {
+  padding: 4rpx 8rpx;
+  border-radius: 8rpx;
+  transition: all 0.3s ease;
+  
+  &:active {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0.95);
+  }
+}
+
+.detail-text {
+  font-size: 22rpx;
+  color: #b58c2b;
+  font-weight: 500;
 }
 
 .todo-indicator {
@@ -457,6 +519,49 @@ onMounted(() => {
   50% {
     transform: translateX(-50%) translateY(-10px);
   }
+}
+
+/* 功能图标栏样式 */
+.function-icons {
+  position: relative;
+  width: 100%;
+  height: 0;
+  margin-top: 30rpx;
+  z-index: 20;
+}
+
+.function-icon {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  
+  &:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.8);
+  }
+  
+  &.left {
+    right: 24rpx;
+  }
+}
+
+.icon-image {
+  width: 64rpx;
+  height: 64rpx;
+}
+
+.icon-label {
+  font-size: 22rpx;
+  color: #333;
+  font-weight: 500;
 }
 
 /* 任务列表样式 */
@@ -554,7 +659,7 @@ onMounted(() => {
   width: 60rpx;
   height: 60rpx;
   border-radius: 50%;
-  background: #F5F5F5;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -563,22 +668,11 @@ onMounted(() => {
   &:active {
     transform: scale(0.9);
   }
-  
-  &.completed {
-    background: #4CAF50;
-  }
 }
 
 .action-icon {
-  width: 32rpx;
-  height: 32rpx;
-  filter: grayscale(1);
-  opacity: 0.6;
-  
-  .completed & {
-    filter: brightness(0) invert(1);
-    opacity: 1;
-  }
+  width: 48rpx;
+  height: 48rpx;
 }
 
 

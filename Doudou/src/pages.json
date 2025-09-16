@@ -30,13 +30,6 @@
 			}
 		},
 		{
-			"path": "pages/task/task",
-			"style": {
-				"navigationBarTitleText": "任务系统",
-				"navigationStyle": "custom"
-			}
-		},
-		{
 			"path": "pages/user-info-collection/user-info-collection",
 			"style": {
 				"navigationBarTitleText": "性格测试",

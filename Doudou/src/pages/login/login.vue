@@ -335,7 +335,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('@/static/login/登录背景.jpg');
+    background-image: url('@static/login/登录背景.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

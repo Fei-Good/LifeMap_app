@@ -4,15 +4,10 @@
     <view class="status-bar"></view>
     <!-- 顶部标题栏 -->
     <view class="header">
-      <image 
-        class="header-bg" 
-        src="/textures/地图功能/背景色.png" 
-        mode="scaleToFill"
-      />
       <view class="header-content">
         <view class="header-left">
           <view class="back-button" @click="goBack">
-            <text class="back-text">← 返回</text>
+            <text class="back-text">←</text>
           </view>
         </view>
         <view class="header-center">
@@ -217,7 +212,7 @@
                 >
                   <image 
                     class="suggestion-avatar" 
-                    :src="user.avatar || '/src/static/chat/DouDou_chat.svg'" 
+                    :src="user.avatar || '/static/chat/DouDou_chat.svg'" 
                     mode="aspectFill"
                   />
                   <view class="suggestion-info">
@@ -260,7 +255,7 @@
         </view>
         <view class="popup-body">
           <view class="profile-header">
-            <image class="profile-avatar" :src="profileFriend.avatar || '/src/static/chat/DouDou_chat.svg'" mode="aspectFill" />
+            <image class="profile-avatar" :src="profileFriend.avatar || '/static/chat/DouDou_chat.svg'" mode="aspectFill" />
             <view class="profile-main">
               <text class="profile-name">{{ profileFriend.name }}</text>
               <view class="profile-meta">
@@ -429,7 +424,6 @@ const fetchFriends = async (targetPage = 1, size = pageSize.value) => {
     return {
       id: `friend${idx}`,
       name: `好友${idx}`,
-      avatar: '/textures/地图功能/好友（后续可能替换）.png',
       status: ['online', 'busy', 'away', 'offline'][idx % 4],
       location: ['北京', '上海', '广州', '深圳'][idx % 4],
       lastSeen: new Date(Date.now() - 1000 * 60 * (idx * 7)),
@@ -476,7 +470,7 @@ const filteredFriends = computed(() => {
 // 方法
 const goBack = () => {
   uni.navigateTo({
-    url: '/pages/chat/chat'
+    url: '/pages/map/map'
   })
 }
 
@@ -765,7 +759,7 @@ const onReachBottom = async () => {
   height: 100dvh;
   min-height: 100svh;
   /* 对齐 chat 页背景风格 */
-  background-image: url('@/static/chat/chat_background.png');
+  background-image: url('/static/chat/chat_background.png');
   background-size: contain;
   background-position: center bottom;
   background-repeat: no-repeat;

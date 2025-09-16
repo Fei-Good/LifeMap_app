@@ -98,7 +98,7 @@
           <view class="header-doudou-large">
             <image 
               class="section-doudou-large"
-              src="@/static/QA/5_matting.gif"
+              src="@static/QA/5_matting.gif"
               mode="aspectFit"
             />
           </view>
