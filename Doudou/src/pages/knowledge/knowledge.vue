@@ -190,17 +190,13 @@
             <view v-if="selectedCard.emotionalSupport" class="detail-section">
               <text class="section-title">💝 情感支撑</text>
               <view class="emotional-support-content">
-                <view class="support-item encouragement">
-                  <view class="support-icon">🌟</view>
-                  <text class="support-text">{{ selectedCard.emotionalSupport.encouragement }}</text>
-                </view>
-                <view class="support-item universality">
+                <view class="support-main">
                   <view class="support-icon">🤝</view>
                   <text class="support-text">{{ selectedCard.emotionalSupport.universality }}</text>
                 </view>
-                <view class="support-item value">
-                  <view class="support-icon">💎</view>
-                  <text class="support-text">{{ selectedCard.emotionalSupport.value }}</text>
+                <view class="data-support">
+                  <view class="data-icon">📊</view>
+                  <text class="data-text">这个场景下有 {{ selectedCard.emotionalSupport.percentage || 78 }}% 的人跟你有同样经历</text>
                 </view>
               </view>
             </view>
@@ -766,8 +762,15 @@ const aiAnalyzeSingleCard = async (card) => {
     return
   }
   
+  // 关闭弹窗
+  hideCardDetail()
+  
   try {
-    uni.showLoading({ title: 'AI分析中...' })
+    // 显示分析进度提示
+    uni.showLoading({ 
+      title: '豆包AI正在深度分析中...',
+      mask: true
+    })
     
     // 提取对话数据
     const selectedChats = card.chats || []
@@ -778,8 +781,12 @@ const aiAnalyzeSingleCard = async (card) => {
       return
     }
     
-    // 调用AI分析
-    const analysisResult = await aiService.summarizeChatsForKnowledge(selectedChats)
+    // 调用豆包AI分析
+    const analysisResult = await aiService.summarizeChatsForKnowledge(selectedChats, {
+      useDoubao: true,
+      maxTokens: 3000,
+      temperature: 0.6
+    })
     
     // 更新现有卡片
     const cardIndex = knowledgeCards.value.findIndex(c => c.id === card.id)
@@ -792,18 +799,31 @@ const aiAnalyzeSingleCard = async (card) => {
       
       // 更新本地存储
       uni.setStorageSync('knowledge_cards', knowledgeCards.value)
-      
-      // 更新当前选中的卡片
-      selectedCard.value = knowledgeCards.value[cardIndex]
     }
     
     uni.hideLoading()
-    uni.showToast({ title: 'AI分析完成', icon: 'success' })
+    uni.showToast({ 
+      title: '豆包AI分析完成！', 
+      icon: 'success',
+      duration: 2000
+    })
+    
+    // 延迟重新打开弹窗显示分析结果
+    setTimeout(() => {
+      const updatedCard = knowledgeCards.value.find(c => c.id === card.id)
+      if (updatedCard) {
+        viewKnowledgeCard(updatedCard)
+      }
+    }, 500)
     
   } catch (error) {
     console.error('AI分析失败:', error)
     uni.hideLoading()
-    uni.showToast({ title: 'AI分析失败，请重试', icon: 'error' })
+    uni.showToast({ 
+      title: 'AI分析失败，请重试', 
+      icon: 'error',
+      duration: 2000
+    })
   }
 }
 </script>
@@ -1253,30 +1273,17 @@ const aiAnalyzeSingleCard = async (card) => {
 .emotional-support-content {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 20rpx;
 }
 
-.support-item {
+.support-main {
   display: flex;
   align-items: flex-start;
   gap: 16rpx;
-  padding: 20rpx;
+  padding: 24rpx;
+  background: linear-gradient(135deg, #E6F7FF 0%, #CCE7FF 100%);
   border-radius: 16rpx;
-  
-  &.encouragement {
-    background: linear-gradient(135deg, #FFF5E6 0%, #FFEBCC 100%);
-    border-left: 4rpx solid #FF9900;
-  }
-  
-  &.universality {
-    background: linear-gradient(135deg, #E6F7FF 0%, #CCE7FF 100%);
-    border-left: 4rpx solid #1890FF;
-  }
-  
-  &.value {
-    background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
-    border-left: 4rpx solid #0EA5E9;
-  }
+  border-left: 4rpx solid #1890FF;
 }
 
 .support-icon {
@@ -1291,6 +1298,44 @@ const aiAnalyzeSingleCard = async (card) => {
   line-height: 1.6;
   color: #2D3748;
   font-weight: 500;
+}
+
+.data-support {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 20rpx 24rpx;
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.08) 0%, rgba(24, 144, 255, 0.15) 100%);
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(24, 144, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.data-support::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4rpx;
+  background: linear-gradient(180deg, #1890FF 0%, #40A9FF 100%);
+  border-radius: 2rpx;
+}
+
+.data-icon {
+  font-size: 28rpx;
+  flex-shrink: 0;
+}
+
+.data-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: #1890FF;
+  font-weight: 600;
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
 }
 
 /* 失败分析样式 */

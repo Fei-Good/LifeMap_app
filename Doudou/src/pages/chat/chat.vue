@@ -119,7 +119,7 @@
       </view>
       <view class="toolbar-right">
         <view class="toolbar-btn" @click="selectAllMessages">
-          <text class="toolbar-btn-text">全选</text>
+          <text class="toolbar-btn-text">{{ selectedMessages.size === messages.length ? '取消全选' : '全选' }}</text>
         </view>
         <view class="toolbar-btn" @click="favoriteSelectedMessages">
           <text class="toolbar-btn-text">收藏</text>
@@ -325,8 +325,8 @@
             <text class="selection-count">已选择 {{ selectedHistories.size }} 个对话</text>
           </view>
           <view class="toolbar-right">
-            <view class="toolbar-btn" @click="selectAllHistories">
-              <text class="toolbar-btn-text">全选</text>
+            <view class="toolbar-btn" @click="selectAllHistories" v-if="chatHistories.length > 0">
+              <text class="toolbar-btn-text">{{ selectedHistories.size === chatHistories.length ? '取消全选' : '全选' }}</text>
             </view>
             <view class="toolbar-btn" @click="favoriteSelectedHistories">
               <text class="toolbar-btn-text">收藏</text>
@@ -1147,9 +1147,15 @@ const toggleMessageSelection = (messageId) => {
 }
 
 const selectAllMessages = () => {
-  messages.value.forEach(msg => {
-    if (msg.id) selectedMessages.value.add(msg.id)
-  })
+  // 如果已经全选，则取消全选
+  if (selectedMessages.value.size === messages.value.length) {
+    selectedMessages.value.clear()
+  } else {
+    // 全选所有消息
+    messages.value.forEach(msg => {
+      if (msg.id) selectedMessages.value.add(msg.id)
+    })
+  }
 }
 
 const clearSelection = () => {
@@ -1161,13 +1167,23 @@ const deleteSelectedMessages = () => {
   
   uni.showModal({
     title: '确认删除',
-    content: `确定要删除选中的 ${selectedMessages.value.size} 条消息吗？`,
+    content: `确定要删除选中的 ${selectedMessages.value.size} 条消息吗？删除后无法恢复。`,
+    confirmText: '确认删除',
+    cancelText: '取消',
+    confirmColor: '#E53E3E',
     success: (res) => {
       if (res.confirm) {
-        messages.value = messages.value.filter(msg => !selectedMessages.value.has(msg.id))
+        // 删除选中的消息
+        const selectedIds = Array.from(selectedMessages.value)
+        messages.value = messages.value.filter(msg => !selectedIds.includes(msg.id))
+        
+        // 清空选择状态
         selectedMessages.value.clear()
         isSelectionMode.value = false
+        
+        // 保存聊天历史
         saveChatHistory()
+        
         uni.showToast({ title: '删除成功', icon: 'success' })
       }
     }
@@ -1191,9 +1207,15 @@ const toggleHistorySelection = (chatId) => {
 }
 
 const selectAllHistories = () => {
-  chatHistories.value.forEach(chat => {
-    selectedHistories.value.add(chat.id)
-  })
+  // 如果已经全选，则取消全选
+  if (selectedHistories.value.size === chatHistories.value.length && chatHistories.value.length > 0) {
+    selectedHistories.value.clear()
+  } else {
+    // 全选所有对话
+    chatHistories.value.forEach(chat => {
+      selectedHistories.value.add(chat.id)
+    })
+  }
 }
 
 const clearHistorySelection = () => {
@@ -1202,19 +1224,46 @@ const clearHistorySelection = () => {
 }
 
 const deleteSelectedHistories = () => {
-  if (selectedHistories.value.size === 0) return
+  if (selectedHistories.value.size === 0) {
+    uni.showToast({ title: '请选择要删除的对话', icon: 'none' })
+    return
+  }
   
+  // 使用uni.showModal确保弹窗在最上层显示
   uni.showModal({
     title: '确认删除',
-    content: `确定要删除选中的 ${selectedHistories.value.size} 个对话吗？`,
+    content: `确定要删除选中的 ${selectedHistories.value.size} 个对话吗？删除后无法恢复。`,
+    confirmText: '确认删除',
+    cancelText: '取消',
+    confirmColor: '#E53E3E',
     success: (res) => {
       if (res.confirm) {
-        chatHistories.value = chatHistories.value.filter(chat => !selectedHistories.value.has(chat.id))
-        uni.setStorageSync('chat_histories', chatHistories.value)
-        selectedHistories.value.clear()
-        isHistorySelectionMode.value = false
-        uni.showToast({ title: '删除成功', icon: 'success' })
+        try {
+          // 删除选中的对话
+          const selectedIds = Array.from(selectedHistories.value)
+          chatHistories.value = chatHistories.value.filter(chat => !selectedIds.includes(chat.id))
+          
+          // 保存到本地存储
+          uni.setStorageSync('chat_histories', chatHistories.value)
+          
+          // 清空选择状态
+          selectedHistories.value.clear()
+          isHistorySelectionMode.value = false
+          
+          uni.showToast({ 
+            title: `已删除${selectedIds.length}个对话`, 
+            icon: 'success',
+            duration: 2000
+          })
+        } catch (error) {
+          console.error('删除聊天历史失败:', error)
+          uni.showToast({ title: '删除失败，请重试', icon: 'error' })
+        }
       }
+    },
+    fail: (error) => {
+      console.error('显示确认弹窗失败:', error)
+      uni.showToast({ title: '操作失败，请重试', icon: 'error' })
     }
   })
 }
@@ -1252,9 +1301,15 @@ const toggleFavoriteSelection = (favoriteId) => {
 }
 
 const selectAllFavorites = () => {
-  favoriteChats.value.forEach(fav => {
-    selectedFavorites.value.add(fav.id)
-  })
+  // 如果已经全选，则取消全选
+  if (selectedFavorites.value.size === favoriteChats.value.length) {
+    selectedFavorites.value.clear()
+  } else {
+    // 全选所有收藏
+    favoriteChats.value.forEach(fav => {
+      selectedFavorites.value.add(fav.id)
+    })
+  }
 }
 
 const clearFavoriteSelection = () => {
@@ -1267,13 +1322,23 @@ const deleteSelectedFavorites = () => {
   
   uni.showModal({
     title: '确认删除',
-    content: `确定要删除选中的 ${selectedFavorites.value.size} 个收藏吗？`,
+    content: `确定要删除选中的 ${selectedFavorites.value.size} 个收藏吗？删除后无法恢复。`,
+    confirmText: '确认删除',
+    cancelText: '取消',
+    confirmColor: '#E53E3E',
     success: (res) => {
       if (res.confirm) {
-        favoriteChats.value = favoriteChats.value.filter(fav => !selectedFavorites.value.has(fav.id))
+        // 删除选中的收藏
+        const selectedIds = Array.from(selectedFavorites.value)
+        favoriteChats.value = favoriteChats.value.filter(fav => !selectedIds.includes(fav.id))
+        
+        // 保存到本地存储
         uni.setStorageSync('favorite_chats', favoriteChats.value)
+        
+        // 清空选择状态
         selectedFavorites.value.clear()
         isFavoriteSelectionMode.value = false
+        
         uni.showToast({ title: '删除成功', icon: 'success' })
       }
     }
@@ -1386,13 +1451,23 @@ const deleteSelectedKnowledge = () => {
   
   uni.showModal({
     title: '确认删除',
-    content: `确定要删除选中的 ${selectedKnowledge.value.size} 张知识卡片吗？`,
+    content: `确定要删除选中的 ${selectedKnowledge.value.size} 张知识卡片吗？删除后无法恢复。`,
+    confirmText: '确认删除',
+    cancelText: '取消',
+    confirmColor: '#E53E3E',
     success: (res) => {
       if (res.confirm) {
-        knowledgeCards.value = knowledgeCards.value.filter(card => !selectedKnowledge.value.has(card.id))
+        // 删除选中的知识卡片
+        const selectedIds = Array.from(selectedKnowledge.value)
+        knowledgeCards.value = knowledgeCards.value.filter(card => !selectedIds.includes(card.id))
+        
+        // 保存到本地存储
         uni.setStorageSync('knowledge_cards', knowledgeCards.value)
+        
+        // 清空选择状态
         selectedKnowledge.value.clear()
         isKnowledgeSelectionMode.value = false
+        
         uni.showToast({ title: '删除成功', icon: 'success' })
       }
     }

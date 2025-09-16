@@ -856,7 +856,15 @@ ${answerSummary}
    */
   async summarizeChatsForKnowledge(selectedChats, options = {}) {
     try {
-      // 构建知识库总结提示词
+      // 优先使用豆包AI进行深度分析
+      if (options.useDoubao !== false) {
+        const doubaoResult = await this.analyzeChatsWithDoubao(selectedChats, options)
+        if (doubaoResult) {
+          return doubaoResult
+        }
+      }
+      
+      // 备用方案：使用原有方法
       const prompt = this.buildKnowledgeSummaryPrompt(selectedChats, options)
       
       // 调用AI API进行总结
@@ -873,6 +881,212 @@ ${answerSummary}
       console.error('知识库总结失败:', error)
       // 返回默认总结
       return this.getDefaultKnowledgeSummary(selectedChats)
+    }
+  }
+
+  /**
+   * 使用豆包AI进行对话复盘分析
+   * @param {Array} chats 对话数据
+   * @param {Object} options 配置选项
+   * @returns {Promise<Object>} 分析结果
+   */
+  async analyzeChatsWithDoubao(chats, options = {}) {
+    try {
+      console.log('开始使用豆包AI进行对话复盘分析...')
+      
+      // 构建豆包AI分析提示词
+      const prompt = this.buildDoubaoAnalysisPrompt(chats, options)
+      
+      // 调用豆包AI API
+      const response = await this.callAIAPI(prompt, {
+        temperature: 0.6,
+        max_tokens: 3000,
+        ...options
+      })
+      
+      return this.parseDoubaoAnalysisResponse(response, chats)
+      
+    } catch (error) {
+      console.error('豆包AI分析失败:', error)
+      return null // 返回null让调用方使用备用方案
+    }
+  }
+
+  /**
+   * 构建豆包AI分析提示词
+   * @param {Array} chats 对话数据
+   * @param {Object} options 配置选项
+   * @returns {string} 构建好的提示词
+   */
+  buildDoubaoAnalysisPrompt(chats, options = {}) {
+    const systemPrompt = `你是豆包AI，一个专业的复盘分析师。请对用户的对话进行深度分析，重点关注问题拆解、内因外因分析。
+
+分析要求：
+1. 【情感支撑】- 提供温暖的情感支持，让用户知道这种经历很常见
+2. 【问题拆解】- 深入分析外在因素和内在因素
+3. 【肯定正确】- 识别用户做对的事情
+4. 【多角度视野】- 提供不同视角的思考
+5. 【行动计划】- 给出具体的改进建议
+
+请以专业、温暖、建设性的态度进行分析。`
+
+    // 构建对话内容
+    let conversationContent = ''
+    chats.forEach((chat, index) => {
+      conversationContent += `\n\n=== 对话 ${index + 1} ===\n`
+      conversationContent += `时间：${new Date(chat.timestamp).toLocaleString()}\n`
+      conversationContent += `标题：${chat.title}\n`
+      conversationContent += `内容：\n`
+      
+      if (chat.messages && chat.messages.length > 0) {
+        chat.messages.forEach(msg => {
+          conversationContent += `${msg.isUser ? '用户' : 'AI'}: ${msg.content}\n`
+        })
+      } else {
+        conversationContent += chat.content || '无具体内容\n'
+      }
+    })
+
+    const fullPrompt = `${systemPrompt}
+
+请分析以下对话内容：
+
+${conversationContent}
+
+请返回JSON格式的分析结果：
+{
+  "title": "复盘标题",
+  "summary": "核心总结",
+  "emotionalSupport": {
+    "universality": "普遍性分析",
+    "percentage": 78
+  },
+  "failureAnalysis": {
+    "externalFactors": ["外在因素1", "外在因素2"],
+    "internalFactors": ["内在因素1", "内在因素2"],
+    "keyObstacles": ["关键卡点1", "关键卡点2"]
+  },
+  "positiveActions": {
+    "correctBehaviors": ["正确行为1", "正确行为2"],
+    "effectiveStrategies": ["有效策略1", "有效策略2"],
+    "strengths": ["展现优势1", "展现优势2"]
+  },
+  "multiPerspective": {
+    "alternativeViews": ["不同视角1", "不同视角2"],
+    "systematicThinking": ["系统思考1", "系统思考2"],
+    "growthMindset": ["成长思维1", "成长思维2"]
+  },
+  "actionPlan": ["行动1", "行动2", "行动3"],
+  "tags": ["标签1", "标签2", "标签3"],
+  "insights": ["洞察1", "洞察2", "洞察3"]
+}`
+
+    return fullPrompt
+  }
+
+  /**
+   * 解析豆包AI分析响应
+   * @param {Object} response AI响应
+   * @param {Array} chats 原始对话数据
+   * @returns {Object} 解析后的分析结果
+   */
+  parseDoubaoAnalysisResponse(response, chats) {
+    try {
+      let analysisData
+      
+      if (typeof response === 'string') {
+        // 尝试解析JSON
+        const jsonMatch = response.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          analysisData = JSON.parse(jsonMatch[0])
+        } else {
+          throw new Error('无法解析AI响应为JSON格式')
+        }
+      } else if (response.choices && response.choices[0]) {
+        const content = response.choices[0].message.content
+        const jsonMatch = content.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          analysisData = JSON.parse(jsonMatch[0])
+        } else {
+          throw new Error('无法从AI响应中提取JSON')
+        }
+      } else {
+        throw new Error('AI响应格式不正确')
+      }
+
+      // 确保必要字段存在
+      return {
+        title: analysisData.title || '对话复盘分析',
+        summary: analysisData.summary || '基于对话内容的深度分析',
+        emotionalSupport: {
+          universality: analysisData.emotionalSupport?.universality || '这种经历很常见，很多人都会遇到类似的挑战',
+          percentage: analysisData.emotionalSupport?.percentage || 75
+        },
+        failureAnalysis: {
+          externalFactors: analysisData.failureAnalysis?.externalFactors || ['环境因素', '时机因素'],
+          internalFactors: analysisData.failureAnalysis?.internalFactors || ['思维模式', '技能水平'],
+          keyObstacles: analysisData.failureAnalysis?.keyObstacles || ['关键障碍1', '关键障碍2']
+        },
+        positiveActions: {
+          correctBehaviors: analysisData.positiveActions?.correctBehaviors || ['正确行为1', '正确行为2'],
+          effectiveStrategies: analysisData.positiveActions?.effectiveStrategies || ['有效策略1', '有效策略2'],
+          strengths: analysisData.positiveActions?.strengths || ['优势1', '优势2']
+        },
+        multiPerspective: {
+          alternativeViews: analysisData.multiPerspective?.alternativeViews || ['视角1', '视角2'],
+          systematicThinking: analysisData.multiPerspective?.systematicThinking || ['系统思考1', '系统思考2'],
+          growthMindset: analysisData.multiPerspective?.growthMindset || ['成长思维1', '成长思维2']
+        },
+        actionPlan: analysisData.actionPlan || ['行动计划1', '行动计划2', '行动计划3'],
+        tags: analysisData.tags || ['复盘', '成长', '反思'],
+        insights: analysisData.insights || ['洞察1', '洞察2', '洞察3'],
+        chatCount: chats.length,
+        needsAIAnalysis: false,
+        createdTime: Date.now(),
+        source: 'doubao_ai'
+      }
+      
+    } catch (error) {
+      console.error('解析豆包AI分析响应失败:', error)
+      return this.getDefaultAnalysisResult(chats)
+    }
+  }
+
+  /**
+   * 获取默认分析结果
+   * @param {Array} chats 对话数据
+   * @returns {Object} 默认分析结果
+   */
+  getDefaultAnalysisResult(chats) {
+    return {
+      title: '对话复盘分析',
+      summary: '基于对话内容的深度分析，帮助识别问题和成长机会',
+      emotionalSupport: {
+        universality: '这种经历很常见，很多人都会遇到类似的挑战',
+        percentage: 75
+      },
+      failureAnalysis: {
+        externalFactors: ['环境因素', '时机因素', '资源限制'],
+        internalFactors: ['思维模式', '技能水平', '情绪管理'],
+        keyObstacles: ['关键障碍1', '关键障碍2']
+      },
+      positiveActions: {
+        correctBehaviors: ['正确行为1', '正确行为2'],
+        effectiveStrategies: ['有效策略1', '有效策略2'],
+        strengths: ['优势1', '优势2']
+      },
+      multiPerspective: {
+        alternativeViews: ['视角1', '视角2'],
+        systematicThinking: ['系统思考1', '系统思考2'],
+        growthMindset: ['成长思维1', '成长思维2']
+      },
+      actionPlan: ['行动计划1', '行动计划2', '行动计划3'],
+      tags: ['复盘', '成长', '反思'],
+      insights: ['洞察1', '洞察2', '洞察3'],
+      chatCount: chats.length,
+      needsAIAnalysis: false,
+      createdTime: Date.now(),
+      source: 'default'
     }
   }
 

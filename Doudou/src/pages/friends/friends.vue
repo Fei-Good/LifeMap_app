@@ -92,6 +92,10 @@
                 <text class="friend-name">{{ friend.name }}</text>
                 <text class="friend-status">{{ getStatusText(friend.status) }}</text>
                 <text class="friend-location">{{ friend.location }}</text>
+                <view class="friend-badges">
+                  <text v-if="friend.mbti" :class="['badge', getMbtiClass(friend.mbti)]">{{ friend.mbti }}</text>
+                  <text class="badge light">在线</text>
+                </view>
               </view>
               <view class="friend-actions">
                 <view class="action-btn skills-btn" @click.stop="openSharedSkills(friend)">
@@ -104,6 +108,7 @@
                   <text class="action-icon">📞</text>
                 </view>
               </view>
+              <view class="chevron">›</view>
             </view>
           </view>
         </view>
@@ -133,6 +138,10 @@
                 <text class="friend-name">{{ friend.name }}</text>
                 <text class="friend-status">{{ getLastSeenText(friend.lastSeen) }}</text>
                 <text class="friend-location">{{ friend.location }}</text>
+                <view class="friend-badges">
+                  <text v-if="friend.mbti" :class="['badge', getMbtiClass(friend.mbti)]">{{ friend.mbti }}</text>
+                  <text class="badge light">离线</text>
+                </view>
               </view>
               <view class="friend-actions">
                 <view class="action-btn skills-btn" @click.stop="openSharedSkills(friend)">
@@ -145,6 +154,7 @@
                   <text class="action-icon">⋯</text>
                 </view>
               </view>
+              <view class="chevron">›</view>
             </view>
           </view>
         </view>
@@ -207,7 +217,7 @@
                 >
                   <image 
                     class="suggestion-avatar" 
-                    :src="user.avatar || '/textures/地图功能/好友（后续可能替换）.png'" 
+                    :src="user.avatar || '/src/static/chat/DouDou_chat.svg'" 
                     mode="aspectFill"
                   />
                   <view class="suggestion-info">
@@ -250,7 +260,7 @@
         </view>
         <view class="popup-body">
           <view class="profile-header">
-            <image class="profile-avatar" :src="profileFriend.avatar || '/textures/地图功能/好友（后续可能替换）.png'" mode="aspectFill" />
+            <image class="profile-avatar" :src="profileFriend.avatar || '/src/static/chat/DouDou_chat.svg'" mode="aspectFill" />
             <view class="profile-main">
               <text class="profile-name">{{ profileFriend.name }}</text>
               <view class="profile-meta">
@@ -281,12 +291,12 @@
           </view>
 
           <view class="profile-actions">
-            <view class="action-btn" @click.stop="openSharedSkills(profileFriend)"><text>技能库</text></view>
+            <view class="action-btn ghost" @click.stop="openSharedSkills(profileFriend)"><text>技能库</text></view>
             <view class="action-btn primary" @click.stop="startChat(profileFriend)">
               <text class="nav-icon">🔥</text>
-              <text class="nav-text">DouDou</text>
+              <text class="nav-text">发消息</text>
             </view>
-            <view class="action-btn" @click.stop="startCall(profileFriend)"><text>语音通话</text></view>
+            <view class="action-btn outline" @click.stop="startCall(profileFriend)"><text>到抖音戳</text></view>
           </view>
         </view>
       </view>
@@ -364,7 +374,7 @@ const friends = ref([
   {
     id: 'friend_liguozheng',
     name: '李国正',
-    avatar: '/static/avatars/liguozheng.jpeg',
+    avatar: '/static/liguozheng.jpeg',
     status: 'online',
     location: '武汉',
     mbti: 'ENTP',
@@ -375,7 +385,7 @@ const friends = ref([
   {
     id: 'friend_afly',
     name: '阿飞',
-    avatar: '/static/avatars/afei.jpeg',
+    avatar: '/static/afei.jpeg',
     status: 'busy',
     location: '杭州',
     mbti: 'INFJ',
@@ -386,7 +396,7 @@ const friends = ref([
   {
     id: 'friend_haodi',
     name: '浩迪',
-    avatar: '/static/avatars/haodi.jpeg',
+    avatar: '/static/haodi.jpeg',
     status: 'away',
     location: '广州',
     mbti: 'INFP',
@@ -397,7 +407,7 @@ const friends = ref([
   {
     id: 'friend_edvina',
     name: 'Edvina',
-    avatar: '/static/avatars/edvina.jpeg',
+    avatar: '/static/Edvina.jpeg',
     status: 'offline',
     location: '新加坡',
     mbti: 'ENTJ',
@@ -512,6 +522,22 @@ const getStatusText = (status) => {
   return statusMap[status] || '未知'
 }
 
+// MBTI 四大气质配色：
+// NT(理性) 蓝 / NF(理想) 紫 / SJ(守序) 绿 / SP(体验) 橙
+const getMbtiClass = (mbti) => {
+  if (!mbti) return 'mbti-nt'
+  const t = String(mbti).toUpperCase()
+  // 定制需求：INFP、INFJ 用绿色；ENTJ、ENTP 用紫色
+  if (t === 'INFP' || t === 'INFJ') return 'mbti-green'
+  if (t === 'ENTJ' || t === 'ENTP') return 'mbti-purple'
+  // 其余保持原有近似映射
+  if (/^.N.T.$/.test(t) || (t[1]==='N' && t[2]==='T')) return 'mbti-nt'
+  if (/^.N.F.$/.test(t) || (t[1]==='N' && t[2]==='F')) return 'mbti-nf'
+  if (/^.S.J.$/.test(t) || (t[1]==='S' && t[3]==='J')) return 'mbti-sj'
+  if (/^.S.P.$/.test(t) || (t[1]==='S' && t[3]==='P')) return 'mbti-sp'
+  return 'mbti-nt'
+}
+
 const getLastSeenText = (lastSeen) => {
   const now = new Date()
   const diff = now - lastSeen
@@ -536,7 +562,8 @@ const formatMbti = (mbti) => {
 const openFriendProfile = (friend) => {
   profileFriend.value = { ...friend, mbti: formatMbti(friend.mbti) }
   // 模拟统计数据，可替换为接口
-  profileStats.value = { chats: 128, days: 365, score: 86 }
+  // 使用更贴近真实的个位数模拟数据
+  profileStats.value = { chats: 5, days: 7, score: 8 }
   showProfileDialog.value = true
 }
 
@@ -966,6 +993,18 @@ const onReachBottom = async () => {
   gap: 5rpx;
   min-width: 0;
 }
+.friend-badges { display: flex; gap: 8rpx; margin-top: 6rpx; }
+.badge { font-size: 20rpx; padding: 4rpx 10rpx; border-radius: 999rpx; background: rgba(255,153,0,0.10); color: #FF9900; border: 2rpx solid rgba(255,153,0,0.16); }
+.badge.mbti-nt { background: rgba(33,150,243,0.10); color: #1E88E5; border-color: rgba(33,150,243,0.18); }
+.badge.mbti-nf { background: rgba(156,39,176,0.10); color: #8E24AA; border-color: rgba(156,39,176,0.18); }
+.badge.mbti-sj { background: rgba(76,175,80,0.10); color: #2E7D32; border-color: rgba(76,175,80,0.18); }
+.badge.mbti-sp { background: rgba(255,153,0,0.10); color: #E65100; border-color: rgba(255,153,0,0.18); }
+/* 定制：INFP/INFJ 绿，ENTJ/ENTP 紫 */
+.badge.mbti-green { background: rgba(76,175,80,0.10); color: #2E7D32; border-color: rgba(76,175,80,0.18); }
+.badge.mbti-purple { background: rgba(156,39,176,0.10); color: #8E24AA; border-color: rgba(156,39,176,0.18); }
+.badge.light { background: rgba(0,0,0,0.04); color: #666; border-color: rgba(0,0,0,0.06); }
+
+.chevron { font-size: 40rpx; color: #CBD5E0; margin-left: 8rpx; }
 
 .friend-name { font-size: 32rpx; font-weight: 700; color: #2D3748; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -1151,26 +1190,40 @@ const onReachBottom = async () => {
 
 .profile-actions .action-btn { 
   flex: 1; padding: 24rpx 0; text-align: center;
-  background: #f2f2f2; color: #333; border-radius: 16rpx;
+  background: #f7f7f7; color: #333; border-radius: 18rpx;
   box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.06);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-  font-size: 28rpx; font-weight: 500;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease, border-color 0.14s ease;
+  font-size: 28rpx; font-weight: 600; letter-spacing: 0.5rpx;
+  position: relative; overflow: hidden;
 }
-.profile-actions .action-btn:active { transform: scale(0.98); box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06); }
-.profile-actions .action-btn.primary {
-  display: flex; align-items: center; gap: 8rpx;
-  background: rgba(255, 153, 0, 0.12);
-  border: 1rpx solid #FFC58F;
-  color: #FF9900;
+.profile-actions .action-btn:active { transform: translateY(2rpx) scale(0.985); box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06); }
+/* 主按钮：橙色渐变，发光边 */
+.profile-actions .action-btn.primary { 
+  background: linear-gradient(135deg, #FFC58F 0%, #FF9900 100%);
+  color: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 10rpx;
+  border: 2rpx solid rgba(255,149,0,0.28);
+  box-shadow: 0 12rpx 28rpx rgba(255,149,0,0.25), inset 0 -4rpx 8rpx rgba(0,0,0,0.06);
 }
-.profile-actions .action-btn.primary .nav-icon {
-  width: 50rpx; height: 50rpx; border-radius: 50%;
-  background: #FFC58F; color: #fff; display: flex; align-items: center; justify-content: center;
-  font-size: 24rpx;
+.profile-actions .action-btn.primary:active { 
+  background: linear-gradient(135deg, #FFB970 0%, #FF8A00 100%);
 }
-.profile-actions .action-btn.primary .nav-text {
-  font-size: 26rpx; color: #FF9900; font-weight: 600;
+/* 描边按钮：透明底 + 橙色描边 */
+.profile-actions .action-btn.outline { 
+  background: rgba(255,153,0,0.02); color: #FF9900; border: 2rpx solid #FFC58F;
 }
+.profile-actions .action-btn.outline:active { 
+  background: rgba(255,153,0,0.08); border-color: #FFB970;
+}
+/* 幽灵按钮：浅橙底 */
+.profile-actions .action-btn.ghost { 
+  background: rgba(255,153,0,0.10); color: #FF9900; border: 2rpx solid rgba(255,153,0,0.16);
+}
+.profile-actions .action-btn.ghost:active { 
+  background: rgba(255,153,0,0.16);
+}
+/* 图标尺寸与对齐 */
+.nav-icon { font-size: 30rpx; }
+.profile-actions .nav-text { font-weight: 700; }
 
 @keyframes pulse {
   0% { transform: scale(1); opacity: 1; }
