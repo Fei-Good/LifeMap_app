@@ -19,9 +19,9 @@
         </view>
       </view>
       
-      <!-- 未完成todolist图标 -->
+      <!-- 动态todolist图标 -->
       <view class="todo-indicator">
-        <image src="@/static/map/未完成todolist.png" class="todo-icon" mode="aspectFit" />
+        <image :src="todoIndicatorIcon" class="todo-icon" mode="aspectFit" />
       </view>
     </view>
 
@@ -60,20 +60,7 @@
       </view>
     </view>
 
-    <!-- 调试面板 -->
-    <view class="debug-panel" v-if="showDebugPanel">
-      <text class="debug-title">调试面板</text>
-      <view class="debug-buttons">
-        <button class="debug-btn" @click="resetAllTasks">重置所有任务</button>
-        <button class="debug-btn" @click="showDebugPanel = false">关闭面板</button>
-      </view>
-    </view>
-
-    <!-- 调试触发器 -->
-    <view class="debug-trigger" @click="showDebugPanel = !showDebugPanel">
-      🛠️
-    </view>
-
+ 
     <!-- 底部导航栏 -->
     <view class="bottom-nav">
       <view class="nav-item" :class="{ active: currentPage === 'map' }" @click="navigateToMap">
@@ -165,7 +152,7 @@ const taskList = ref([
   {
     id: 'emotions', 
     avatar: '/static/map/emotions_task.png',
-    statusText: '时间管理',
+    statusText: '情绪管理',
     description: '',
     isCompleted: false,
     type: 'emotions'
@@ -297,6 +284,26 @@ const initializeTasks = () => {
     updateTaskStatus(task)
   })
 }
+
+// 计算属性：动态获取todo-indicator图标路径
+const todoIndicatorIcon = computed(() => {
+  // 检查各个任务的完成状态
+  const hardSkillsCompleted = taskList.value.find(t => t.id === 'hard-skills')?.isCompleted || false
+  const emotionsCompleted = taskList.value.find(t => t.id === 'emotions')?.isCompleted || false
+  const softSkillsCompleted = taskList.value.find(t => t.id === 'soft-skills')?.isCompleted || false
+  
+  // 根据完成的任务类型返回对应的图标
+  // 如果多个任务完成，优先显示硬技能 > 软技能 > 情绪管理
+  if (hardSkillsCompleted) {
+    return '/static/map/硬技能完成.png'
+  } else if (softSkillsCompleted) {
+    return '/static/map/软技能完成.png'
+  } else if (emotionsCompleted) {
+    return '/static/map/情绪管理完成.png'
+  } else {
+    return '/static/map/未完成todolist.png'
+  }
+})
 
 // 重置所有任务进度（调试用）
 const resetAllTasks = () => {

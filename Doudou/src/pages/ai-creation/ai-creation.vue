@@ -6,8 +6,8 @@
     <!-- 顶部导航栏 -->
     <view class="header-toolbar">
       <view class="toolbar-left">
-        <view class="back-button" @click="goBack">
-          <text class="back-text">返回</text>
+        <view class="back-btn" @click="goBack">
+          <text class="back-icon">←</text>
         </view>
         <text class="page-title">AI创作</text>
       </view>
@@ -235,6 +235,7 @@
                 class="result-image" 
                 :src="creationProgress.result.thumbnail || creationProgress.result.url"
                 mode="aspectFit"
+                @click="viewCreationResult"
               />
               <view v-else class="result-video">
                 <video 
@@ -248,10 +249,10 @@
                   @error="onVideoError"
                   @loadstart="onVideoLoadStart"
                   @canplay="onVideoCanPlay"
-                  @click="playVideoFullscreen(creationProgress.result.url)"
+                  @click="viewCreationResult"
                 >
                 </video>
-                <view class="video-overlay" @click="playVideoFullscreen(creationProgress.result.url)">
+                <view class="video-overlay" @click="viewCreationResult">
                   <view class="play-button">
                     <text class="play-icon">▶</text>
                   </view>
@@ -293,6 +294,80 @@
         </view>
       </view>
     </view>
+
+    <!-- 查看创作结果弹窗 -->
+    <view v-if="viewResultModal.show" class="view-result-overlay">
+      <view class="view-result-modal">
+        <view class="view-result-header">
+          <text class="view-result-title">创作结果</text>
+          <view class="view-result-close" @click="closeViewResultModal">
+            <text class="close-icon">✕</text>
+          </view>
+        </view>
+        
+        <view class="view-result-content">
+          <!-- 图片查看 -->
+          <view v-if="viewResultModal.result && viewResultModal.result.type === 'image'" class="image-view-container">
+            <image 
+              class="full-image" 
+              :src="viewResultModal.result.url"
+              mode="aspectFit"
+              @load="onImageLoad"
+              @error="onImageError"
+            />
+            <view class="image-info">
+              <text class="info-item">尺寸: {{ imageInfo.width }}x{{ imageInfo.height }}</text>
+              <text class="info-item">格式: {{ getFileFormat(viewResultModal.result.url) }}</text>
+            </view>
+          </view>
+          
+          <!-- 视频查看 -->
+          <view v-if="viewResultModal.result && viewResultModal.result.type === 'video'" class="video-view-container">
+            <video 
+              class="full-video"
+              :src="viewResultModal.result.url"
+              :poster="viewResultModal.result.thumbnail"
+              controls
+              autoplay="false"
+              loop="false"
+              muted="false"
+              @error="onVideoError"
+              @loadstart="onVideoLoadStart"
+              @canplay="onVideoCanPlay"
+              @timeupdate="onVideoTimeUpdate"
+              @loadedmetadata="onVideoLoadedMetadata"
+            >
+            </video>
+            <view class="video-info">
+              <text class="info-item">时长: {{ formatDuration(videoInfo.duration) }}</text>
+              <text class="info-item">格式: {{ getFileFormat(viewResultModal.result.url) }}</text>
+            </view>
+          </view>
+          
+          <!-- 结果详情 -->
+          <view class="result-details">
+            <text class="detail-title">{{ viewResultModal.result.result.title }}</text>
+            <text class="detail-description">{{ viewResultModal.result.result.description }}</text>
+            <view class="detail-meta">
+              <text class="meta-item">创作时间: {{ formatTime(viewResultModal.result.timestamp) }}</text>
+              <text class="meta-item">AI模型: {{ viewResultModal.result.source === 'doubao_api' ? 'Doubao AI' : '本地模型' }}</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="view-result-actions">
+          <view class="action-btn secondary" @click="downloadResult">
+            <text class="btn-text">下载</text>
+          </view>
+          <view class="action-btn secondary" @click="saveCreationResult">
+            <text class="btn-text">保存到相册</text>
+          </view>
+          <view class="action-btn primary" @click="shareCreationResult">
+            <text class="btn-text">分享</text>
+          </view>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -323,6 +398,22 @@ export default {
         progress: 0,
         result: null,
         error: null
+      },
+      
+      // 查看结果弹窗
+      viewResultModal: {
+        show: false,
+        result: null
+      },
+      
+      // 媒体信息
+      imageInfo: {
+        width: 0,
+        height: 0
+      },
+      videoInfo: {
+        duration: 0,
+        currentTime: 0
       }
     }
   },
@@ -333,9 +424,11 @@ export default {
   },
   
   methods: {
-    // 返回上一页
+    // 返回chat页面
     goBack() {
-      uni.navigateBack()
+      uni.navigateTo({
+        url: '/pages/chat/chat'
+      })
     },
     
     // 清空所有选择
@@ -671,19 +764,121 @@ export default {
     viewCreationResult() {
       if (!this.creationProgress.result) return
 
-      const result = this.creationProgress.result
+      // 设置查看弹窗数据
+      this.viewResultModal.result = this.creationProgress.result
+      this.viewResultModal.show = true
       
-      if (result.type === 'image') {
-        // 预览图片
-        uni.previewImage({
-          urls: [result.url],
-          current: result.url
-        })
-      } else if (result.type === 'video') {
-        // 直接在当前页面播放视频（进度弹窗中已经有视频播放器）
-        // 或者可以全屏播放
-        this.playVideoFullscreen(result.url)
+      // 重置媒体信息
+      this.imageInfo = { width: 0, height: 0 }
+      this.videoInfo = { duration: 0, currentTime: 0 }
+    },
+
+    // 关闭查看结果弹窗
+    closeViewResultModal() {
+      this.viewResultModal.show = false
+      // 清空数据
+      setTimeout(() => {
+        this.viewResultModal.result = null
+        this.imageInfo = { width: 0, height: 0 }
+        this.videoInfo = { duration: 0, currentTime: 0 }
+      }, 300)
+    },
+
+    // 图片加载完成
+    onImageLoad(e) {
+      if (e.detail && e.detail.width && e.detail.height) {
+        this.imageInfo.width = e.detail.width
+        this.imageInfo.height = e.detail.height
       }
+    },
+
+    // 图片加载失败
+    onImageError(e) {
+      console.error('图片加载失败:', e)
+      uni.showToast({
+        title: '图片加载失败',
+        icon: 'error'
+      })
+    },
+
+    // 视频时间更新
+    onVideoTimeUpdate(e) {
+      if (e.detail && e.detail.currentTime) {
+        this.videoInfo.currentTime = e.detail.currentTime
+      }
+    },
+
+    // 视频元数据加载完成
+    onVideoLoadedMetadata(e) {
+      if (e.detail && e.detail.duration) {
+        this.videoInfo.duration = e.detail.duration
+      }
+    },
+
+    // 获取文件格式
+    getFileFormat(url) {
+      if (!url) return '未知'
+      const extension = url.split('.').pop().toLowerCase()
+      const formatMap = {
+        'jpg': 'JPEG',
+        'jpeg': 'JPEG', 
+        'png': 'PNG',
+        'gif': 'GIF',
+        'webp': 'WebP',
+        'mp4': 'MP4',
+        'avi': 'AVI',
+        'mov': 'MOV',
+        'wmv': 'WMV',
+        'flv': 'FLV'
+      }
+      return formatMap[extension] || extension.toUpperCase()
+    },
+
+    // 格式化时长
+    formatDuration(seconds) {
+      if (!seconds || seconds <= 0) return '00:00'
+      const mins = Math.floor(seconds / 60)
+      const secs = Math.floor(seconds % 60)
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    },
+
+    // 下载结果
+    downloadResult() {
+      if (!this.viewResultModal.result) return
+
+      const result = this.viewResultModal.result
+      
+      // 调用下载功能
+      uni.downloadFile({
+        url: result.url,
+        success: (res) => {
+          if (res.statusCode === 200) {
+            uni.showToast({
+              title: '下载成功',
+              icon: 'success'
+            })
+            
+            // 如果是图片，还可以保存到相册
+            if (result.type === 'image') {
+              uni.saveImageToPhotosAlbum({
+                filePath: res.tempFilePath,
+                success: () => {
+                  uni.showToast({
+                    title: '已保存到相册',
+                    icon: 'success'
+                  })
+                }
+              })
+            }
+          }
+        },
+        fail: () => {
+          uni.showToast({
+            title: '下载失败',
+            icon: 'error'
+          })
+        }
+      })
     },
 
     // 保存创作结果
@@ -1060,7 +1255,10 @@ export default {
 .ai-creation-container {
   height: 100vh;
   width: 100vw;
-  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  background-image: url('@/static/chat/chat_background.png');
+  background-size: contain;
+  background-position: center bottom;
+  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -1068,7 +1266,8 @@ export default {
 }
 
 .status-bar {
-  height: var(--status-bar-height);
+  height: calc(var(--status-bar-height) + 20rpx);
+  width: 100%;
 }
 
 /* 顶部导航栏 */
@@ -1087,16 +1286,20 @@ export default {
   align-items: center;
 }
 
-.back-button {
+.back-btn {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
   margin-right: 20rpx;
-  padding: 10rpx 20rpx;
-  background: rgba(102, 126, 234, 0.1);
-  border-radius: 20rpx;
 }
 
-.back-text {
-  color: #667eea;
-  font-size: 28rpx;
+.back-icon {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
 }
 
 .page-title {
@@ -1112,13 +1315,13 @@ export default {
 
 .header-btn {
   padding: 10rpx 20rpx;
-  background: rgba(102, 126, 234, 0.1);
-  border-radius: 20rpx;
+  background: rgba(255, 153, 0, 0.12);
+  border-radius: 24rpx;
   margin-left: 15rpx;
 }
 
 .btn-text {
-  color: #667eea;
+  color: #FF9900;
   font-size: 28rpx;
 }
 
@@ -1132,10 +1335,11 @@ export default {
 
 /* 区域样式 */
 .section {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20rpx;
+  background: white;
+  border-radius: 32rpx;
   margin-bottom: 20rpx;
   overflow: hidden;
+  box-shadow: 0 8rpx 16rpx rgba(0,0,0,0.08);
 }
 
 .section-header {
@@ -1143,8 +1347,8 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 20rpx;
-  background: rgba(102, 126, 234, 0.05);
-  border-bottom: 1rpx solid rgba(102, 126, 234, 0.1);
+  background: rgba(255, 153, 0, 0.05);
+  border-bottom: 1rpx solid rgba(255, 153, 0, 0.1);
   box-sizing: border-box;
 }
 
@@ -1159,7 +1363,7 @@ export default {
 }
 
 .expand-icon {
-  color: #667eea;
+  color: #FF9900;
   font-size: 24rpx;
 }
 
@@ -1183,8 +1387,13 @@ export default {
 
 .action-btn {
   padding: 10rpx 20rpx;
-  background: #667eea;
-  border-radius: 15rpx;
+  background: #FF9900;
+  border-radius: 24rpx;
+  transition: all 0.3s ease;
+}
+
+.action-btn:active {
+  transform: scale(0.95);
 }
 
 .action-btn .btn-text {
@@ -1216,8 +1425,13 @@ export default {
 
 .empty-action {
   padding: 10rpx 20rpx;
-  background: #667eea;
-  border-radius: 15rpx;
+  background: #FF9900;
+  border-radius: 24rpx;
+  transition: all 0.3s ease;
+}
+
+.empty-action:active {
+  transform: scale(0.95);
 }
 
 .action-text {
@@ -1237,14 +1451,19 @@ export default {
   padding: 20rpx;
   margin-bottom: 15rpx;
   background: #f8f9fa;
-  border-radius: 15rpx;
+  border-radius: 24rpx;
   border: 2rpx solid transparent;
   transition: all 0.3s ease;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.chat-item:active {
+  transform: scale(0.98);
 }
 
 .chat-item.selected {
-  background: rgba(102, 126, 234, 0.1);
-  border-color: #667eea;
+  background: #ffe9bf;
+  border-color: #FF9900;
 }
 
 .chat-preview {
@@ -1254,7 +1473,7 @@ export default {
 
 .chat-role {
   font-size: 24rpx;
-  color: #667eea;
+  color: #b58c2b;
   font-weight: bold;
   margin-bottom: 5rpx;
 }
@@ -1278,7 +1497,7 @@ export default {
   width: 40rpx;
   height: 40rpx;
   border-radius: 20rpx;
-  background: #667eea;
+  background: #FF9900;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1302,14 +1521,19 @@ export default {
   padding: 20rpx;
   margin-bottom: 15rpx;
   background: #f8f9fa;
-  border-radius: 15rpx;
+  border-radius: 24rpx;
   border: 2rpx solid transparent;
   transition: all 0.3s ease;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.knowledge-item:active {
+  transform: scale(0.98);
 }
 
 .knowledge-item.selected {
-  background: rgba(102, 126, 234, 0.1);
-  border-color: #667eea;
+  background: #ffe9bf;
+  border-color: #FF9900;
 }
 
 .knowledge-preview {
@@ -1344,8 +1568,8 @@ export default {
 
 .meta-tags {
   font-size: 20rpx;
-  color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
+  color: #b58c2b;
+  background: rgba(255, 153, 0, 0.12);
   padding: 2rpx 8rpx;
   border-radius: 8rpx;
   align-self: flex-start;
@@ -1357,13 +1581,19 @@ export default {
   min-height: 200rpx;
   padding: 20rpx;
   background: #f8f9fa;
-  border-radius: 15rpx;
+  border-radius: 24rpx;
   border: 2rpx solid #e9ecef;
   font-size: 28rpx;
   line-height: 1.5;
   color: #333;
   box-sizing: border-box;
   resize: none;
+  transition: all 0.3s ease;
+}
+
+.custom-input:focus {
+  border-color: #FF9900;
+  box-shadow: 0 0 0 3rpx rgba(255, 153, 0, 0.12);
 }
 
 .input-counter {
@@ -1389,14 +1619,19 @@ export default {
   align-items: center;
   padding: 30rpx 20rpx;
   background: #f8f9fa;
-  border-radius: 15rpx;
+  border-radius: 24rpx;
   border: 2rpx solid transparent;
   transition: all 0.3s ease;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.type-item:active {
+  transform: scale(0.98);
 }
 
 .type-item.active {
-  background: rgba(102, 126, 234, 0.1);
-  border-color: #667eea;
+  background: #ffe9bf;
+  border-color: #FF9900;
 }
 
 .type-icon {
@@ -1412,13 +1647,14 @@ export default {
 /* 预览区域 */
 .preview-content {
   background: #f8f9fa;
-  border-radius: 15rpx;
+  border-radius: 24rpx;
   padding: 20rpx;
   min-height: 150rpx;
   max-height: 300rpx;
   overflow-y: auto;
   box-sizing: border-box;
   width: 100%;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .preview-text {
@@ -1459,7 +1695,7 @@ export default {
 }
 
 .action-btn.primary {
-  background: #667eea;
+  background: #FF9900;
 }
 
 .action-btn.disabled {
@@ -1469,9 +1705,10 @@ export default {
 
 .action-btn {
   padding: 15rpx 30rpx;
-  border-radius: 25rpx;
+  border-radius: 32rpx;
   min-width: 120rpx;
   text-align: center;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .action-btn .btn-text {
@@ -1498,7 +1735,7 @@ export default {
   width: 80%;
   max-width: 600rpx;
   background: white;
-  border-radius: 20rpx;
+  border-radius: 32rpx;
   overflow: hidden;
   box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.3);
 }
@@ -1508,7 +1745,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 30rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #FF9900 0%, #FFC58F 100%);
 }
 
 .progress-title {
@@ -1553,7 +1790,7 @@ export default {
   width: 80rpx;
   height: 80rpx;
   border: 6rpx solid #f3f3f3;
-  border-top: 6rpx solid #667eea;
+  border-top: 6rpx solid #FF9900;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -1580,7 +1817,7 @@ export default {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #FF9900 0%, #FFC58F 100%);
   border-radius: 5rpx;
   transition: width 0.3s ease;
 }
@@ -1602,12 +1839,13 @@ export default {
   width: 200rpx;
   height: 200rpx;
   margin-bottom: 30rpx;
-  border-radius: 15rpx;
+  border-radius: 24rpx;
   overflow: hidden;
   background: #f8f9fa;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .result-image {
@@ -1628,7 +1866,7 @@ export default {
 .result-video-player {
   width: 100%;
   height: 150rpx;
-  border-radius: 10rpx;
+  border-radius: 16rpx;
   background: #000;
   object-fit: contain;
   cursor: pointer;
@@ -1644,7 +1882,7 @@ export default {
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 10rpx;
+  border-radius: 16rpx;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -1738,5 +1976,174 @@ export default {
   display: flex;
   gap: 15rpx;
   justify-content: center;
+}
+
+/* 查看结果弹窗样式 */
+.view-result-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.view-result-modal {
+  width: 90%;
+  max-width: 800rpx;
+  max-height: 90vh;
+  background: white;
+  border-radius: 32rpx;
+  overflow: hidden;
+  box-shadow: 0 20rpx 40rpx rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.view-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30rpx;
+  background: linear-gradient(135deg, #FF9900 0%, #FFC58F 100%);
+  flex-shrink: 0;
+}
+
+.view-result-title {
+  color: white;
+  font-size: 36rpx;
+  font-weight: bold;
+}
+
+.view-result-close {
+  width: 50rpx;
+  height: 50rpx;
+  border-radius: 25rpx;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.view-result-close:active {
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.view-result-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30rpx;
+}
+
+/* 图片查看容器 */
+.image-view-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.full-image {
+  width: 100%;
+  max-height: 400rpx;
+  border-radius: 16rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  margin-bottom: 20rpx;
+}
+
+.image-info {
+  display: flex;
+  gap: 20rpx;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.info-item {
+  font-size: 24rpx;
+  color: #666;
+  background: #f8f9fa;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+}
+
+/* 视频查看容器 */
+.video-view-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.full-video {
+  width: 100%;
+  height: 400rpx;
+  border-radius: 16rpx;
+  background: #000;
+  object-fit: contain;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  margin-bottom: 20rpx;
+}
+
+.video-info {
+  display: flex;
+  gap: 20rpx;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* 结果详情 */
+.result-details {
+  background: #f8f9fa;
+  border-radius: 24rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.detail-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15rpx;
+  text-align: center;
+}
+
+.detail-description {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+.detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  align-items: center;
+}
+
+.meta-item {
+  font-size: 24rpx;
+  color: #999;
+  background: white;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid #e9ecef;
+}
+
+/* 查看结果操作按钮 */
+.view-result-actions {
+  display: flex;
+  gap: 15rpx;
+  justify-content: center;
+  padding: 20rpx 30rpx 30rpx;
+  background: #f8f9fa;
+  flex-shrink: 0;
 }
 </style>

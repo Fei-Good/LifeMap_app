@@ -52,7 +52,7 @@
 
 
     <!-- 浮动操作栏 -->
-    <view v-if="!isChatStarted" class="floating-actions">
+    <view class="floating-actions" :class="{ 'chat-started': isChatStarted }">
       <!-- 角色选择 -->
       <view 
         class="floating-item role-selector-item"
@@ -60,12 +60,8 @@
         @click="toggleRoleSelector"
       >
         <view class="floating-item-top">
-          <image 
-            class="floating-icon"
-            :src="roleConfig[currentRole].avatar"
-            mode="aspectFit"
-          />
-          <text class="floating-function">{{ roleConfig[currentRole].name }}</text>
+          <image class="floating-icon" src="@/static/chat/切换人物.svg" mode="aspectFit"></image>
+          <text class="floating-function">切换身份</text>
         </view>
         <text class="floating-desc">切换视角看问题</text>
       </view>
@@ -77,9 +73,9 @@
       >
         <view class="floating-item-top">
           <image class="floating-icon" src="@/static/chat/AI创作.svg" mode="aspectFit"></image>
-          <text class="floating-function">AI创作</text>
+          <text class="floating-function">总结嘴替</text>
         </view>
-        <text class="floating-desc">AI智能创作</text>
+        <text class="floating-desc">AI生成职场视频</text>
       </view>
       
       <!-- 职场吐槽 -->
@@ -587,7 +583,7 @@ const currentPage = ref('chat')
 const roleConfig = {
   doudou: {
     name: 'DouDou',
-    avatar: '/static/chat/初始形象.png',
+    avatar: '/static/chat/default.png',
     placeholder: '和DouDou聊一下吧',
     description: '你自己的视角',
     prompt: `你是DouDou，一个温暖、友善、专业的AI助手。你的任务是：
@@ -700,8 +696,8 @@ onMounted(() => {
 
 // 猜你想问（默认常见问题）
 const defaultQuestions = ref([
-  '我该如何跟领导沟通这件事？',
-  '近期工作压力大，怎么缓解？',
+  '😐同事甩锅给我，第一次遇到该咋办？💢？',
+  '🔄如何书写有效的提示词，有没有框架？⏰',
 ])
 
 // 显示个性化报告
@@ -2741,7 +2737,7 @@ const handleWorkplaceVent = () => {
 /* 浮动操作栏样式 */
 .floating-actions {
   position: fixed;
-  right: 5rpx; /* 靠右侧 */
+  right: 30rpx; /* 靠右侧 */
   bottom: 280rpx; /* 位于输入区域(120rpx)之上 */
   top: auto;
   transform: none;
@@ -2750,8 +2746,15 @@ const handleWorkplaceVent = () => {
   flex-direction: row; /* 横向排列 */
   justify-content: flex-end;
   align-items: center;
-  gap: 12rpx;
+  gap: 15rpx;
   animation: floatingSlideIn 0.5s ease-out;
+  opacity: 1; /* 初始状态不透明 */
+  transition: opacity 0.3s ease; /* 添加透明度过渡动画 */
+  
+  /* 聊天开始后的透明度状态 */
+  &.chat-started {
+    opacity: 0.5; /* 50%透明度 */
+  }
 }
 
 .floating-item {
@@ -2787,13 +2790,15 @@ const handleWorkplaceVent = () => {
   }
   
   &.task-item:active {
-    background: rgba(255, 171, 64, 0.1);
-    border-color: #FFAB40;
+    background: rgba(74, 158, 255, 0.1);
+    border-color: #4A9EFF;
+    box-shadow: 0 8rpx 24rpx rgba(74, 158, 255, 0.2);
   }
   
   &.workplace-vent-item:active {
-    background: rgba(156, 39, 176, 0.1);
-    border-color: #9C27B0;
+    background: rgba(74, 158, 255, 0.1);
+    border-color: #4A9EFF;
+    box-shadow: 0 8rpx 24rpx rgba(74, 158, 255, 0.2);
   }
 }
 
