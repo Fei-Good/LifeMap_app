@@ -2,6 +2,11 @@
   <view class="report-container">
     <!-- 顶部感谢区域 -->
     <view class="header-section">
+      <view class="back-button-container">
+        <view @click="goBackToMap">
+          <text class="back-icon">←</text>
+        </view>
+      </view>
       <view class="thank-you-header">
         <view class="header-content">
           <view class="header-text">
@@ -192,6 +197,11 @@
 
       <!-- E.（合并后删除单独目标模块） -->
 
+      <!-- CTA 卡片：去完成任务（作为页面内容的一部分） -->
+      <view class="cta-card" @click="goBackToMap">
+        <text class="cta-icon">🎯</text>
+        <text class="cta-text">去完成任务</text>
+      </view>
     </scroll-view>
 
     <!-- 历史任务完成查看弹窗 -->
@@ -280,6 +290,15 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import RadarChart from '@/components/RadarChart.vue'
+// 返回到地图页（优先返回上一页，否则重启至地图页）
+const goBackToMap = () => {
+  const pages = getCurrentPages && getCurrentPages()
+  if (pages && pages.length > 1) {
+    uni.navigateBack()
+  } else {
+    uni.reLaunch({ url: '/pages/map/map' })
+  }
+}
 
 // A. 情绪模式总结数据
 const emotionTriggers = ref([
@@ -1112,6 +1131,35 @@ const syncWithKnowledgeBase = async () => {
   overflow-x: hidden; /* 防止水平滚动 */
 }
 
+/* CTA卡片（嵌入内容，不固定） */
+.cta-card {
+  margin: 30rpx 20rpx 50rpx 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14rpx;
+  padding: 22rpx 28rpx;
+  border-radius: 22rpx;
+  background: linear-gradient(135deg, #FF9500 0%, #FFB84D 100%);
+  color: #ffffff;
+  box-shadow: 0 12rpx 28rpx rgba(255, 149, 0, 0.25), 0 4rpx 10rpx rgba(0, 0, 0, 0.08);
+  border: 2rpx solid rgba(255, 255, 255, 0.6);
+}
+
+/* 去除点击缩放与浮动动画，保持稳定位置与外观 */
+
+.cta-icon {
+  font-size: 30rpx;
+  filter: drop-shadow(0 2rpx 4rpx rgba(0,0,0,0.15));
+}
+
+.cta-text {
+  font-size: 30rpx;
+  font-weight: 800;
+  letter-spacing: 1rpx;
+  text-shadow: 0 1rpx 2rpx rgba(0,0,0,0.15);
+}
+
 /* 顶部感谢区域 */
 .header-section {
   padding: 120rpx 20rpx 40rpx 10rpx;
@@ -1119,6 +1167,92 @@ const syncWithKnowledgeBase = async () => {
   background: url('/static/beijing.png') no-repeat center center;
   background-size: cover;
   border-radius: 0 0 30rpx 30rpx;
+}
+
+.back-button-container {
+  position: absolute;
+  top: 24rpx;
+  left: 20rpx;
+  z-index: 50;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 16rpx 24rpx;
+  background: linear-gradient(135deg, rgba(255, 239, 224, 0.85) 0%, rgba(255, 225, 181, 0.75) 100%);
+  border: 2rpx solid rgba(242, 158, 56, 0.55);
+  border-radius: 999rpx;
+  box-shadow: 0 10rpx 24rpx rgba(255, 149, 0, 0.22), 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8rpx);
+  position: relative;
+  overflow: hidden;
+}
+
+.back-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999rpx;
+  padding: 2rpx;
+  background: linear-gradient(135deg, rgba(242,158,56,.45), rgba(255,184,77,.35));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+.back-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0));
+  border-top-left-radius: 999rpx;
+  border-top-right-radius: 999rpx;
+  pointer-events: none;
+}
+
+.back-icon {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #ffffff;
+  font-weight: 800;
+  background: linear-gradient(135deg, #FF9500, #FFB84D);
+  box-shadow: 0 4rpx 10rpx rgba(255, 149, 0, 0.35);
+  border: 1rpx solid rgba(255, 255, 255, 0.6);
+}
+
+.back-label {
+  font-size: 24rpx;
+  font-weight: 800;
+  letter-spacing: 1rpx;
+  background: linear-gradient(135deg, #2E3A59 0%, #F29E38 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 1rpx 2rpx rgba(0,0,0,0.08);
+}
+
+.back-button:hover {
+  transform: translateY(-2rpx);
+  box-shadow: 0 14rpx 30rpx rgba(255, 149, 0, 0.28), 0 6rpx 12rpx rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, rgba(255, 230, 204, 0.9) 0%, rgba(255, 237, 204, 0.8) 100%);
+}
+
+.back-button:active {
+  transform: scale(0.98);
+  box-shadow: 0 10rpx 22rpx rgba(255, 149, 0, 0.26), 0 4rpx 10rpx rgba(0, 0, 0, 0.08);
 }
 
 
@@ -1474,7 +1608,7 @@ const syncWithKnowledgeBase = async () => {
 
 .stats-title {
   display: block;
-  font-size: 32rpx;
+  font-size: 40rpx;
   color: #F29E38;
   font-weight: 700;
   margin-bottom: 12rpx;
@@ -1663,7 +1797,7 @@ const syncWithKnowledgeBase = async () => {
 
 .tags-container {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16rpx;
   align-items: stretch;
   padding: 0 20rpx;
