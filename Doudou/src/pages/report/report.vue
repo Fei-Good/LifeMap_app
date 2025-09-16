@@ -3,13 +3,12 @@
     <!-- 顶部感谢区域 -->
     <view class="header-section">
       <view class="thank-you-header">
-        <image 
-          class="doudou-character"
-          src="@/static/login/DouDou_主形象.png"
-          mode="aspectFit"
-        />
-        <text class="thank-title">你的成长报告</text>
+        <view class="header-content">
+          <view class="header-text">
+            <text class="thank-title">成长报告</text>
         <text class="thank-subtitle">DouDou陪伴你的每一步成长</text>
+          </view>
+        </view>
       </view>
       
       <!-- 同步按钮 -->
@@ -1106,7 +1105,7 @@ const syncWithKnowledgeBase = async () => {
 
 .report-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #FFE0B2 0%, #FFCC80 100%);
+  background: #ffffff;
   padding-bottom: 68px; /* 为底部导航栏留出空间 */
   width: 100%;
   box-sizing: border-box;
@@ -1115,36 +1114,74 @@ const syncWithKnowledgeBase = async () => {
 
 /* 顶部感谢区域 */
 .header-section {
-  padding: 120rpx 20rpx 40rpx;
-  text-align: center;
+  padding: 120rpx 20rpx 40rpx 10rpx;
+  text-align: left;
+  background: url('/static/beijing.png') no-repeat center center;
+  background-size: cover;
+  border-radius: 0 0 30rpx 30rpx;
 }
+
 
 .thank-you-header {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 20rpx;
+  padding: 0 20rpx 0 0;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
   gap: 30rpx;
 }
 
-.doudou-character {
-  width: 150rpx;
-  height: 150rpx;
-  border-radius: 50%;
-  background: rgba(255, 193, 7, 0.2);
-  padding: 20rpx;
+.header-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 15rpx;
+  flex: 1;
+  text-align: left;
+  width: 100%;
+  margin-left: 20rpx;
 }
 
+.header-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.doudou-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 60rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 149, 0, 0.2);
+}
+
+
 .thank-title {
-  font-size: 36rpx;
-  font-weight: 600;
+  font-size: 64rpx;
+  font-weight: 700;
   color: #2E3A59;
   text-shadow: 0 2rpx 8rpx rgba(255, 255, 255, 0.3);
+  letter-spacing: 2rpx;
+  text-align: left;
+  align-self: flex-start;
 }
 
 .thank-subtitle {
   font-size: 28rpx;
   color: #666;
   text-shadow: 0 1rpx 4rpx rgba(255, 255, 255, 0.2);
+  text-align: left;
+  align-self: flex-start;
 }
 
 /* 同步按钮样式 */
@@ -1161,7 +1198,7 @@ const syncWithKnowledgeBase = async () => {
   align-items: center;
   gap: 15rpx;
   padding: 24rpx 48rpx;
-  background: linear-gradient(135deg, #FF9500 0%, #FF8F00 50%, #FFB84D 100%);
+  background: linear-gradient(135deg, #FFE8CC 0%, #FFD79A 50%, #FFECB3 100%);
   border-radius: 60rpx;
   box-shadow: 
     0 12rpx 30rpx rgba(255, 149, 0, 0.4),
@@ -1181,7 +1218,7 @@ const syncWithKnowledgeBase = async () => {
   }
   
   &.syncing {
-    background: linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FFB84D 100%);
+    background: linear-gradient(135deg, #FFD0B3 0%, #FFC38A 50%, #FFECB3 100%);
     box-shadow: 
       0 12rpx 30rpx rgba(255, 107, 53, 0.4),
       0 6rpx 12rpx rgba(0, 0, 0, 0.1),
@@ -1321,21 +1358,16 @@ const syncWithKnowledgeBase = async () => {
   width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
+  background: #ffffff;
 }
 
 /* 报告部分样式 */
 .report-section {
-  background: rgba(255, 255, 255, 0.96);
-  border-radius: 28rpx;
   padding: 32rpx;
   margin: 0 auto 44rpx auto;
-  box-shadow: 0 14rpx 46rpx rgba(255, 149, 0, 0.10), 0 8rpx 20rpx rgba(0, 0, 0, 0.06);
-  border: 2rpx solid rgba(255, 149, 0, 0.08);
-  backdrop-filter: blur(10rpx);
   width: 100%;
   max-width: 750rpx;
   box-sizing: border-box;
-  animation: sectionFade 280ms ease-out both;
 }
 
 .section-header {
@@ -1369,7 +1401,7 @@ const syncWithKnowledgeBase = async () => {
 
 .section-icon {
   font-size: 32rpx;
-  color: #FF9500;
+  color: #F29E38;
   margin-bottom: 5rpx;
 }
 
@@ -1384,7 +1416,9 @@ const syncWithKnowledgeBase = async () => {
 
 /* A. 情绪模式总结样式 */
 .emotion-pattern {
-  background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
+  background: #ffffff;
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(0, 0, 0, 0.05);
 }
 
 /* 勇气值统计样式 */
@@ -1393,18 +1427,12 @@ const syncWithKnowledgeBase = async () => {
 }
 
 .stats-card {
-  background: linear-gradient(135deg, #FF9500 0%, #FF8F00 50%, #FFB84D 100%);
-  border-radius: 32rpx;
-  padding: 50rpx 40rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 36rpx 28rpx;
   text-align: center;
-  border: 4rpx solid rgba(255, 255, 255, 0.3);
-  box-shadow: 
-    0 25rpx 50rpx rgba(255, 149, 0, 0.4),
-    0 12rpx 24rpx rgba(0, 0, 0, 0.15),
-    inset 0 2rpx 0 rgba(255, 255, 255, 0.3);
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10rpx);
+  border: 1rpx solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4rpx 10rpx rgba(0,0,0,0.06);
   margin: 0 20rpx;
 }
 
@@ -1446,67 +1474,73 @@ const syncWithKnowledgeBase = async () => {
 
 .stats-title {
   display: block;
-  font-size: 36rpx;
-  color: rgba(255, 255, 255, 0.95);
+  font-size: 32rpx;
+  color: #F29E38;
   font-weight: 700;
-  margin-bottom: 20rpx;
-  text-shadow: 0 3rpx 6rpx rgba(0, 0, 0, 0.4);
-  position: relative;
-  z-index: 2;
+  margin-bottom: 12rpx;
+  text-shadow: 0 2rpx 6rpx rgba(242, 158, 56, 0.25);
 }
 
 .stats-number {
   display: block;
   font-size: 80rpx;
-  color: #ffffff;
-  font-weight: 900;
-  margin-bottom: 10rpx;
-  text-shadow: 
-    0 6rpx 12rpx rgba(0, 0, 0, 0.4),
-    0 0 30rpx rgba(255, 255, 255, 0.6);
-  position: relative;
-  z-index: 2;
-  animation: pulse 2s ease-in-out infinite;
-  line-height: 1;
+  font-weight: 800;
+  margin-bottom: 8rpx;
+  line-height: 1.05;
+  letter-spacing: 2rpx;
+  background: linear-gradient(135deg, #FF9500 0%, #FFB84D 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 3rpx 10rpx rgba(255, 149, 0, 0.28);
 }
 
 .stats-desc {
   display: block;
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.9);
-  font-style: italic;
-  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.4);
-  position: relative;
-  z-index: 2;
+  font-size: 24rpx;
+  color: #6B7280;
+  font-weight: 500;
   margin-bottom: 8rpx;
 }
 
 .courage-explanation {
   margin-top: 16rpx;
-  padding: 12rpx 16rpx;
-  background: rgba(255, 255, 255, 0.15);
+  padding: 16rpx 18rpx;
+  background: #F8FAFC;
   border-radius: 12rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(5rpx);
+  border: 1rpx solid rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  position: relative;
+}
+
+.courage-explanation::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6rpx;
+  border-radius: 12rpx 0 0 12rpx;
+  background: #F29E38;
 }
 
 .explanation-text {
   display: block;
-  font-size: 22rpx;
-  color: #ffffff;
-  font-weight: 600;
-  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.3);
-  margin-bottom: 6rpx;
-  line-height: 1.3;
+  font-size: 24rpx;
+  color: #111827;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.35;
 }
 
 .explanation-tip {
   display: block;
-  font-size: 20rpx;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 400;
-  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.2);
-  line-height: 1.3;
+  font-size: 22rpx;
+  color: #6B7280;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 @keyframes pulse {
@@ -1529,14 +1563,11 @@ const syncWithKnowledgeBase = async () => {
   display: flex;
   justify-content: space-around;
   margin-top: 20rpx;
-  padding: 25rpx 20rpx;
-  background: linear-gradient(135deg, rgba(255, 243, 224, 0.95) 0%, rgba(255, 224, 178, 0.9) 100%);
-  border-radius: 20rpx;
-  border: 2rpx solid rgba(255, 149, 0, 0.2);
-  box-shadow: 
-    0 8rpx 25rpx rgba(255, 149, 0, 0.15),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10rpx);
+  padding: 20rpx 16rpx;
+  background: #FFFFFF;
+  border-radius: 12rpx;
+  border: 1rpx solid rgba(0,0,0,0.06);
+  box-shadow: 0 4rpx 10rpx rgba(0,0,0,0.06);
 }
 
 .breakdown-item {
@@ -1546,7 +1577,7 @@ const syncWithKnowledgeBase = async () => {
   gap: 10rpx;
   flex: 1;
   padding: 15rpx 10rpx;
-  border-radius: 16rpx;
+  border-radius: 12rpx;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -1559,7 +1590,7 @@ const syncWithKnowledgeBase = async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 149, 0, 0.05) 0%, rgba(255, 193, 7, 0.05) 100%);
+  background: rgba(242, 158, 56, 0.08);
   border-radius: 16rpx;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -1570,13 +1601,13 @@ const syncWithKnowledgeBase = async () => {
 }
 
 .breakdown-item:hover {
-  transform: translateY(-5rpx);
-  box-shadow: 0 8rpx 20rpx rgba(255, 149, 0, 0.2);
+  transform: translateY(-3rpx);
+  box-shadow: 0 6rpx 14rpx rgba(0, 0, 0, 0.08);
 }
 
 .breakdown-label {
-  font-size: 22rpx;
-  color: #4A5568;
+  font-size: 24rpx;
+  color: #374151;
   font-weight: 600;
   text-align: center;
   position: relative;
@@ -1584,22 +1615,22 @@ const syncWithKnowledgeBase = async () => {
 }
 
 .breakdown-count {
-  font-size: 32rpx;
-  color: #FF9500;
+  font-size: 34rpx;
+  color: #DC6803;
   font-weight: 800;
-  text-shadow: 0 2rpx 4rpx rgba(255, 149, 0, 0.2);
+  text-shadow: none;
   position: relative;
   z-index: 1;
-  animation: countGlow 3s ease-in-out infinite;
+  animation: none;
 }
 
 @keyframes countGlow {
   0%, 100% { 
-    color: #FF9500;
+    color: #F29E38;
     text-shadow: 0 2rpx 4rpx rgba(255, 149, 0, 0.2);
   }
   50% { 
-    color: #FF8F00;
+    color: #F4AA52;
     text-shadow: 0 2rpx 8rpx rgba(255, 143, 0, 0.4);
   }
 }
@@ -1607,88 +1638,76 @@ const syncWithKnowledgeBase = async () => {
 /* 常见挑战标题 */
 .highlights-title {
   display: block;
-  font-size: 26rpx;
-  color: #4CAF50;
-  font-weight: 600;
-  margin-bottom: 20rpx;
-  text-align: center;
+  font-size: 30rpx;
+  color: #1F2937;
+  font-weight: 700;
+  margin: 4rpx 20rpx 16rpx 20rpx;
+  text-align: left;
+  position: relative;
+}
+
+.highlights-title::after {
+  content: '';
+  display: block;
+  height: 2rpx;
+  width: 64rpx;
+  background: rgba(31, 41, 55, 0.12);
+  margin-top: 8rpx;
+  border-radius: 2rpx;
 }
 
 /* 挑战标签容器 */
 .challenge-tags {
-  margin-bottom: 25rpx;
+  margin: 24rpx 0 28rpx 0;
 }
 
 .tags-container {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16rpx;
-  justify-content: center;
-  align-items: flex-start;
+  align-items: stretch;
   padding: 0 20rpx;
 }
 
 .challenge-tag {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 8rpx;
-  background: linear-gradient(135deg, #FF9500 0%, #FF8F00 50%, #FFB84D 100%);
-  border: 2rpx solid rgba(255, 255, 255, 0.3);
-  border-radius: 20rpx;
-  padding: 20rpx 16rpx;
-  box-shadow: 
-    0 8rpx 20rpx rgba(255, 149, 0, 0.3),
-    0 4rpx 8rpx rgba(0, 0, 0, 0.1),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.2);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  justify-content: space-between;
+  gap: 12rpx;
+  background: #FFFFFF;
+  border: 1rpx solid rgba(0,0,0,0.08);
+  border-radius: 14rpx;
+  padding: 16rpx 16rpx 16rpx 20rpx;
+  box-shadow: 0 4rpx 10rpx rgba(0,0,0,0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-height: 72rpx;
   position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10rpx);
-  min-width: 120rpx;
-  max-width: 200rpx;
-  text-align: center;
 }
 
 .challenge-tag::before {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    rgba(255, 255, 255, 0.1) 60deg,
-    transparent 120deg,
-    rgba(255, 255, 255, 0.1) 180deg,
-    transparent 240deg,
-    rgba(255, 255, 255, 0.1) 300deg,
-    transparent 360deg
-  );
-  animation: tagRotate 3s linear infinite;
-  z-index: 0;
+  left: 0;
+  top: 8rpx;
+  bottom: 8rpx;
+  width: 6rpx;
+  border-radius: 12rpx 0 0 12rpx;
+  background: #F29E38;
 }
 
 .challenge-tag::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  border-radius: 30rpx;
-  z-index: 1;
+  inset: 0;
+  background: transparent;
+  border-radius: 14rpx;
 }
 
 .challenge-tag:hover {
-  transform: translateY(-8rpx) scale(1.05);
-  box-shadow: 
-    0 15rpx 35rpx rgba(255, 149, 0, 0.4),
-    0 8rpx 16rpx rgba(0, 0, 0, 0.15),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-2rpx);
+  box-shadow: 0 6rpx 14rpx rgba(0, 0, 0, 0.08);
+  background: #F9FAFB;
 }
 
 @keyframes tagRotate {
@@ -1697,35 +1716,27 @@ const syncWithKnowledgeBase = async () => {
 }
 
 .tag-text {
-  font-size: 22rpx;
-  color: #ffffff;
-  font-weight: 700;
-  line-height: 1.3;
-  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.3);
-  position: relative;
-  z-index: 2;
+  font-size: 26rpx;
+  color: #111827;
+  font-weight: 600;
+  line-height: 1.35;
   word-wrap: break-word;
   word-break: break-all;
   white-space: normal;
-  text-align: center;
-  max-width: 100%;
+  flex: 1;
 }
 
 .tag-frequency {
-  background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-  color: white;
-  font-size: 20rpx;
-  font-weight: 800;
+  background: #FFF7ED;
+  color: #92400E;
+  font-size: 22rpx;
+  font-weight: 700;
   padding: 6rpx 12rpx;
-  border-radius: 15rpx;
-  min-width: 45rpx;
+  border-radius: 12rpx;
+  min-width: 54rpx;
   text-align: center;
-  box-shadow: 
-    0 4rpx 8rpx rgba(255, 107, 53, 0.4),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.2);
-  position: relative;
-  z-index: 2;
-  animation: frequencyPulse 2s ease-in-out infinite;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid rgba(146, 64, 14, 0.12);
 }
 
 @keyframes frequencyPulse {
@@ -1788,22 +1799,23 @@ const syncWithKnowledgeBase = async () => {
 }
 
 .comfort-message {
-  padding: 25rpx;
-  background: rgba(255, 193, 7, 0.1);
-  border-radius: 20rpx;
-  border-left: 4rpx solid #FFC107;
+  padding: 18rpx 20rpx;
+  background: #F8FAFC;
+  border-radius: 12rpx;
+  border: 1rpx solid rgba(15, 23, 42, 0.06);
 }
 
 .comfort-text {
-  font-size: 28rpx;
-  color: #444;
+  font-size: 24rpx;
+  color: #374151;
   line-height: 1.6;
 }
 
 /* B. 优势画像样式 */
 .strength-profile {
-  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%);
-  border: 3rpx solid rgba(33, 150, 243, 0.3);
+  background: #ffffff;
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(0, 0, 0, 0.05);
 }
 
 /* 核心优势画像专用样式 */
@@ -1863,12 +1875,6 @@ const syncWithKnowledgeBase = async () => {
   75% { transform: rotate(5deg); }
 }
 
-.header-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
 
 .section-subtitle {
   font-size: 26rpx;
@@ -2093,8 +2099,8 @@ const syncWithKnowledgeBase = async () => {
 }
 
 .scenario-tag {
-  background: rgba(255, 149, 0, 0.1);
-  color: #FF9500;
+  background: rgba(242, 158, 56, 0.12);
+  color: #F29E38;
   padding: 8rpx 16rpx;
   border-radius: 20rpx;
   font-size: 24rpx;
@@ -2136,33 +2142,16 @@ const syncWithKnowledgeBase = async () => {
 
 .impact-value {
   font-size: 26rpx;
-  color: #FF9500;
+  color: #F29E38;
   font-weight: 600;
   flex-shrink: 0;
 }
 
 /* C. 新人进阶路线 */
 .career-progression {
-  background: linear-gradient(135deg, #FFF8E1 0%, #FFF3C4 30%, #FFE0B2 70%, #FFCC80 100%);
-  border: 2rpx solid rgba(255, 149, 0, 0.15);
-  box-shadow: 
-    0 12rpx 30rpx rgba(255, 149, 0, 0.08) inset, 
-    0 8rpx 24rpx rgba(0, 0, 0, 0.04),
-    0 4rpx 12rpx rgba(255, 149, 0, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-.career-progression::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 149, 0, 0.03) 0%, transparent 70%);
-  animation: goalRotate 20s linear infinite;
-  pointer-events: none;
+  background: #ffffff;
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(0, 0, 0, 0.05);
 }
 
 .progression-list {
@@ -2233,7 +2222,7 @@ const syncWithKnowledgeBase = async () => {
 .category-title {
   font-size: 28rpx;
   font-weight: 700;
-  color: #FF9500;
+  color: #F29E38;
   text-shadow: 0 1rpx 2rpx rgba(255, 149, 0, 0.2);
 }
 
@@ -2266,8 +2255,8 @@ const syncWithKnowledgeBase = async () => {
   align-items: center;
   justify-content: center;
   padding: 10rpx 20rpx;
-  background: linear-gradient(135deg, #FF9500 0%, #FF8F00 100%);
-  border: 1rpx solid #FF9500;
+  background: linear-gradient(135deg, #FFEFE0 0%, #FFE1B5 100%);
+  border: 1rpx solid #F29E38;
   border-radius: 20rpx;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -2275,7 +2264,7 @@ const syncWithKnowledgeBase = async () => {
 }
 
 .edit-btn:hover {
-  background: linear-gradient(135deg, #FF8F00 0%, #FF9500 100%);
+  background: linear-gradient(135deg, #FFE6CC 0%, #FFEDCC 100%);
   transform: translateY(-1rpx);
   box-shadow: 0 4rpx 12rpx rgba(255, 149, 0, 0.4);
 }
@@ -2506,7 +2495,7 @@ const syncWithKnowledgeBase = async () => {
 .modal-title {
   font-size: 32rpx;
   font-weight: 700;
-  color: #FF9500;
+  color: #F29E38;
 }
 
 .close-btn {
@@ -2527,7 +2516,7 @@ const syncWithKnowledgeBase = async () => {
 
 .close-icon {
   font-size: 24rpx;
-  color: #FF9500;
+  color: #F29E38;
   font-weight: 600;
 }
 
@@ -2624,7 +2613,7 @@ const syncWithKnowledgeBase = async () => {
 }
 
 .form-input:focus, .form-textarea:focus {
-  border-color: #FF9500;
+  border-color: #F29E38;
   box-shadow: 0 0 0 4rpx rgba(255, 149, 0, 0.1);
 }
 
@@ -2752,7 +2741,7 @@ const syncWithKnowledgeBase = async () => {
 .progress-value {
   font-size: 24rpx;
   font-weight: 700;
-  color: #FF9500;
+  color: #F29E38;
   text-align: right;
   line-height: 1.2;
 }
@@ -2760,7 +2749,7 @@ const syncWithKnowledgeBase = async () => {
 .progress-desc {
   font-size: 20rpx;
   font-weight: 500;
-  color: #FF8F00;
+  color: #F4AA52;
   text-align: right;
   line-height: 1.2;
 }
@@ -2809,8 +2798,8 @@ const syncWithKnowledgeBase = async () => {
 }
 
 .scenario-pill .scenario-tag {
-  background: linear-gradient(135deg, rgba(255,149,0,.2), rgba(255,193,7,.15));
-  color: #FF9500;
+  background: linear-gradient(135deg, rgba(242,158,56,.18), rgba(255,193,7,.12));
+  color: #F29E38;
   padding: 6rpx 12rpx;
   border-radius: 12rpx;
   font-size: 20rpx;
@@ -2838,14 +2827,14 @@ const syncWithKnowledgeBase = async () => {
 .impact-value {
   font-size: 24rpx;
   font-weight: 700;
-  color: #FF9500;
+  color: #F29E38;
   line-height: 1.2;
 }
 
 .impact-desc {
   font-size: 20rpx;
   font-weight: 500;
-  color: #FF8F00;
+  color: #F4AA52;
   line-height: 1.2;
 }
 
@@ -2950,12 +2939,33 @@ const syncWithKnowledgeBase = async () => {
     padding: 0 15rpx;
   }
   
+  .header-section {
+    padding: 120rpx 20rpx 40rpx 5rpx;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 20rpx;
+  }
+  
+  .header-text {
+    align-items: flex-start;
+    text-align: left;
+    margin-left: 10rpx;
+  }
+  
+  .doudou-avatar {
+    width: 100rpx;
+    height: 100rpx;
+    border-radius: 50rpx;
+  }
+  
   .report-section {
     padding: 20rpx;
     margin: 0 auto 30rpx auto;
     width: 100%;
     max-width: 100%;
-  border-radius: 20rpx;
   }
   
   .section-header {
@@ -2965,6 +2975,7 @@ const syncWithKnowledgeBase = async () => {
   }
   
   .tags-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12rpx;
     padding: 0 10rpx;
   }
@@ -3267,7 +3278,6 @@ const syncWithKnowledgeBase = async () => {
     padding: 15rpx;
     margin: 0 auto 20rpx auto;
     width: 100%;
-    border-radius: 15rpx;
   }
   
   .section-header {
